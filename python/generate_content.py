@@ -112,7 +112,7 @@ def generate_narration(topic_data: dict) -> dict:
             if attempt == max_attempts - 1:
                 raise
                 
-    raise ValueError(f"Failed to generate a script with at least 42 words after {max_attempts} attempts.")")
+    raise ValueError(f"Failed to generate a script with at least 42 words after {max_attempts} attempts.")
 
 
 def generate_metadata(topic: str, title: str) -> dict:
