@@ -34,7 +34,7 @@ def generate_narration(topic_data: dict) -> dict:
     model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     
     client = Groq(api_key=api_key)
-       system_prompt = (
+    system_prompt = (
         "SYSTEM PROMPT - THE SHORTEST ORBIT MASTER AI VIDEO PRODUCTION PROMPT (v3.0)\n\n"
         "You are an elite AI filmmaker, documentary editor, and storytelling expert.\n"
         "Your objective is to create a premium YouTube Shorts script (20 seconds max) that maximizes retention, "
