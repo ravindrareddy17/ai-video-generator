@@ -80,8 +80,8 @@ def generate_karaoke_srt(sentence_timings, chunk_size=5):
             display_words = []
             for w in chunk:
                 if w["is_important"]:
-                    # Highlighted (Yellow BGR in ASS format is &H00FFFF&)
-                    display_words.append(f"{{\\c&H00FFFF&}}{w['word']}{{\\c&HFFFFFF&}}")
+                    # Highlighted (Crimson Red BGR in ASS format is &H1F12C1&)
+                    display_words.append(f"{{\\c&H1F12C1&}}{w['word']}{{\\c&HFFFFFF&}}")
                 else:
                     display_words.append(w['word'])
                     

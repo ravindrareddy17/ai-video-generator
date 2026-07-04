@@ -109,7 +109,7 @@ def generate_queries(subtitles: list[dict]) -> list[dict]:
         "1. For each input sentence, generate exactly ONE query.\n"
         "2. Keep queries short (2-4 words maximum).\n"
         "3. Focus on concrete visual subjects, action terms, and atmosphere.\n"
-        "4. Avoid abstract concepts, metaphors, pronouns, adjectives like 'incredible', or filler words.\n"
+        "4. Include cinematic keywords when applicable (e.g. 'cinematic', 'volumetric', 'HDR', 'dark', 'glow').\n"
         "5. The queries must return good results on stock video search engines.\n\n"
         "Respond in JSON format with the following structure:\n"
         "{\n"

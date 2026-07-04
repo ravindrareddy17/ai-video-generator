@@ -405,7 +405,7 @@ def mix_audio(
     music_path: Path,
     output_path: Path,
     voice_vol: float = 1.0,
-    music_vol: float = 0.1,
+    music_vol: float = 0.05,
 ) -> Path:
     """Mix voice-over and background music onto a video.
 
@@ -512,12 +512,12 @@ def burn_subtitles(
         f"FontName={font_name},"
         f"FontSize={font_size},"
         f"PrimaryColour=&H00FFFFFF,"
-        f"SecondaryColour=&H0000FFFF,"
+        f"SecondaryColour=&H00000000,"
         f"OutlineColour=&H00000000,"
-        f"BackColour={back_color},"
+        f"BackColour=&H60000000,"
         f"BorderStyle=1,"
-        f"Outline=2,"
-        f"Shadow=1,"
+        f"Outline=8,"
+        f"Shadow=3,"
         f"Bold=1,"
         f"Alignment=2,"
         f"MarginV={margin_v}"
