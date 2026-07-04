@@ -28,15 +28,42 @@ from utils.helpers import load_json
 logger = get_logger(__name__)
 
 # Reliable royalty-free MP3 URLs for different moods
-MUSIC_URLS: dict[str, str] = {
-    "upbeat": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Decisions.mp3",
-    "chill": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deep%20Haze.mp3",
-    "cinematic": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Industrial%20Cinematic.mp3",
-    "inspiring": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Impact%20Lento.mp3",
-    "ambient": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Echoes%20of%20Time.mp3",
-    "lo-fi": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deep%20Haze.mp3",
-    "acoustic": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Decisions.mp3",
-    "beats": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Decisions.mp3",
+# Reliable royalty-free MP3 URLs for different moods
+MUSIC_URLS: dict[str, list[str]] = {
+    "upbeat": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Voxel%20Revolution.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Newer%20Wave.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Decisions.mp3",
+    ],
+    "chill": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deep%20Haze.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Space%20Jazz.mp3",
+    ],
+    "cinematic": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Industrial%20Cinematic.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Ice%20Giants.mp3",
+    ],
+    "inspiring": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Impact%20Lento.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Gathering%20Darkness.mp3",
+    ],
+    "ambient": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Echoes%20of%20Time.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ether%20Vox.mp3",
+    ],
+    "lo-fi": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deep%20Haze.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Space%20Jazz.mp3",
+    ],
+    "acoustic": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Decisions.mp3",
+    ],
+    "beats": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Canon%20In%20D%20Interstellar%20Mix.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ethernight%20Club.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Neon%20Laser%20Horizon.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Blippy%20Trance.mp3",
+    ],
 }
 
 VALID_MOODS = list(MUSIC_URLS.keys())
@@ -106,7 +133,9 @@ def download_track(mood: str) -> Path:
     Returns:
         Path to the downloaded MP3 file.
     """
-    url = MUSIC_URLS[mood]
+    import random
+    urls = MUSIC_URLS[mood]
+    url = random.choice(urls)
     output_path = MUSIC_DIR / "background.mp3"
 
     # Clean old music files

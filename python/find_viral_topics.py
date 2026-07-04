@@ -158,7 +158,42 @@ def collect_all_topics() -> list[dict]:
     return unique_topics
 
 
-def select_best_topic(topics: list[dict]) -> dict:
+def get_recent_uploaded_titles() -> list[str]:
+    """Retrieve the titles of the last 15 uploaded videos from the YouTube channel."""
+    try:
+        from python.upload_youtube import get_authenticated_service
+        youtube = get_authenticated_service()
+        if not youtube:
+            logger.info("YouTube client not available, skipping recent uploads fetch.")
+            return []
+            
+        channels_response = youtube.channels().list(
+            mine=True,
+            part="contentDetails"
+        ).execute()
+        
+        if not channels_response.get("items"):
+            logger.info("No channel found for current credentials.")
+            return []
+            
+        uploads_playlist_id = channels_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        playlist_response = youtube.playlistItems().list(
+            playlistId=uploads_playlist_id,
+            part="snippet",
+            maxResults=15
+        ).execute()
+        
+        titles = []
+        for item in playlist_response.get("items", []):
+            titles.append(item["snippet"]["title"])
+        logger.info(f"Fetched {len(titles)} recent uploaded titles from channel to prevent duplicate concepts.")
+        return titles
+    except Exception as e:
+        logger.warning(f"Could not fetch recent uploaded titles: {e}")
+        return []
+
+
+def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> dict:
     """Send topics to Groq LLM to extract viral angles and choose the best one."""
     if not topics:
         return {
@@ -204,6 +239,10 @@ def select_best_topic(topics: list[dict]) -> dict:
     )
     
     user_prompt = f"Extract viral angles from these raw headlines:\n\n{candidate_list_str}"
+    
+    if recent_titles:
+        recent_titles_str = "\n".join([f"- {t}" for t in recent_titles])
+        user_prompt += f"\n\nCRITICAL: DO NOT select any topic that overlaps or is similar to these recently uploaded videos on the channel:\n{recent_titles_str}"
     
     logger.info("Calling Groq LLM to scan for viral topics...")
     try:
@@ -264,7 +303,8 @@ def run() -> dict:
     logger.info("=== STEP 1: FIND VIRAL TOPICS ===")
     
     topics = collect_all_topics()
-    selected = select_best_topic(topics)
+    recent_titles = get_recent_uploaded_titles()
+    selected = select_best_topic(topics, recent_titles)
     
     import datetime
     
