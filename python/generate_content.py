@@ -50,7 +50,7 @@ def generate_narration(topic_data: dict) -> dict:
         "{\n"
         '  "title": "Curiosity-driven English title, under 60 characters",\n'
         '  "hook": "The exact hook line provided in the prompt",\n'
-        '  "narration": "A 20-second script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced."\n'
+        '  "narration": "A detailed 55 to 65 word narration script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced."\n'
         "}\n\n"
         "NON-NEGOTIABLE RULES:\n"
         "1. Start the narration exactly with the provided hook line.\n"
@@ -74,7 +74,7 @@ def generate_narration(topic_data: dict) -> dict:
     
     logger.info(f"Calling Groq to generate Shortest Orbit script...")
     
-    # Retry loop to guarantee a minimum length of 38 words (which translates to ~20 seconds at -10% TTS speed)
+    # Retry loop to guarantee a minimum length of 48 words (which translates to ~22+ seconds at -10% TTS speed)
     max_attempts = 4
     for attempt in range(max_attempts):
         try:
@@ -95,7 +95,7 @@ def generate_narration(topic_data: dict) -> dict:
             word_count = len(content["narration"].split())
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
             
-            if word_count >= 38:
+            if word_count >= 48:
                 import re
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
                 if not sentences:
@@ -107,14 +107,14 @@ def generate_narration(topic_data: dict) -> dict:
                 logger.info(f"Successfully generated script with adequate length: {content['title']}")
                 return content
             else:
-                logger.warning(f"Script word count ({word_count}) was under 38 words. Retrying...")
+                logger.warning(f"Script word count ({word_count}) was under 48 words. Retrying...")
                 
         except Exception as e:
             logger.error(f"Error on attempt {attempt+1}: {e}")
             if attempt == max_attempts - 1:
                 raise
                 
-    raise ValueError(f"Failed to generate a script with at least 38 words after {max_attempts} attempts.")
+    raise ValueError(f"Failed to generate a script with at least 48 words after {max_attempts} attempts.")
 
 
 def generate_metadata(topic: str, title: str) -> dict:
