@@ -34,27 +34,26 @@ def generate_narration(topic_data: dict) -> dict:
     model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     
     client = Groq(api_key=api_key)
-    
-    system_prompt = (
+       system_prompt = (
         "SYSTEM PROMPT - THE SHORTEST ORBIT MASTER AI VIDEO PRODUCTION PROMPT (v3.0)\n\n"
         "You are an elite AI filmmaker, documentary editor, and storytelling expert.\n"
-        "Your objective is to create a premium YouTube Shorts script (30 seconds max) that maximizes retention, "
+        "Your objective is to create a premium YouTube Shorts script (20 seconds max) that maximizes retention, "
         "watch time, and replay value while maintaining a luxury cinematic documentary aesthetic.\n\n"
         "CHANNEL IDENTITY: Science, Space, AI, Astronomy, Physics, Biology, Technology, Universe.\n"
         "Brand Style: Dark, cinematic, futuristic, luxurious, premium, intelligent.\n\n"
         "STORY STRUCTURE:\n"
         "- 0-3s: Irresistible hook.\n"
-        "- 3-20s: Explain topic using progressively stronger visuals.\n"
-        "- 20-30s: Deliver the reveal, payoff, or surprising fact, ending with a memorable line.\n\n"
+        "- 3-12s: Explain topic using progressively stronger visuals.\n"
+        "- 12-20s: Deliver the reveal, payoff, or surprising fact, ending with a memorable line.\n\n"
         "Respond in valid JSON format only:\n"
         "{\n"
         '  "title": "Curiosity-driven English title, under 60 characters",\n'
         '  "hook": "The exact hook line provided in the prompt",\n'
-        '  "narration": "A detailed 55 to 65 word narration script (30 seconds) that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced."\n'
+        '  "narration": "A 20-second script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced."\n'
         "}\n\n"
         "NON-NEGOTIABLE RULES:\n"
         "1. Start the narration exactly with the provided hook line.\n"
-        "2. The script MUST contain between 55 and 65 words. Count them carefully. If it is shorter than 55 words, the generation is invalid.\n"
+        "2. Keep the script between 45 and 50 words for a strict 20-second pacing.\n"
         "3. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
@@ -67,25 +66,20 @@ def generate_narration(topic_data: dict) -> dict:
         f"Generate a script for this viral concept:\n"
         f"Hook Line: {hook_line}\n"
         f"Viral Angle (What to explain): {viral_angle}\n\n"
-        f"CRITICAL STRUCTURE REQUIREMENTS TO HIT THE 55-65 WORD RANGE:\n"
-        f"Your script must be structured with 4 clear sentences:\n"
-        f"1. The Hook (Sentence 1): Exactly start with the hook line.\n"
-        f"2. The Mechanism (Sentence 2): Explain the underlying science (e.g., neural networks, algorithms, training data) of how it works.\n"
-        f"3. The Implication (Sentence 3): Describe why this matters or how it impacts humanity.\n"
-        f"4. The Replay Climax (Sentence 4): End with a dramatic, mind-bending question or statement that forces them to rewatch the video.\n\n"
-        f"Count your words. You MUST write between 55 and 65 words total. Currently, anything under 50 words is invalid."
+        f"CRITICAL REQUIREMENT: The narration script MUST be between 45 and 50 words total. "
+        f"Start with the hook line. Count your words carefully before outputting!"
     )
     
     logger.info(f"Calling Groq to generate Shortest Orbit script...")
     
-    # Retry loop to guarantee a minimum length of 48 words (which translates to ~22+ seconds at -10% TTS speed)
+    # Retry loop to guarantee a minimum length of 42 words (which translates to ~20 seconds at -10% TTS speed)
     max_attempts = 4
     for attempt in range(max_attempts):
         try:
             chat_completion = client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Your previous generation was only {word_count} words, which is too short! You MUST expand the narration to be between 55 and 65 words. Write more sentences."}
+                    {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Your previous generation was only {word_count} words, which is too short! You MUST expand the narration to be between 45 and 50 words. Add more detail."}
                 ],
                 model=model,
                 temperature=0.7 + (attempt * 0.05),  # slightly increase temperature for variety if it fails
@@ -99,7 +93,7 @@ def generate_narration(topic_data: dict) -> dict:
             word_count = len(content["narration"].split())
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
             
-            if word_count >= 48:
+            if word_count >= 42:
                 import re
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
                 if not sentences:
@@ -111,14 +105,14 @@ def generate_narration(topic_data: dict) -> dict:
                 logger.info(f"Successfully generated script with adequate length: {content['title']}")
                 return content
             else:
-                logger.warning(f"Script word count ({word_count}) was under 48 words. Retrying...")
+                logger.warning(f"Script word count ({word_count}) was under 42 words. Retrying...")
                 
         except Exception as e:
             logger.error(f"Error on attempt {attempt+1}: {e}")
             if attempt == max_attempts - 1:
                 raise
                 
-    raise ValueError(f"Failed to generate a script with at least 48 words after {max_attempts} attempts.")
+    raise ValueError(f"Failed to generate a script with at least 42 words after {max_attempts} attempts.")")
 
 
 def generate_metadata(topic: str, title: str) -> dict:
