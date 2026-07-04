@@ -1,0 +1,60 @@
+name: AI Video Generator - The Shortest Orbit
+
+on:
+  schedule:
+    # GitHub Actions runs on UTC time. 
+    # The cron schedules below are in UTC!
+    # Convert your local timezone to UTC to match these times if they seem off.
+    # Currently set roughly to (9am, 1pm, 5pm, 7:30pm, 9:30pm) depending on your local offset.
+    - cron: "0 9 * * *"
+    - cron: "0 13 * * *"
+    - cron: "0 17 * * *"
+    - cron: "30 19 * * *"
+    - cron: "30 21 * * *"
+  workflow_dispatch: # Allows you to run this manually from the Actions tab
+
+jobs:
+  generate-and-upload:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install System Dependencies (FFmpeg & ImageMagick)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg imagemagick
+
+      - name: Fix ImageMagick Security Policy for MoviePy
+        run: |
+          # MoviePy requires ImageMagick to have read/write access to paths
+          sudo sed -i 's/none/read,write/g' /etc/ImageMagick-6/policy.xml || true
+
+      - name: Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Reconstruct Environment (.env)
+        run: |
+          echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" > .env
+          echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> .env
+          echo "PIXABAY_API_KEY=${{ secrets.PIXABAY_API_KEY }}" >> .env
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" >> .env
+
+      - name: Reconstruct YouTube Credentials
+        run: |
+          # Decode the base64 secrets back into files
+          echo "${{ secrets.TOKEN_PICKLE_BASE64 }}" | base64 --decode > token.pickle
+          echo "${{ secrets.CLIENT_SECRET_BASE64 }}" | base64 --decode > client_secret.json
+
+      - name: Run Pipeline
+        run: |
+          python python/main.py
