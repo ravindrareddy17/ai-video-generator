@@ -38,19 +38,19 @@ def generate_narration(topic_data: dict) -> dict:
     system_prompt = (
         "SYSTEM PROMPT - THE SHORTEST ORBIT MASTER AI VIDEO PRODUCTION PROMPT (v3.0)\n\n"
         "You are an elite AI filmmaker, documentary editor, and storytelling expert.\n"
-        "Your objective is to create a premium YouTube Shorts script (20 seconds max) that maximizes retention, "
+        "Your objective is to create a premium YouTube Shorts script (30 seconds max) that maximizes retention, "
         "watch time, and replay value while maintaining a luxury cinematic documentary aesthetic.\n\n"
         "CHANNEL IDENTITY: Science, Space, AI, Astronomy, Physics, Biology, Technology, Universe.\n"
         "Brand Style: Dark, cinematic, futuristic, luxurious, premium, intelligent.\n\n"
         "STORY STRUCTURE:\n"
         "- 0-3s: Irresistible hook.\n"
-        "- 3-12s: Explain topic using progressively stronger visuals.\n"
-        "- 12-20s: Deliver the reveal, payoff, or surprising fact, ending with a memorable line.\n\n"
+        "- 3-20s: Explain topic using progressively stronger visuals.\n"
+        "- 20-30s: Deliver the reveal, payoff, or surprising fact, ending with a memorable line.\n\n"
         "Respond in valid JSON format only:\n"
         "{\n"
         '  "title": "Curiosity-driven English title, under 60 characters",\n'
         '  "hook": "The exact hook line provided in the prompt",\n'
-        '  "narration": "A detailed 55 to 65 word narration script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced."\n'
+        '  "narration": "A detailed 55 to 65 word narration script (30 seconds) that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced."\n'
         "}\n\n"
         "NON-NEGOTIABLE RULES:\n"
         "1. Start the narration exactly with the provided hook line.\n"
@@ -69,7 +69,7 @@ def generate_narration(topic_data: dict) -> dict:
         f"Viral Angle (What to explain): {viral_angle}\n\n"
         f"CRITICAL REQUIREMENT: The narration script MUST be a detailed explanation between 55 and 65 words. "
         f"Do not write a brief summary. Write at least 3-4 full sentences to expand on the topic. "
-        f"You must hit the 55-65 word range so the video is at least 20 seconds long. Count your words carefully before outputting!"
+        f"You must hit the 55-65 word range so the video is at least 30 seconds long (at normal pace). Count your words carefully before outputting!"
     )
     
     logger.info(f"Calling Groq to generate Shortest Orbit script...")
