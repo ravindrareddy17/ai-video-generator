@@ -57,6 +57,7 @@ def generate_narration(topic_data: dict) -> dict:
         "3. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
+        "6. REWATCH LOOP & COMMENT BAITING: The script's final sentence MUST be a mind-bending question designed to bait user comments (e.g., 'Would you let a robot perform surgery on you? Let me know below.'). Frame this final sentence so it connects and loops seamlessly back into the very first hook sentence without a noticeable pause.\n"
     )
     
     viral_angle = topic_data.get("viral_angle", "")
@@ -72,7 +73,7 @@ def generate_narration(topic_data: dict) -> dict:
         f"Sentence 2 (Mechanism 1): Write a detailed sentence explaining the technical or scientific mechanism (how it works, neural networks, advanced physics, astronomical processes, etc.) related to: '{viral_angle}'.\n"
         f"Sentence 3 (Mechanism 2): Write another detailed sentence describing the deep technical details, data, or processes involved in: '{viral_angle}'.\n"
         f"Sentence 4 (Implication): Write a detailed sentence explaining the human, global, or cosmic implications of this topic.\n"
-        f"Sentence 5 (Climax): Ask a final mind-bending closing question (at least 10 words) to prompt a rewatch.\n\n"
+        f"Sentence 5 (Rewatch Loop Climax & Comment Bait): Write a final mind-bending question (at least 10 words) that baits viewers to leave comments, AND ensure it loops seamlessly back into the hook line (Sentence 1) when the video repeats.\n\n"
         f"Count your words carefully. Ensure the script contains at least 40 words total!"
     )
     

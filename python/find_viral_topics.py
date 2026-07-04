@@ -232,9 +232,9 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "]\n\n"
         "RULES:\n"
         "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify to the point of being wrong.\n"
-        "2. Prioritize stories with a \"wait, that's real?\" reaction over purely incremental research news.\n"
+        "2. Prioritize stories with a \"wait, that's real?\" reaction over purely incremental research news. Shift focus towards 'bizarre science facts,' 'cosmic scale comparisons,' and 'sci-fi real-life tech'.\n"
         "3. Never sensationalize to the point of inaccuracy — surprising != false.\n"
-        "4. Favor stories tied to: scale comparisons, \"first ever,\" \"AI beat/replaced X,\" things that sound sci-fi but are real, or numbers that sound impossible.\n"
+        "4. The hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking' to capture immediate viewer attention.\n"
         "5. CRITICAL: The chosen topic MUST bridge the intersection of all three: SPACE, SCIENCE, and AI (e.g., using AI to map Mars features, neural networks decoding deep space radio signals, AI analyzing exoplanet biosignatures). Frame or select the story to capture this powerful synergy!"
     )
     
