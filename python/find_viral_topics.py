@@ -200,7 +200,7 @@ def select_best_topic(topics: list[dict]) -> dict:
         "2. Prioritize stories with a \"wait, that's real?\" reaction over purely incremental research news.\n"
         "3. Never sensationalize to the point of inaccuracy — surprising != false.\n"
         "4. Favor stories tied to: scale comparisons, \"first ever,\" \"AI beat/replaced X,\" things that sound sci-fi but are real, or numbers that sound impossible.\n"
-        "5. CRITICAL: Favor stories or frame the chosen story specifically at the intersection of AI, Science, and Space (e.g., AI discovering planets, neural networks solving space mysteries, AI accelerating cosmology and physics)."
+        "5. CRITICAL: The chosen topic MUST bridge the intersection of all three: SPACE, SCIENCE, and AI (e.g., using AI to map Mars features, neural networks decoding deep space radio signals, AI analyzing exoplanet biosignatures). Frame or select the story to capture this powerful synergy!"
     )
     
     user_prompt = f"Extract viral angles from these raw headlines:\n\n{candidate_list_str}"

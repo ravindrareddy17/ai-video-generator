@@ -33,10 +33,10 @@ logger = get_logger(__name__)
 
 # Valid voice styles for LLM to choose from
 VOICE_PROFILES = {
-    "deep_story": {"voice": "en-US-SteffanNeural", "rate": "-5%"},
-    "energetic": {"voice": "en-US-ChristopherNeural", "rate": "+0%"},
-    "casual": {"voice": "en-US-GuyNeural", "rate": "-5%"},
-    "serious": {"voice": "en-US-EricNeural", "rate": "-5%"},
+    "deep_story": {"voice": "en-US-SteffanNeural", "rate": "+3%"},
+    "energetic": {"voice": "en-US-ChristopherNeural", "rate": "+8%"},
+    "casual": {"voice": "en-US-GuyNeural", "rate": "+3%"},
+    "serious": {"voice": "en-US-EricNeural", "rate": "+3%"},
 }
 
 def analyze_voice_style(topic: str) -> dict:
