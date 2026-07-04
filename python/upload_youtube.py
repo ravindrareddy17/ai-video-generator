@@ -240,10 +240,25 @@ def run() -> str | None:
     privacy_status = get_setting('upload', 'privacy', 'unlisted')
     category_id = metadata.get("category", get_setting('upload', 'category', '22'))
     
+    # Format description to include exactly 5-6 hashtags at the end
+    raw_desc = metadata.get("description", "Created with AI Video Generator V2.")
+    import re
+    # Clean description of any inline hashtags to avoid duplicates
+    clean_desc = re.sub(r'#\w+', '', raw_desc).strip()
+    
+    hashtags_list = metadata.get("hashtags", [])
+    if not hashtags_list:
+        # Fallback hashtags if somehow missing
+        hashtags_list = ["#Shorts", "#Science", "#Space", "#AI", "#Technology", "#Future"]
+        
+    # Standardize format and format as a single string
+    formatted_hashtags = " ".join([h if h.startswith("#") else f"#{h}" for h in hashtags_list])
+    final_description = f"{clean_desc}\n\n{formatted_hashtags}"
+    
     body = {
         "snippet": {
             "title": metadata.get("title", "AI Generated Short #Shorts")[:100], # title limit 100 chars
-            "description": metadata.get("description", "Created with AI Video Generator V2. #Shorts"),
+            "description": final_description,
             "tags": metadata.get("keywords", ["#Shorts"]),
             "categoryId": category_id
         },

@@ -29,14 +29,14 @@ logger = get_logger(__name__)
 
 # Reliable royalty-free MP3 URLs for different moods
 MUSIC_URLS: dict[str, str] = {
-    "upbeat": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
-    "chill": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
-    "cinematic": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
-    "inspiring": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
-    "ambient": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
-    "lo-fi": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
-    "acoustic": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
-    "beats": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
+    "upbeat": "https://cdn.pixabay.com/audio/2024/11/29/audio_a0fdb1faa2.mp3",
+    "chill": "https://cdn.pixabay.com/audio/2024/10/30/audio_93e067e30a.mp3",
+    "cinematic": "https://cdn.pixabay.com/audio/2024/09/10/audio_6e4cc4b319.mp3",
+    "inspiring": "https://cdn.pixabay.com/audio/2024/02/07/audio_98ed045aee.mp3",
+    "ambient": "https://cdn.pixabay.com/audio/2024/08/27/audio_32e39e3c08.mp3",
+    "lo-fi": "https://cdn.pixabay.com/audio/2024/04/15/audio_828b543ef0.mp3",
+    "acoustic": "https://cdn.pixabay.com/audio/2024/06/11/audio_4faf2e29f9.mp3",
+    "beats": "https://cdn.pixabay.com/audio/2024/03/18/audio_c4b02b3413.mp3",
 }
 
 VALID_MOODS = list(MUSIC_URLS.keys())

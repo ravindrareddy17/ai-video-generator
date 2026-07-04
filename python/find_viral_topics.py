@@ -199,7 +199,8 @@ def select_best_topic(topics: list[dict]) -> dict:
         "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify to the point of being wrong.\n"
         "2. Prioritize stories with a \"wait, that's real?\" reaction over purely incremental research news.\n"
         "3. Never sensationalize to the point of inaccuracy — surprising != false.\n"
-        "4. Favor stories tied to: scale comparisons, \"first ever,\" \"AI beat/replaced X,\" things that sound sci-fi but are real, or numbers that sound impossible."
+        "4. Favor stories tied to: scale comparisons, \"first ever,\" \"AI beat/replaced X,\" things that sound sci-fi but are real, or numbers that sound impossible.\n"
+        "5. CRITICAL: Favor stories or frame the chosen story specifically at the intersection of AI, Science, and Space (e.g., AI discovering planets, neural networks solving space mysteries, AI accelerating cosmology and physics)."
     )
     
     user_prompt = f"Extract viral angles from these raw headlines:\n\n{candidate_list_str}"
