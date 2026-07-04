@@ -27,16 +27,16 @@ from utils.helpers import load_json
 
 logger = get_logger(__name__)
 
-# ── Valid moods → Reliable Github MP3 URL (fallback for testing) ─────────
+# Reliable royalty-free MP3 URLs for different moods
 MUSIC_URLS: dict[str, str] = {
-    "upbeat": "https://raw.githubusercontent.com/mdn/webaudio-examples/main/audio-analyser/viper.mp3",
-    "chill": "https://raw.githubusercontent.com/mdn/webaudio-examples/main/audio-analyser/viper.mp3",
-    "cinematic": "https://raw.githubusercontent.com/mdn/webaudio-examples/main/audio-analyser/viper.mp3",
-    "inspiring": "https://raw.githubusercontent.com/mdn/webaudio-examples/main/audio-analyser/viper.mp3",
-    "ambient": "https://raw.githubusercontent.com/mdn/webaudio-examples/main/audio-analyser/viper.mp3",
-    "lo-fi": "https://raw.githubusercontent.com/mdn/webaudio-examples/main/audio-analyser/viper.mp3",
-    "acoustic": "https://raw.githubusercontent.com/mdn/webaudio-examples/main/audio-analyser/viper.mp3",
-    "beats": "https://raw.githubusercontent.com/mdn/webaudio-examples/main/audio-analyser/viper.mp3",
+    "upbeat": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    "chill": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    "cinematic": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    "inspiring": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3",
+    "ambient": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3",
+    "lo-fi": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3",
+    "acoustic": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3",
+    "beats": "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3",
 }
 
 VALID_MOODS = list(MUSIC_URLS.keys())

@@ -38,23 +38,23 @@ def generate_narration(topic_data: dict) -> dict:
     system_prompt = (
         "SYSTEM PROMPT - THE SHORTEST ORBIT MASTER AI VIDEO PRODUCTION PROMPT (v3.0)\n\n"
         "You are an elite AI filmmaker, documentary editor, and storytelling expert.\n"
-        "Your objective is to create a premium YouTube Shorts script (28-35 seconds) that maximizes retention, "
+        "Your objective is to create a premium YouTube Shorts script (20 seconds max) that maximizes retention, "
         "watch time, and replay value while maintaining a luxury cinematic documentary aesthetic.\n\n"
         "CHANNEL IDENTITY: Science, Space, AI, Astronomy, Physics, Biology, Technology, Universe.\n"
         "Brand Style: Dark, cinematic, futuristic, luxurious, premium, intelligent.\n\n"
         "STORY STRUCTURE:\n"
         "- 0-3s: Irresistible hook.\n"
-        "- 3-20s: Explain topic using progressively stronger visuals.\n"
-        "- 20-35s: Deliver the reveal, payoff, or surprising fact, ending with a memorable line.\n\n"
+        "- 3-12s: Explain topic using progressively stronger visuals.\n"
+        "- 12-20s: Deliver the reveal, payoff, or surprising fact, ending with a memorable line.\n\n"
         "Respond in valid JSON format only:\n"
         "{\n"
         '  "title": "Curiosity-driven English title, under 60 characters",\n'
         '  "hook": "The exact hook line provided in the prompt",\n'
-        '  "narration": "A 35-second script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced."\n'
+        '  "narration": "A 20-second script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced."\n'
         "}\n\n"
         "NON-NEGOTIABLE RULES:\n"
         "1. Start the narration exactly with the provided hook line.\n"
-        "2. Keep the script between 70 and 85 words for a 35-second pacing.\n"
+        "2. Keep the script between 40 and 45 words for a strict 20-second pacing.\n"
         "3. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
