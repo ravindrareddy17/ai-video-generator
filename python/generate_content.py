@@ -73,12 +73,12 @@ def generate_narration(topic_data: dict) -> dict:
         f"Sentence 3 (Mechanism 2): Write another detailed sentence describing the deep technical details, data, or processes involved in: '{viral_angle}'.\n"
         f"Sentence 4 (Implication): Write a detailed sentence explaining the human, global, or cosmic implications of this topic.\n"
         f"Sentence 5 (Climax): Ask a final mind-bending closing question (at least 10 words) to prompt a rewatch.\n\n"
-        f"Count your words carefully. Ensure the script contains at least 45 words total!"
+        f"Count your words carefully. Ensure the script contains at least 40 words total!"
     )
     
     logger.info(f"Calling Groq to generate Shortest Orbit script...")
     
-    # Retry loop to guarantee a minimum length of 45 words (which translates to ~20 seconds at -10% TTS speed)
+    # Retry loop to guarantee a minimum length of 40 words (which translates to ~20 seconds at slower speech rate)
     max_attempts = 4
     for attempt in range(max_attempts):
         try:
@@ -99,7 +99,7 @@ def generate_narration(topic_data: dict) -> dict:
             word_count = len(content["narration"].split())
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
             
-            if word_count >= 45:
+            if word_count >= 40:
                 import re
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
                 if not sentences:
@@ -111,7 +111,7 @@ def generate_narration(topic_data: dict) -> dict:
                 logger.info(f"Successfully generated script with adequate length: {content['title']}")
                 return content
             else:
-                logger.warning(f"Script word count ({word_count}) was under 45 words. Retrying...")
+                logger.warning(f"Script word count ({word_count}) was under 40 words. Retrying...")
                 
         except Exception as e:
             logger.error(f"Error on attempt {attempt+1}: {e}")
@@ -120,7 +120,7 @@ def generate_narration(topic_data: dict) -> dict:
                 raise
                 
     # Fallback: if we exhausted all attempts but still have a script, use it rather than crashing the pipeline!
-    logger.warning(f"Failed to generate a script with at least 45 words after {max_attempts} attempts. Proceeding with the last generated script (word count: {word_count}) to avoid crashing.")
+    logger.warning(f"Failed to generate a script with at least 40 words after {max_attempts} attempts. Proceeding with the last generated script (word count: {word_count}) to avoid crashing.")
     
     import re
     sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
