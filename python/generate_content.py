@@ -110,9 +110,20 @@ def generate_narration(topic_data: dict) -> dict:
         except Exception as e:
             logger.error(f"Error on attempt {attempt+1}: {e}")
             if attempt == max_attempts - 1:
+                # If we hit an exception on the last run, we raise it
                 raise
                 
-    raise ValueError(f"Failed to generate a script with at least 42 words after {max_attempts} attempts.")
+    # Fallback: if we exhausted all attempts but still have a script, use it rather than crashing the pipeline!
+    logger.warning(f"Failed to generate a script with at least 42 words after {max_attempts} attempts. Proceeding with the last generated script (word count: {word_count}) to avoid crashing.")
+    
+    import re
+    sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
+    if not sentences:
+        sentences = [content["narration"]]
+        
+    content["sentences"] = sentences
+    content["word_count"] = word_count
+    return content
 
 
 def generate_metadata(topic: str, title: str) -> dict:
