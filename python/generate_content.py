@@ -54,7 +54,7 @@ def generate_narration(topic_data: dict) -> dict:
         "}\n\n"
         "NON-NEGOTIABLE RULES:\n"
         "1. Start the narration exactly with the provided hook line.\n"
-        "2. Keep the script between 40 and 45 words for a strict 20-second pacing.\n"
+        "2. The script MUST contain between 55 and 65 words. Count them carefully. If it is shorter than 55 words, the generation is invalid.\n"
         "3. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
@@ -71,35 +71,47 @@ def generate_narration(topic_data: dict) -> dict:
     
     logger.info(f"Calling Groq to generate Shortest Orbit script...")
     
-    try:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            model=model,
-            temperature=0.7,
-            max_tokens=2000,
-            response_format={"type": "json_object"}
-        )
-        
-        response_text = chat_completion.choices[0].message.content
-        content = json.loads(response_text)
-        
-        import re
-        sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
-        if not sentences:
-            sentences = [content["narration"]]
+    # Retry loop to guarantee a minimum length of 50 words
+    max_attempts = 4
+    for attempt in range(max_attempts):
+        try:
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Your previous generation was too short. You MUST expand the script. It MUST contain between 55 and 65 words total. Currently it is too short."}
+                ],
+                model=model,
+                temperature=0.7 + (attempt * 0.1),  # slightly increase temperature for variety if it fails
+                max_tokens=2000,
+                response_format={"type": "json_object"}
+            )
             
-        content["sentences"] = sentences
-        content["word_count"] = len(content["narration"].split())
-        
-        logger.info(f"Successfully generated script: {content['title']}")
-        return content
-        
-    except Exception as e:
-        logger.error(f"Error generating script: {e}")
-        raise
+            response_text = chat_completion.choices[0].message.content
+            content = json.loads(response_text)
+            
+            word_count = len(content["narration"].split())
+            logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
+            
+            if word_count >= 50:
+                import re
+                sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
+                if not sentences:
+                    sentences = [content["narration"]]
+                    
+                content["sentences"] = sentences
+                content["word_count"] = word_count
+                
+                logger.info(f"Successfully generated script with adequate length: {content['title']}")
+                return content
+            else:
+                logger.warning(f"Script word count ({word_count}) was under 50 words. Retrying...")
+                
+        except Exception as e:
+            logger.error(f"Error on attempt {attempt+1}: {e}")
+            if attempt == max_attempts - 1:
+                raise
+                
+    raise ValueError(f"Failed to generate a script with at least 50 words after {max_attempts} attempts.")
 
 
 def generate_metadata(topic: str, title: str) -> dict:
