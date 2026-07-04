@@ -67,9 +67,13 @@ def generate_narration(topic_data: dict) -> dict:
         f"Generate a script for this viral concept:\n"
         f"Hook Line: {hook_line}\n"
         f"Viral Angle (What to explain): {viral_angle}\n\n"
-        f"CRITICAL REQUIREMENT: The narration script MUST be a detailed explanation between 55 and 65 words. "
-        f"Do not write a brief summary. Write at least 3-4 full sentences to expand on the topic. "
-        f"You must hit the 55-65 word range so the video is at least 30 seconds long (at normal pace). Count your words carefully before outputting!"
+        f"CRITICAL STRUCTURE REQUIREMENTS TO HIT THE 55-65 WORD RANGE:\n"
+        f"Your script must be structured with 4 clear sentences:\n"
+        f"1. The Hook (Sentence 1): Exactly start with the hook line.\n"
+        f"2. The Mechanism (Sentence 2): Explain the underlying science (e.g., neural networks, algorithms, training data) of how it works.\n"
+        f"3. The Implication (Sentence 3): Describe why this matters or how it impacts humanity.\n"
+        f"4. The Replay Climax (Sentence 4): End with a dramatic, mind-bending question or statement that forces them to rewatch the video.\n\n"
+        f"Count your words. You MUST write between 55 and 65 words total. Currently, anything under 50 words is invalid."
     )
     
     logger.info(f"Calling Groq to generate Shortest Orbit script...")
