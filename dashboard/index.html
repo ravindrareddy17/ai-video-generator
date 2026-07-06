@@ -39,9 +39,9 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             border-bottom: 1px solid var(--card-border);
-            padding-bottom: 1.5rem;
+            padding-bottom: 1rem;
         }
 
         .logo {
@@ -59,6 +59,49 @@
             color: var(--text-muted);
             letter-spacing: 2px;
             text-transform: uppercase;
+        }
+
+        /* Top Menu Bar Styles */
+        .menu-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.2rem;
+        }
+
+        .menu-tab {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            color: var(--text-muted);
+            padding: 0.6rem 1.4rem;
+            border-radius: 30px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-tab:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 215, 0, 0.2);
+        }
+
+        .menu-tab.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, var(--primary) 0%, rgba(138, 43, 226, 0.4) 100%);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active-content {
+            display: block;
         }
 
         .grid {
@@ -100,11 +143,25 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .main-layout {
+        /* Overview Tab Layout */
+        .overview-layout {
             display: grid;
-            grid-template-columns: 2.2fr 1fr;
+            grid-template-columns: 2fr 1fr;
             gap: 1.5rem;
-            margin-bottom: 2rem;
+        }
+
+        /* Video Tab Layout */
+        .videos-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Insights Tab Layout */
+        .insights-layout {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 1.5rem;
         }
 
         .section-title {
@@ -204,12 +261,12 @@
 
         /* Charts styling */
         .chart-box {
-            height: 250px;
+            height: 350px;
             position: relative;
         }
 
         .pie-chart-box {
-            height: 220px;
+            height: 320px;
             position: relative;
             margin-top: 1rem;
         }
@@ -221,16 +278,16 @@
             border-radius: 12px;
             padding: 1rem;
             font-family: 'Consolas', monospace;
-            font-size: 0.8rem;
-            line-height: 1.5;
+            font-size: 0.85rem;
+            line-height: 1.6;
             color: var(--terminal-green);
-            height: 200px;
+            height: 450px;
             overflow-y: auto;
         }
         
         .log-line {
             border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-            padding: 0.2rem 0;
+            padding: 0.3rem 0;
         }
 
         /* Inspector Cards layout */
@@ -245,15 +302,15 @@
             background: rgba(0, 0, 0, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
-            padding: 1rem;
+            padding: 1.2rem;
             font-size: 0.95rem;
             line-height: 1.6;
             color: #e0e0ff;
-            height: 100%;
+            min-height: 150px;
         }
 
         .hook-item {
-            padding: 0.6rem;
+            padding: 0.7rem;
             border-radius: 8px;
             margin-bottom: 0.6rem;
             font-size: 0.85rem;
@@ -307,18 +364,35 @@
         </div>
     </div>
 
-    <!-- Layout: Video History & AI Insights -->
-    <div class="main-layout">
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <!-- Performance Chart -->
+    <!-- Top Tab Menu Bar -->
+    <div class="menu-bar">
+        <button class="menu-tab active" id="btn-overview" onclick="switchTab('overview')">📊 Channel Overview</button>
+        <button class="menu-tab" id="btn-videos" onclick="switchTab('videos')">🎥 Video Performance</button>
+        <button class="menu-tab" id="btn-insights" onclick="switchTab('insights')">✨ AI Self-Learning</button>
+        <button class="menu-tab" id="btn-logs" onclick="switchTab('logs')">⚙️ Live System Logs</button>
+    </div>
+
+    <!-- TAB 1: Channel Overview -->
+    <div class="tab-content active-content" id="tab-overview">
+        <div class="overview-layout">
             <div class="card">
-                <div class="section-title">📈 Weekly Growth Report</div>
+                <div class="section-title">📈 Growth Trend (Cumulative Views)</div>
                 <div class="chart-box">
                     <canvas id="viewsChart"></canvas>
                 </div>
             </div>
+            <div class="card">
+                <div class="section-title">📊 Views Share by Niche</div>
+                <div class="pie-chart-box">
+                    <canvas id="nicheChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            <!-- Video List -->
+    <!-- TAB 2: Video Performance Deep-Dive -->
+    <div class="tab-content" id="tab-videos">
+        <div class="videos-layout">
             <div class="card">
                 <div class="section-title">🎥 Upload History & Performance (Click video to inspect)</div>
                 <div class="table-container">
@@ -341,67 +415,67 @@
                 </div>
             </div>
 
-            <!-- Video Deep-Dive Inspector (Individual Performance & Analytics) -->
             <div class="card" id="inspector-card">
                 <div class="section-title" style="color: var(--accent);">🔍 Video Deep-Dive Inspector</div>
                 <div id="inspector-content">
                     <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Select any video from the list above to view its script, hook split-testing, and raw assets.</p>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Terminal logs console -->
+    <!-- TAB 3: AI Self-Learning & Scheduling -->
+    <div class="tab-content" id="tab-insights">
+        <div class="insights-layout">
             <div class="card">
-                <div class="section-title" style="color: #00ff64;">⚙️ Live Engine Console Logs</div>
-                <div class="terminal-logs" id="logs-box">
-                    <div class="log-line">Connecting to agent logs stream...</div>
+                <div class="section-title" style="color: var(--accent);">✨ AI Self-Learning Analytics</div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div>
+                        <div class="card-title" style="margin-top: 1rem; color: #ffffff;">🎯 High-Interest Niches to Focus:</div>
+                        <ul class="recommendations" id="niches-list" style="margin-top: 0.5rem;">
+                            <li>Data pending initial analytics collection.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <div class="card-title" style="margin-top: 1rem; color: #ffffff;">🚀 Algorithm-Boost Keywords:</div>
+                        <ul class="recommendations" id="keywords-list" style="margin-top: 0.5rem;">
+                            <li>Waiting for harvest data...</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="card">
+                    <div class="section-title">🧠 Retention Optimizer</div>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+                        The loop algorithm checks previous viewers' dropdown frames. The system dynamically adjusts the hook length, narration tempo, and ducking ratio to maximize average watch percentage above 100%.
+                    </p>
+                </div>
+                
+                <div class="card">
+                    <div class="section-title">⏰ Global Posting Timelines</div>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0.8rem;">
+                        Posts occur 5x daily targeting peak commute and evening scroll hours globally:
+                    </p>
+                    <div style="font-size: 0.85rem; color: var(--accent); line-height: 1.5;">
+                        • 07:00 AM EST (commute peak)<br>
+                        • 11:00 AM EST (lunch peak)<br>
+                        • 02:30 PM EST (mid-day prime)<br>
+                        • 06:00 PM EST (evening prime)<br>
+                        • 09:30 PM EST (night-scroll peak)
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- AI Insights Sidebar -->
-        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
-            <!-- Niche distribution doughnut chart -->
-            <div class="card">
-                <div class="section-title">📊 Views Share by Niche</div>
-                <div class="pie-chart-box">
-                    <canvas id="nicheChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Self-Learning insights -->
-            <div class="card">
-                <div class="section-title" style="color: var(--accent);">✨ AI Self-Learning Insights</div>
-                <div class="card-title" style="margin-top: 1rem;">Niches to Focus:</div>
-                <ul class="recommendations" id="niches-list">
-                    <li>Data pending initial analytics collection.</li>
-                </ul>
-                <div class="card-title" style="margin-top: 1.5rem;">Keywords to Target:</div>
-                <ul class="recommendations" id="keywords-list">
-                    <li>Waiting for harvest data...</li>
-                </ul>
-            </div>
-
-            <!-- Retention explanation -->
-            <div class="card">
-                <div class="section-title">🧠 Retention Optimizer</div>
-                <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
-                    The loop algorithm checks previous viewers' dropdown frames. The system dynamically adjusts the hook length, narration tempo, and ducking ratio to maximize average watch percentage above 100%.
-                </p>
-            </div>
-            
-            <!-- Quick manual trigger status -->
-            <div class="card">
-                <div class="section-title">⏰ Global Posting Timelines</div>
-                <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0.8rem;">
-                    Posts occur 5x daily targeting peak commute and evening scroll hours globally:
-                </p>
-                <div style="font-size: 0.85rem; color: var(--accent); line-height: 1.5;">
-                    • 07:00 AM EST (commute peak)<br>
-                    • 11:00 AM EST (lunch peak)<br>
-                    • 02:30 PM EST (mid-day prime)<br>
-                    • 06:00 PM EST (evening prime)<br>
-                    • 09:30 PM EST (night-scroll peak)
-                </div>
+    <!-- TAB 4: Live System Logs -->
+    <div class="tab-content" id="tab-logs">
+        <div class="card">
+            <div class="section-title" style="color: #00ff64;">⚙️ Live Engine Console Logs</div>
+            <div class="terminal-logs" id="logs-box">
+                <div class="log-line">Connecting to agent logs stream...</div>
             </div>
         </div>
     </div>
@@ -411,6 +485,23 @@
         let myPieChart = null;
         let allVideos = [];
         let selectedVideoId = null;
+
+        // Switch active tab view
+        function switchTab(tabId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.remove('active-content');
+            });
+            // Show selected tab content
+            document.getElementById(`tab-${tabId}`).classList.add('active-content');
+
+            // Deactivate all menu buttons
+            document.querySelectorAll('.menu-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            // Activate current button
+            document.getElementById(`btn-${tabId}`).classList.add('active');
+        }
 
         function updateNicheChart(nicheData) {
             const ctx = document.getElementById('nicheChart').getContext('2d');
@@ -664,7 +755,7 @@
                     data.logs.forEach(l => {
                         logsBox.innerHTML += `<div class="log-line">${l}</div>`;
                     });
-                    // Auto scroll to bottom of logs
+                    // Auto scroll to bottom of logs if user isn't scrolling up
                     logsBox.scrollTop = logsBox.scrollHeight;
                 }
 
