@@ -33,30 +33,34 @@ MUSIC_URLS: dict[str, list[str]] = {
     "upbeat": [
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Voxel%20Revolution.mp3",
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Newer%20Wave.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Decisions.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Winner%20Winner.mp3",
     ],
     "chill": [
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deep%20Haze.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Space%20Jazz.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Double%20Drift.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dreamer.mp3",
     ],
     "cinematic": [
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Industrial%20Cinematic.mp3",
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Ice%20Giants.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sovereign.mp3",
     ],
     "inspiring": [
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Impact%20Lento.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Gathering%20Darkness.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heartwarming.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Finding%20the%20Balance.mp3",
     ],
     "ambient": [
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Echoes%20of%20Time.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ether%20Vox.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Quiet%20Panic.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mystic%20Force.mp3",
     ],
     "lo-fi": [
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deep%20Haze.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Space%20Jazz.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deliberate%20Thought.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Late%20Night%20Radio.mp3",
     ],
     "acoustic": [
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Decisions.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cattails.mp3",
     ],
     "beats": [
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Canon%20In%20D%20Interstellar%20Mix.mp3",
@@ -89,7 +93,11 @@ def analyze_mood(topic: str) -> str:
         f"Choose EXACTLY ONE mood from this list: {mood_list}\n\n"
         "Rules:\n"
         "1. Reply with ONLY the mood keyword — nothing else.\n"
-        "2. No punctuation, no explanation, no extra words.\n"
+        "2. No punctuation, no explanation, no extra words.\n\n"
+        "Guidelines to ensure variety based on content type:\n"
+        "- If the topic involves AI, robotics, coding, or technology, choose: beats, lo-fi, or upbeat.\n"
+        "- If the topic involves space, astronomy, exoplanets, or the universe, choose: cinematic, inspiring, or ambient.\n"
+        "- If the topic involves quantum physics, ancient history, biology, or mysteries, choose: chill, acoustic, or ambient.\n"
     )
 
     logger.info(f"Asking Groq to determine mood for topic: '{topic}'")
