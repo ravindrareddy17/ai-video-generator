@@ -67,7 +67,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             cursor = conn.cursor()
             
             # Total uploads
-            cursor.execute("SELECT COUNT(*) FROM videos")
+            cursor.execute("SELECT COUNT(*) FROM videos WHERE status = 'uploaded'")
             total_uploads = cursor.fetchone()[0]
             
             # Aggregate views, likes, comments
