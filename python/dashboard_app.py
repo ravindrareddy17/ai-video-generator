@@ -1,6 +1,8 @@
 import json
 import sqlite3
 import sys
+import threading
+import time
 from pathlib import Path
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import urllib.parse
@@ -339,10 +341,34 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "speech_rate": "+3%"
             }
 
+def start_background_harvester():
+    """Starts a background thread that periodically harvests YouTube statistics to keep the dashboard updated."""
+    def run_harvest_loop():
+        # Delay initial harvest slightly to allow dashboard server to start cleanly
+        time.sleep(15)
+        while True:
+            try:
+                logger.info("Background thread triggering stats harvest from YouTube API...")
+                from python.harvest_analytics import harvest_channel_stats
+                success = harvest_channel_stats()
+                logger.info(f"Background stats harvest completed successfully: {success}")
+            except Exception as e:
+                logger.error(f"Error in background stats harvester: {e}", exc_info=True)
+            # Sleep for 15 minutes before the next update
+            time.sleep(900)
+
+    t = threading.Thread(target=run_harvest_loop, daemon=True)
+    t.start()
+    logger.info("Background YouTube stats harvester thread initialized successfully (Interval: 15m).")
+
 def run_server():
     server_address = ("", PORT)
     httpd = HTTPServer(server_address, DashboardHandler)
     logger.info(f"Starting Glassmorphism Performance Dashboard on http://localhost:{PORT}")
+    
+    # Start background stats harvesting to keep dashboard updated time-to-time
+    start_background_harvester()
+    
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
