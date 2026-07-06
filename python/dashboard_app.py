@@ -209,6 +209,74 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
 
+            # Calculate daily gains first to enable proper period aggregations
+            from datetime import datetime
+            daily_gains = []
+            for idx in range(len(trend_data)):
+                cur = trend_data[idx]
+                if idx == 0:
+                    gains = {
+                        "date": cur["date"],
+                        "views": cur["views"],
+                        "likes": cur["likes"],
+                        "comments": cur["comments"]
+                    }
+                else:
+                    prev = trend_data[idx - 1]
+                    gains = {
+                        "date": cur["date"],
+                        "views": max(0, cur["views"] - prev["views"]),
+                        "likes": max(0, cur["likes"] - prev["likes"]),
+                        "comments": max(0, cur["comments"] - prev["comments"])
+                    }
+                daily_gains.append(gains)
+
+            # Aggregate Weekly
+            weekly_map = {}
+            for g in daily_gains:
+                try:
+                    dt = datetime.strptime(g["date"], "%Y-%m-%d")
+                    year, week, _ = dt.isocalendar()
+                    key = f"{year}-W{week:02d}"
+                    if key not in weekly_map:
+                        weekly_map[key] = {"views": 0, "likes": 0, "comments": 0}
+                    weekly_map[key]["views"] += g["views"]
+                    weekly_map[key]["likes"] += g["likes"]
+                    weekly_map[key]["comments"] += g["comments"]
+                except Exception:
+                    pass
+            weekly_data = [{"period": k, "views": v["views"], "likes": v["likes"], "comments": v["comments"]} for k, v in weekly_map.items()]
+
+            # Aggregate Monthly
+            monthly_map = {}
+            for g in daily_gains:
+                try:
+                    dt = datetime.strptime(g["date"], "%Y-%m-%d")
+                    key = dt.strftime("%Y-%m")
+                    if key not in monthly_map:
+                        monthly_map[key] = {"views": 0, "likes": 0, "comments": 0}
+                    monthly_map[key]["views"] += g["views"]
+                    monthly_map[key]["likes"] += g["likes"]
+                    monthly_map[key]["comments"] += g["comments"]
+                except Exception:
+                    pass
+            monthly_data = [{"period": k, "views": v["views"], "likes": v["likes"], "comments": v["comments"]} for k, v in monthly_map.items()]
+
+            # Aggregate Yearly
+            yearly_map = {}
+            for g in daily_gains:
+                try:
+                    dt = datetime.strptime(g["date"], "%Y-%m-%d")
+                    key = dt.strftime("%Y")
+                    if key not in yearly_map:
+                        yearly_map[key] = {"views": 0, "likes": 0, "comments": 0}
+                    yearly_map[key]["views"] += g["views"]
+                    yearly_map[key]["likes"] += g["likes"]
+                    yearly_map[key]["comments"] += g["comments"]
+                except Exception:
+                    pass
+            yearly_data = [{"period": k, "views": v["views"], "likes": v["likes"], "comments": v["comments"]} for k, v in yearly_map.items()]
+
             return {
                 "total_uploads": total_uploads,
                 "total_views": total_views,
@@ -217,6 +285,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "videos": videos,
                 "insights": insights,
                 "trend_data": trend_data,
+                "weekly_data": weekly_data,
+                "monthly_data": monthly_data,
+                "yearly_data": yearly_data,
                 "logs": logs,
                 "niche_data": niche_data,
                 "db_size_kb": db_size_kb,

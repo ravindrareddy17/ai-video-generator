@@ -371,6 +371,7 @@
     <!-- Top Tab Menu Bar -->
     <div class="menu-bar">
         <button class="menu-tab active" id="btn-overview" onclick="switchTab('overview')">📊 Channel Overview</button>
+        <button class="menu-tab" id="btn-growth" onclick="switchTab('growth')">📈 Growth Ledgers</button>
         <button class="menu-tab" id="btn-videos" onclick="switchTab('videos')">🎥 Video Performance</button>
         <button class="menu-tab" id="btn-insights" onclick="switchTab('insights')">✨ AI Self-Learning</button>
         <button class="menu-tab" id="btn-logs" onclick="switchTab('logs')">⚙️ Live System Logs</button>
@@ -413,6 +414,77 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB 1.5: Period-over-Period Growth Ledgers -->
+    <div class="tab-content" id="tab-growth">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+            <!-- Weekly -->
+            <div class="card">
+                <div class="section-title" style="color: #00ff64;">📅 Weekly Performance Ledger (Week-by-Week)</div>
+                <div class="table-container" style="max-height: 250px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Week Period</th>
+                                <th>Total Views Gained</th>
+                                <th>Total Likes Gained</th>
+                                <th>Total Comments Gained</th>
+                            </tr>
+                        </thead>
+                        <tbody id="weekly-growth-table-body">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted)">Loading weekly ledger...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Monthly -->
+            <div class="card">
+                <div class="section-title" style="color: var(--accent);">📅 Monthly Performance Ledger (Month-by-Month)</div>
+                <div class="table-container" style="max-height: 250px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Month Period</th>
+                                <th>Total Views Gained</th>
+                                <th>Total Likes Gained</th>
+                                <th>Total Comments Gained</th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthly-growth-table-body">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted)">Loading monthly ledger...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Yearly -->
+            <div class="card">
+                <div class="section-title" style="color: #ffd700;">📅 Yearly Performance Ledger (Year-over-Year)</div>
+                <div class="table-container" style="max-height: 250px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Year Period</th>
+                                <th>Total Views Gained</th>
+                                <th>Total Likes Gained</th>
+                                <th>Total Comments Gained</th>
+                            </tr>
+                        </thead>
+                        <tbody id="yearly-growth-table-body">
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted)">Loading yearly ledger...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -830,6 +902,72 @@
                                     <td>${cur.comments.toLocaleString()}</td>
                                 </tr>
                             `;
+                        }
+                    }
+                }
+                
+                // Update weekly growth ledger
+                if (data.weekly_data) {
+                    const weeklyBody = document.getElementById('weekly-growth-table-body');
+                    if (weeklyBody) {
+                        weeklyBody.innerHTML = '';
+                        if (data.weekly_data.length === 0) {
+                            weeklyBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted)">Waiting for weekly data...</td></tr>';
+                        } else {
+                            data.weekly_data.forEach(w => {
+                                weeklyBody.innerHTML += `
+                                    <tr>
+                                        <td><strong>${w.period}</strong></td>
+                                        <td style="color: var(--terminal-green); font-weight: 600;">+${w.views.toLocaleString()}</td>
+                                        <td>+${w.likes.toLocaleString()}</td>
+                                        <td>+${w.comments.toLocaleString()}</td>
+                                    </tr>
+                                `;
+                            });
+                        }
+                    }
+                }
+
+                // Update monthly growth ledger
+                if (data.monthly_data) {
+                    const monthlyBody = document.getElementById('monthly-growth-table-body');
+                    if (monthlyBody) {
+                        monthlyBody.innerHTML = '';
+                        if (data.monthly_data.length === 0) {
+                            monthlyBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted)">Waiting for monthly data...</td></tr>';
+                        } else {
+                            data.monthly_data.forEach(m => {
+                                monthlyBody.innerHTML += `
+                                    <tr>
+                                        <td><strong>${m.period}</strong></td>
+                                        <td style="color: var(--terminal-green); font-weight: 600;">+${m.views.toLocaleString()}</td>
+                                        <td>+${m.likes.toLocaleString()}</td>
+                                        <td>+${m.comments.toLocaleString()}</td>
+                                    </tr>
+                                `;
+                            });
+                        }
+                    }
+                }
+
+                // Update yearly growth ledger
+                if (data.yearly_data) {
+                    const yearlyBody = document.getElementById('yearly-growth-table-body');
+                    if (yearlyBody) {
+                        yearlyBody.innerHTML = '';
+                        if (data.yearly_data.length === 0) {
+                            yearlyBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted)">Waiting for yearly data...</td></tr>';
+                        } else {
+                            data.yearly_data.forEach(y => {
+                                yearlyBody.innerHTML += `
+                                    <tr>
+                                        <td><strong>${y.period}</strong></td>
+                                        <td style="color: var(--terminal-green); font-weight: 600;">+${y.views.toLocaleString()}</td>
+                                        <td>+${y.likes.toLocaleString()}</td>
+                                        <td>+${y.comments.toLocaleString()}</td>
+                                    </tr>
+                                `;
+                            });
                         }
                     }
                 }
