@@ -25,7 +25,7 @@ def run_self_learning_loop() -> bool:
         
         # Query top performing videos based on views, likes, and comments
         cursor.execute("""
-            SELECT v.id, v.title, v.script, MAX(a.views) as total_views, MAX(a.likes) as total_likes, MAX(a.comments) as total_comments
+            SELECT v.id, v.title, v.script, MAX(a.views) as total_views, MAX(a.likes) as total_likes, MAX(a.comments) as total_comments, a.retention_data
             FROM videos v
             JOIN analytics a ON v.id = a.video_id
             GROUP BY v.id
@@ -58,7 +58,8 @@ def run_self_learning_loop() -> bool:
                     "script": (row["script"] or "")[:200] + "...",
                     "views": row["total_views"],
                     "likes": row["total_likes"],
-                    "comments": row["total_comments"]
+                    "comments_count": row["total_comments"],
+                    "viewer_comments_feedback": json.loads(row["retention_data"]) if row["retention_data"] else []
                 } for row in top_videos
             ],
             "under_performing": [
@@ -77,7 +78,9 @@ def run_self_learning_loop() -> bool:
         system_prompt = (
             "You are an expert audience analyst and data scientist for YouTube Shorts.\n"
             "Your task is to review historical channel performance data (successful vs underperforming topics) "
-            "and output concrete rules and optimizations for topic generation and script writing.\n\n"
+            "along with actual user feedback comments in 'viewer_comments_feedback'.\n"
+            "Read comments carefully: if viewers complain about speed, topic, voice, or express high interest in certain concepts/subtopics, "
+            "incorporate that directly into failed concepts, pacing adjustments, and algorithm boost keywords.\n\n"
             "Respond in JSON format with this structure:\n"
             "{\n"
             "  \"high_interest_niches\": [\"Niche 1\", \"Niche 2\"],\n"

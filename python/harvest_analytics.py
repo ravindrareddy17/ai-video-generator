@@ -83,6 +83,24 @@ def harvest_channel_stats():
                 """, (title, video_id, "uploaded"))
                 sqlite_video_id = cursor.lastrowid
                 
+            # Get top 5 comment threads for actual feedback analysis
+            comment_texts = []
+            if comments > 0:
+                try:
+                    comments_response = youtube.commentThreads().list(
+                        videoId=video_id,
+                        part="snippet",
+                        maxResults=5,
+                        textFormat="plainText"
+                    ).execute()
+                    for c_item in comments_response.get("items", []):
+                        top_comment = c_item["snippet"]["topLevelComment"]["snippet"]
+                        comment_texts.append(top_comment["textDisplay"])
+                except Exception as ce:
+                    logger.warning(f"Could not fetch comments for video {video_id}: {ce}")
+            
+            retention_json = json.dumps(comment_texts)
+
             # Log video analytics snapshot for today
             # Check if we already have an entry for today for this video
             cursor.execute("""
@@ -94,16 +112,16 @@ def harvest_channel_stats():
             if existing_row:
                 cursor.execute("""
                     UPDATE analytics 
-                    SET views = ?, likes = ?, comments = ?
+                    SET views = ?, likes = ?, comments = ?, retention_data = ?
                     WHERE id = ?
-                """, (views, likes, comments, existing_row[0]))
+                """, (views, likes, comments, retention_json, existing_row[0]))
             else:
                 cursor.execute("""
-                    INSERT INTO analytics (video_id, date, views, likes, comments)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (sqlite_video_id, today_date, views, likes, comments))
+                    INSERT INTO analytics (video_id, date, views, likes, comments, retention_data)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (sqlite_video_id, today_date, views, likes, comments, retention_json))
                 
-            logger.info(f"Synced stats for video '{video_map.get(video_id)[:40]}...': Views: {views} | Likes: {likes} | Comments: {comments}")
+            logger.info(f"Synced stats and comments for video '{video_map.get(video_id)[:40]}...': Views: {views} | Likes: {likes} | Comments: {comments}")
             
         # Update the overall channel metrics (views, subscribers) in settings if needed, or simply log them
         conn.commit()
