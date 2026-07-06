@@ -74,6 +74,27 @@ class DashboardHandler(BaseHTTPRequestHandler):
             total_likes = agg_row["total_likes"] or 0
             total_comments = agg_row["total_comments"] or 0
             
+            # Daily views/likes trend
+            cursor.execute("""
+                SELECT date, SUM(views) as views, SUM(likes) as likes, SUM(comments) as comments
+                FROM (
+                    SELECT date, video_id, MAX(views) as views, MAX(likes) as likes, MAX(comments) as comments
+                    FROM analytics
+                    GROUP BY date, video_id
+                )
+                GROUP BY date
+                ORDER BY date ASC
+                LIMIT 30
+            """)
+            trend_data = []
+            for row in cursor.fetchall():
+                trend_data.append({
+                    "date": row["date"],
+                    "views": row["views"] or 0,
+                    "likes": row["likes"] or 0,
+                    "comments": row["comments"] or 0
+                })
+                
             # List of videos with their stats
             cursor.execute("""
                 SELECT v.id, v.title, v.script, v.youtube_id, v.status, v.created_at,
@@ -109,13 +130,27 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     
             conn.close()
             
+            # Tailing the log file
+            logs = []
+            log_file = PROJECT_ROOT / "logs" / "pipeline.log"
+            if log_file.exists():
+                try:
+                    with open(log_file, "r", encoding="utf-8") as f:
+                        lines = f.readlines()
+                        # Extract the last 30 log lines
+                        logs = [l.strip() for l in lines[-30:]]
+                except Exception:
+                    pass
+                    
             return {
                 "total_uploads": total_uploads,
                 "total_views": total_views,
                 "total_likes": total_likes,
                 "total_comments": total_comments,
                 "videos": videos,
-                "insights": insights
+                "insights": insights,
+                "trend_data": trend_data,
+                "logs": logs
             }
         except Exception as e:
             logger.error(f"Error querying database stats: {e}")
@@ -125,7 +160,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "total_likes": 0,
                 "total_comments": 0,
                 "videos": [],
-                "insights": {}
+                "insights": {},
+                "trend_data": [],
+                "logs": []
             }
 
 def run_server():

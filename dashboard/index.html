@@ -11,8 +11,8 @@
     <style>
         :root {
             --bg-color: #0b071e;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --card-border: rgba(255, 255, 255, 0.1);
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --card-border: rgba(255, 255, 255, 0.08);
             --primary: #8a2be2;
             --accent: #ffd700;
             --text: #ffffff;
@@ -79,12 +79,12 @@
         }
 
         .card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(255, 215, 0, 0.3);
+            transform: translateY(-2px);
+            border-color: rgba(255, 215, 0, 0.2);
         }
 
         .card-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -92,7 +92,7 @@
         }
 
         .card-value {
-            font-size: 2.5rem;
+            font-size: 2.4rem;
             font-weight: 800;
             background: linear-gradient(135deg, #ffffff 0%, #a0a0ff 100%);
             -webkit-background-clip: text;
@@ -101,32 +101,35 @@
 
         .main-layout {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 2.2fr 1fr;
             gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .section-title {
             font-family: 'Cinzel', serif;
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             margin-bottom: 1.2rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            letter-spacing: 1px;
         }
 
         .table-container {
             width: 100%;
             overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
         }
 
         th, td {
-            padding: 1rem;
+            padding: 0.8rem 1rem;
             text-align: left;
             border-bottom: 1px solid var(--card-border);
         }
@@ -135,7 +138,11 @@
             color: var(--text-muted);
             font-weight: 600;
             text-transform: uppercase;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            position: sticky;
+            top: 0;
+            background: rgba(13, 10, 45, 0.95);
+            backdrop-filter: blur(8px);
         }
 
         tr:hover {
@@ -143,9 +150,9 @@
         }
 
         .badge {
-            padding: 0.3rem 0.6rem;
+            padding: 0.2rem 0.5rem;
             border-radius: 20px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             text-transform: uppercase;
         }
@@ -160,8 +167,8 @@
         .recommendations li {
             position: relative;
             padding-left: 1.5rem;
-            margin-bottom: 1rem;
-            font-size: 0.95rem;
+            margin-bottom: 0.8rem;
+            font-size: 0.9rem;
             line-height: 1.4;
         }
 
@@ -175,10 +182,37 @@
         .youtube-link {
             color: var(--accent);
             text-decoration: none;
+            transition: color 0.2s;
         }
 
         .youtube-link:hover {
+            color: #ffffff;
             text-decoration: underline;
+        }
+
+        /* Chart section */
+        .chart-box {
+            height: 250px;
+            position: relative;
+        }
+
+        /* Terminal Logs style */
+        .terminal-logs {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: #00ff64;
+            height: 200px;
+            overflow-y: auto;
+        }
+        
+        .log-line {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+            padding: 0.2rem 0;
         }
     </style>
 </head>
@@ -190,7 +224,7 @@
             <div class="sub-logo">V3 Enterprise Content Engine</div>
         </div>
         <div style="text-align: right; color: var(--text-muted)">
-            <div>Autonomous Mode: <span style="color: #00ff64; font-weight: 600;">ACTIVE</span></div>
+            <div>Autonomous Engine: <span style="color: #00ff64; font-weight: 600;">ACTIVE</span></div>
             <div style="font-size: 0.8rem; margin-top: 0.2rem;" id="timestamp"></div>
         </div>
     </div>
@@ -217,26 +251,44 @@
 
     <!-- Layout: Video History & AI Insights -->
     <div class="main-layout">
-        <!-- Video List -->
-        <div class="card">
-            <div class="section-title">🎥 Upload History & Real-Time Performance</div>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Video Title</th>
-                            <th>Status</th>
-                            <th>Views</th>
-                            <th>Likes</th>
-                            <th>Uploaded At</th>
-                        </tr>
-                    </thead>
-                    <tbody id="video-table-body">
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted)">Loading stats...</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Performance Chart -->
+            <div class="card">
+                <div class="section-title">📈 Weekly Growth Report</div>
+                <div class="chart-box">
+                    <canvas id="viewsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Video List -->
+            <div class="card">
+                <div class="section-title">🎥 Upload History & Performance</div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Video Title</th>
+                                <th>Status</th>
+                                <th>Views</th>
+                                <th>Likes</th>
+                                <th>Uploaded At</th>
+                            </tr>
+                        </thead>
+                        <tbody id="video-table-body">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted)">Loading stats...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Terminal logs console -->
+            <div class="card">
+                <div class="section-title" style="color: #00ff64;">⚙️ Live Engine Console Logs</div>
+                <div class="terminal-logs" id="logs-box">
+                    <div class="log-line">Connecting to agent logs stream...</div>
+                </div>
             </div>
         </div>
 
@@ -255,18 +307,88 @@
                 </ul>
             </div>
 
-            <!-- Loop retention explanation -->
+            <!-- Retention explanation -->
             <div class="card">
-                <div class="section-title">📈 Retention Optimizer</div>
+                <div class="section-title">🧠 Retention Optimizer</div>
                 <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
                     The loop algorithm checks previous viewers' dropdown frames. The system dynamically adjusts the hook length, narration tempo, and ducking ratio to maximize average watch percentage above 100%.
                 </p>
+            </div>
+            
+            <!-- Quick manual trigger status -->
+            <div class="card">
+                <div class="section-title">⏰ Global Posting Timelines</div>
+                <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 0.8rem;">
+                    Posts occur 5x daily targeting peak commute and evening scroll hours globally:
+                </p>
+                <div style="font-size: 0.85rem; color: var(--accent); line-height: 1.5;">
+                    • 07:00 AM EST (commute peak)<br>
+                    • 11:00 AM EST (lunch peak)<br>
+                    • 02:30 PM EST (mid-day prime)<br>
+                    • 06:00 PM EST (evening prime)<br>
+                    • 09:30 PM EST (night-scroll peak)
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.getElementById('timestamp').innerText = 'Last updated: ' + new Date().toLocaleString();
+        let myChart = null;
+
+        function updateChart(trendData) {
+            const ctx = document.getElementById('viewsChart').getContext('2d');
+            const labels = trendData.map(d => d.date);
+            const data = trendData.map(d => d.views);
+
+            if (myChart) {
+                myChart.data.labels = labels;
+                myChart.data.datasets[0].data = data;
+                myChart.update();
+            } else {
+                myChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Daily Cumulative Views',
+                            data: data,
+                            borderColor: '#8a2be2',
+                            backgroundColor: 'rgba(138, 43, 226, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                },
+                                ticks: {
+                                    color: '#a0a0c0'
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    color: 'rgba(255, 255, 255, 0.05)'
+                                },
+                                ticks: {
+                                    color: '#a0a0c0'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
 
         async function fetchStats() {
             try {
@@ -320,12 +442,32 @@
                         keywordsList.innerHTML += `<li>${k}</li>`;
                     });
                 }
+
+                // Update charts
+                if (data.trend_data) {
+                    updateChart(data.trend_data);
+                }
+
+                // Update logs console
+                if (data.logs) {
+                    const logsBox = document.getElementById('logs-box');
+                    logsBox.innerHTML = '';
+                    data.logs.forEach(l => {
+                        logsBox.innerHTML += `<div class="log-line">${l}</div>`;
+                    });
+                    // Auto scroll to bottom of logs
+                    logsBox.scrollTop = logsBox.scrollHeight;
+                }
+
+                document.getElementById('timestamp').innerText = 'Last updated: ' + new Date().toLocaleString();
             } catch (err) {
                 console.error("Failed to load dashboard data: ", err);
             }
         }
 
+        // Fetch once immediately, then poll every 8 seconds
         fetchStats();
+        setInterval(fetchStats, 8000);
     </script>
 </body>
 </html>
