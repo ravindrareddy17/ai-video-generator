@@ -41,9 +41,13 @@ def check_script_quality(content: dict) -> bool:
     client = Groq(api_key=api_key)
     
     system_prompt = (
-        "You are an elite video editor and quality control officer.\n"
+        "You are an elite video editor and quality control officer for YouTube Shorts.\n"
         "Your task is to inspect a narration script for spelling, grammar mistakes, pacing, "
         "and loop-flow issues (e.g. check if the script ends with a repeated sentence or if the loop flow is bad).\n\n"
+        "SHORTS FORMAT RULES:\n"
+        "1. High-energy hooks (e.g. starting with exclamation marks, dramatic declarations, or 'Exposed/Uncovered') are INTENTIONAL and DESIRED. Do NOT flag them as issues.\n"
+        "2. Scripts ending with a mind-bending question to bait comments are INTENTIONAL and DESIRED. Do NOT reject them.\n"
+        "3. Only fail the script if there are actual spelling errors, bad grammar, or if the text is completely confusing/incomprehensible.\n\n"
         "Respond in JSON format with this structure:\n"
         "{\n"
         "  \"passed\": true,\n"
