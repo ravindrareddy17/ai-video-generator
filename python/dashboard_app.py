@@ -45,6 +45,16 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 self.wfile.write(html_file.read_bytes())
             else:
                 self.wfile.write(b"<h1>Dashboard HTML file not found.</h1>")
+        elif path == "/dashboard/chart.js":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/javascript")
+            self.end_headers()
+            
+            chart_file = PROJECT_ROOT / "dashboard" / "chart.js"
+            if chart_file.exists():
+                self.wfile.write(chart_file.read_bytes())
+            else:
+                self.wfile.write(b"")
         else:
             self.send_response(404)
             self.end_headers()
