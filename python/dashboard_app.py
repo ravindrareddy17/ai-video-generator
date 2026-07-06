@@ -198,6 +198,16 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
                     
+            # System file sizes
+            db_size_kb = 0
+            log_size_kb = 0
+            try:
+                db_size_kb = round(DB_PATH.stat().st_size / 1024, 1) if DB_PATH.exists() else 0
+                log_file = PROJECT_ROOT / "logs" / "pipeline.log"
+                log_size_kb = round(log_file.stat().st_size / 1024, 1) if log_file.exists() else 0
+            except Exception:
+                pass
+                
             return {
                 "total_uploads": total_uploads,
                 "total_views": total_views,
@@ -207,7 +217,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "insights": insights,
                 "trend_data": trend_data,
                 "logs": logs,
-                "niche_data": niche_data
+                "niche_data": niche_data,
+                "db_size_kb": db_size_kb,
+                "log_size_kb": log_size_kb
             }
         except Exception as e:
             logger.error(f"Error querying database stats: {e}")
@@ -220,7 +232,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "insights": {},
                 "trend_data": [],
                 "logs": [],
-                "niche_data": []
+                "niche_data": [],
+                "db_size_kb": 0,
+                "log_size_kb": 0
             }
 
 def run_server():

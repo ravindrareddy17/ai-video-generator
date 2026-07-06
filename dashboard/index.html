@@ -447,6 +447,16 @@
 
             <div style="display: flex; flex-direction: column; gap: 1.5rem;">
                 <div class="card">
+                    <div class="section-title">🖥️ System Diagnostics & Schedules</div>
+                    <div style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.8;">
+                        Database Brain: <span style="color: #ffffff; font-weight: 600;" id="db-size-val">0 KB</span><br>
+                        Active Log File: <span style="color: #ffffff; font-weight: 600;" id="log-size-val">0 KB</span><br>
+                        YouTube API: <span style="color: var(--terminal-green); font-weight: 600;">ONLINE (CONNECTED)</span><br>
+                        Next Posting Slot: <span style="color: var(--accent); font-weight: 600;" id="next-post-slot">Calculating...</span>
+                    </div>
+                </div>
+
+                <div class="card">
                     <div class="section-title">🧠 Retention Optimizer</div>
                     <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
                         The loop algorithm checks previous viewers' dropdown frames. The system dynamically adjusts the hook length, narration tempo, and ducking ratio to maximize average watch percentage above 100%.
@@ -758,6 +768,42 @@
                     // Auto scroll to bottom of logs if user isn't scrolling up
                     logsBox.scrollTop = logsBox.scrollHeight;
                 }
+
+                // Update sizes and schedule
+                if (data.db_size_kb !== undefined) {
+                    document.getElementById('db-size-val').innerText = data.db_size_kb + ' KB';
+                }
+                if (data.log_size_kb !== undefined) {
+                    document.getElementById('log-size-val').innerText = data.log_size_kb + ' KB';
+                }
+                
+                // Calculate next posting slot
+                const slots = [1.5, 11.0, 15.0, 18.5, 22.0]; // in UTC decimal hours
+                const now = new Date();
+                const utcHour = now.getUTCHours() + now.getUTCMinutes() / 60;
+                
+                let nextSlot = slots[0];
+                let isTomorrow = false;
+                for (let i = 0; i < slots.length; i++) {
+                    if (utcHour < slots[i]) {
+                        nextSlot = slots[i];
+                        break;
+                    }
+                    if (i === slots.length - 1) {
+                        nextSlot = slots[0];
+                        isTomorrow = true;
+                    }
+                }
+                
+                const nextPostDate = new Date();
+                nextPostDate.setUTCHours(Math.floor(nextSlot));
+                nextPostDate.setUTCMinutes((nextSlot % 1) * 60);
+                nextPostDate.setUTCSeconds(0);
+                if (isTomorrow) {
+                    nextPostDate.setUTCDate(nextPostDate.getUTCDate() + 1);
+                }
+                
+                document.getElementById('next-post-slot').innerText = nextPostDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + (isTomorrow ? ' (Tomorrow)' : ' (Today)');
 
                 document.getElementById('timestamp').innerText = 'Last updated: ' + new Date().toLocaleString();
             } catch (err) {
