@@ -13,6 +13,8 @@ on:
 jobs:
   generate-and-upload:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout Repository
@@ -63,4 +65,4 @@ jobs:
           # Only add database and logs if they exist and changed
           git add data/shortest_orbit_v3.db logs/pipeline.log || true
           git commit -m "Automated: Sync SQLite database and logs from cloud execution [skip ci]" || echo "No updates to commit"
-          git push origin main || echo "Failed to push updates"
+          git push origin HEAD:main || echo "Failed to push updates"
