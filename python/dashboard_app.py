@@ -143,36 +143,20 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     "hooks": hooks_map.get(v_id, [])
                 })
                 
-            # Views by Niche
-            cursor.execute("""
-                SELECT t.title as niche, SUM(a.views) as views
-                FROM videos v
-                JOIN topics t ON v.topic_id = t.id
-                JOIN analytics a ON v.id = a.video_id
-                GROUP BY t.id
-            """)
-            niche_data = []
-            for row in cursor.fetchall():
-                niche_data.append({
-                    "niche": row["niche"],
-                    "views": row["views"] or 0
-                })
-                
-            # Fallback text-classification if database maps are empty in first stage
-            if not niche_data or sum(nd["views"] for nd in niche_data) == 0:
-                niche_counts = {"AI & Tech": 0, "Space & Spaceflight": 0, "Wildlife & Biology": 0, "Science & Physics": 0}
-                for v in videos:
-                    t_lower = v["title"].lower()
-                    views = v["views"]
-                    if "ai" in t_lower or "robot" in t_lower or "computer" in t_lower or "language" in t_lower or "machine" in t_lower:
-                        niche_counts["AI & Tech"] += views
-                    elif "space" in t_lower or "moon" in t_lower or "star" in t_lower or "universe" in t_lower:
-                        niche_counts["Space & Spaceflight"] += views
-                    elif "seal" in t_lower or "fish" in t_lower or "biologist" in t_lower or "body" in t_lower or "cancer" in t_lower:
-                        niche_counts["Wildlife & Biology"] += views
-                    else:
-                        niche_counts["Science & Physics"] += views
-                niche_data = [{"niche": k, "views": v} for k, v in niche_counts.items() if v > 0]
+            # Views by Niche (Classified based on video titles)
+            niche_counts = {"AI & Tech": 0, "Space & Spaceflight": 0, "Wildlife & Biology": 0, "Science & Physics": 0}
+            for v in videos:
+                t_lower = v["title"].lower()
+                views = v["views"]
+                if any(x in t_lower for x in ["ai", "robot", "computer", "language", "machine", "tech", "coder", "coding", "software", "digit", "network"]):
+                    niche_counts["AI & Tech"] += views
+                elif any(x in t_lower for x in ["space", "moon", "star", "universe", "planet", "orbit", "telescope", "exoplanet", "nasa", "mars", "jupiter", "astronom", "comet"]):
+                    niche_counts["Space & Spaceflight"] += views
+                elif any(x in t_lower for x in ["seal", "fish", "biologist", "body", "cancer", "heat", "evolution", "health", "disease", "genetics", "dna", "animal"]):
+                    niche_counts["Wildlife & Biology"] += views
+                else:
+                    niche_counts["Science & Physics"] += views
+            niche_data = [{"niche": k, "views": v} for k, v in niche_counts.items() if v > 0]
                 
             # Fetch self-learning insights
             insights = {}
