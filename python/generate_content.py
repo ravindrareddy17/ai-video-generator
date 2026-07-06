@@ -115,7 +115,8 @@ def generate_narration(topic_data: dict) -> dict:
         "3. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
-        "6. REWATCH LOOP & COMMENT BAITING: The script's final sentence MUST be a mind-bending question designed to bait user comments. Do NOT append or repeat the hook sentence at the end of the narration. The script must end with the question itself. The loop effect is created by the phrasing of the question leading grammatically into the hook, NOT by repeating the hook."
+        "6. REWATCH LOOP & COMMENT BAITING: The script's final sentence MUST be a mind-bending question designed to bait user comments. Do NOT append or repeat the hook sentence at the end of the narration. The script must end with the question itself. The loop effect is created by the phrasing of the question leading grammatically into the hook, NOT by repeating the hook.\n"
+        "7. EXOPLANET ACCURACY: Exoplanets are planets outside our solar system that orbit other stars, NOT our Sun. They are light-years away, NOT in our solar system or 'cosmic backyard'. Never state that an exoplanet orbits our Sun or is in our solar system. Always describe them as orbiting distant stars in other star systems."
     )
     
     viral_angle = topic_data.get("viral_angle", "")
