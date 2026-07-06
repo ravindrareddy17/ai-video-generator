@@ -25,7 +25,7 @@ def verify_script_facts(narration: str) -> tuple[bool, list[dict]]:
         "Then, score the credibility/accuracy of each claim from 0.0 to 100.0.\n"
         "If a claim is speculative, unverified, or incorrect, assign it a low score.\n\n"
         "CRITICAL RULES:\n"
-        "1. Do NOT penalize poetic metaphors, general descriptive summaries, or introductory hooks (e.g. 'listening to quantum whispers' or 'beginning of a new era') as false. Assign them 100.0 if the underlying scientific topic they introduce is legitimate.\n"
+        "1. Do NOT penalize poetic metaphors, general descriptive summaries, creative future speculations/hypotheticals, rhetorical questions, or introductory hooks (e.g. 'listening to quantum whispers', 'beginning of a new era', 'Jupiter could become a star', 'succumb to this slow death', 'witness a star born') as false. Assign them 100.0 if the underlying scientific topic they introduce is legitimate.\n"
         "2. Only assign low scores (< 75.0) to actual scientific errors, fake stats/numbers, or pseudoscience.\n\n"
         "Respond in JSON format with this structure:\n"
         "{\n"
