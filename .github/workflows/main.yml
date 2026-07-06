@@ -2,13 +2,12 @@ name: AI Video Generator - The Shortest Orbit
 
 on:
   schedule:
-    # GitHub Actions runs on UTC time. Your timezone is IST (UTC +5:30).
-    # These have been perfectly converted so they run at your exact local times:
-    - cron: "30 3 * * *"   # Runs at 9:00 AM IST
-    - cron: "30 7 * * *"   # Runs at 1:00 PM IST
-    - cron: "30 11 * * *"  # Runs at 5:00 PM IST
-    - cron: "0 14 * * *"   # Runs at 7:30 PM IST
-    - cron: "0 16 * * *"   # Runs at 9:30 PM IST
+    # Optimized for global prime-time hours (US EST, UK/Europe BST, and Asia IST):
+    - cron: "0 11 * * *"   # Runs at 7:00 AM EST  / 12:00 PM BST / 4:30 PM IST  (Morning commute peak)
+    - cron: "0 15 * * *"   # Runs at 11:00 AM EST / 4:00 PM BST  / 8:30 PM IST  (US lunch & European afternoon)
+    - cron: "30 18 * * *"  # Runs at 2:30 PM EST  / 7:30 PM BST  / 12:00 AM IST (US afternoon & European prime-time)
+    - cron: "0 22 * * *"   # Runs at 6:00 PM EST  / 11:00 PM BST / 3:30 AM IST  (US evening peak)
+    - cron: "30 1 * * *"   # Runs at 9:30 PM EST  / 2:30 AM BST  / 7:00 AM IST  (US late night & Asian morning)
   workflow_dispatch: # Allows you to run this manually from the Actions tab
 
 jobs:
