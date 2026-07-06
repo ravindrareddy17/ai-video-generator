@@ -229,7 +229,7 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "    {\n"
         "      \"source_headline\": \"the original news item this is based on\",\n"
         "      \"viral_angle\": \"the ONE most surprising fact hiding in this story — stated in plain language a 12-year-old would understand\",\n"
-        "      \"hook_line\": \"first 2 seconds — must sound almost unbelievable, framed as a question or shocking statement\",\n"
+        "      \"hook_line\": \"first 2 seconds — must sound almost unbelievable, framed as a question or shocking statement. MUST be a scientifically true statement, NEVER fabricate statistics, numbers, or percentages.\",\n"
         "      \"why_it_could_go_viral\": \"1 sentence: what makes people want to comment, share, or argue about this\",\n"
         "      \"trend_score\": 75.5, // Float between 0.0 and 100.0, scoring current public interest and growth velocity\n"
         "      \"engagement_potential\": 80.0, // Float between 0.0 and 100.0, scoring potential to trigger comments/debates\n"
@@ -247,7 +247,8 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "   - Space & Astronomy (e.g., exoplanets, JWST discoveries, stars, black holes, moon/mars missions).\n"
         "   - Hard Science & Physics (e.g., quantum computing, archaeological discoveries, biotechnology, materials science).\n"
         "   - Advanced AI & Machine Learning (e.g., AI decoding ancient texts, AlphaFold mapping proteins, AI analyzing exoplanet data).\n"
-        "6. STRICT BAN: Do NOT select political news, geopolitical wars, financial stocks, lifestyle/beauty hacks (like hair loss or habits), or speculative pop-psychology. The topic must be verifiable and backed by hard scientific facts so that it passes fact-checking."
+        "6. STRICT BAN: Do NOT select political news, geopolitical wars, financial stocks, lifestyle/beauty hacks (like hair loss or habits), or speculative pop-psychology. The topic must be verifiable and backed by hard scientific facts so that it passes fact-checking.\n"
+        "7. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers (e.g., do NOT say '90% of documents' or '1 in 5 people' unless that is a direct, verified fact from the news story)."
     )
     
     user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}"
