@@ -188,20 +188,8 @@ def run() -> Path:
 
     content = load_json(CONTENT_FILE)
     
-    # MythX schema provides audio_direction
-    audio_direction = content.get("audio_direction", {})
-    mood_keywords = audio_direction.get("mood_keywords", [])
-    
-    selected_mood = "cinematic"
-    if mood_keywords:
-        mood_str = " ".join(mood_keywords).lower()
-        for valid_mood in MUSIC_URLS.keys():
-            if valid_mood in mood_str:
-                selected_mood = valid_mood
-                break
-    
-    logger.info(f"Music mood determined as: '{selected_mood}' based on audio direction")
-    mood = selected_mood
+    # 2. Analyze mood via Groq LLM based on video title
+    mood = analyze_mood(content.get("title", ""))
 
     # 3. Download the track
     music_path = download_track(mood)
