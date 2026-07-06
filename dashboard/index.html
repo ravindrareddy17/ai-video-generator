@@ -886,7 +886,15 @@
                     tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted)">No uploads logged yet. Run pipeline to start.</td></tr>';
                 } else {
                     data.videos.forEach(v => {
-                        const dateStr = new Date(v.created_at).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                        const dateStr = new Date(v.created_at + " UTC").toLocaleString('en-IN', {
+                            timeZone: 'Asia/Kolkata',
+                            month: 'numeric',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true
+                        }) + ' IST';
                         const badgeStyle = v.status === 'uploaded' ? 'badge-success' : 'badge-warning';
                         const rowClass = v.id === selectedVideoId ? 'clickable-row active-row' : 'clickable-row';
                         
