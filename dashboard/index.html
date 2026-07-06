@@ -17,6 +17,7 @@
             --accent: #ffd700;
             --text: #ffffff;
             --text-muted: #a0a0c0;
+            --terminal-green: #00ff64;
         }
 
         * {
@@ -119,7 +120,7 @@
         .table-container {
             width: 100%;
             overflow-x: auto;
-            max-height: 400px;
+            max-height: 380px;
             overflow-y: auto;
         }
 
@@ -143,10 +144,21 @@
             top: 0;
             background: rgba(13, 10, 45, 0.95);
             backdrop-filter: blur(8px);
+            z-index: 10;
         }
 
-        tr:hover {
-            background: rgba(255, 255, 255, 0.02);
+        .clickable-row {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .clickable-row:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .active-row {
+            background: rgba(138, 43, 226, 0.15) !important;
+            border-left: 3px solid var(--accent);
         }
 
         .badge {
@@ -190,10 +202,16 @@
             text-decoration: underline;
         }
 
-        /* Chart section */
+        /* Charts styling */
         .chart-box {
             height: 250px;
             position: relative;
+        }
+
+        .pie-chart-box {
+            height: 220px;
+            position: relative;
+            margin-top: 1rem;
         }
 
         /* Terminal Logs style */
@@ -205,7 +223,7 @@
             font-family: 'Consolas', monospace;
             font-size: 0.8rem;
             line-height: 1.5;
-            color: #00ff64;
+            color: var(--terminal-green);
             height: 200px;
             overflow-y: auto;
         }
@@ -213,6 +231,46 @@
         .log-line {
             border-bottom: 1px solid rgba(255, 255, 255, 0.02);
             padding: 0.2rem 0;
+        }
+
+        /* Inspector Cards layout */
+        .inspector-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .inspector-script-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #e0e0ff;
+            height: 100%;
+        }
+
+        .hook-item {
+            padding: 0.6rem;
+            border-radius: 8px;
+            margin-bottom: 0.6rem;
+            font-size: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        .hook-selected {
+            background: rgba(0, 255, 100, 0.08) !important;
+            border-color: rgba(0, 255, 100, 0.2) !important;
+            color: #ffffff;
+        }
+        
+        .hook-score {
+            float: right;
+            font-weight: 600;
+            color: var(--accent);
         }
     </style>
 </head>
@@ -262,7 +320,7 @@
 
             <!-- Video List -->
             <div class="card">
-                <div class="section-title">🎥 Upload History & Performance</div>
+                <div class="section-title">🎥 Upload History & Performance (Click video to inspect)</div>
                 <div class="table-container">
                     <table>
                         <thead>
@@ -283,6 +341,14 @@
                 </div>
             </div>
 
+            <!-- Video Deep-Dive Inspector (Individual Performance & Analytics) -->
+            <div class="card" id="inspector-card">
+                <div class="section-title" style="color: var(--accent);">🔍 Video Deep-Dive Inspector</div>
+                <div id="inspector-content">
+                    <p style="color: var(--text-muted); text-align: center; padding: 2rem;">Select any video from the list above to view its script, hook split-testing, and raw assets.</p>
+                </div>
+            </div>
+
             <!-- Terminal logs console -->
             <div class="card">
                 <div class="section-title" style="color: #00ff64;">⚙️ Live Engine Console Logs</div>
@@ -294,6 +360,14 @@
 
         <!-- AI Insights Sidebar -->
         <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Niche distribution doughnut chart -->
+            <div class="card">
+                <div class="section-title">📊 Views Share by Niche</div>
+                <div class="pie-chart-box">
+                    <canvas id="nicheChart"></canvas>
+                </div>
+            </div>
+
             <!-- Self-Learning insights -->
             <div class="card">
                 <div class="section-title" style="color: var(--accent);">✨ AI Self-Learning Insights</div>
@@ -334,6 +408,55 @@
 
     <script>
         let myChart = null;
+        let myPieChart = null;
+        let allVideos = [];
+        let selectedVideoId = null;
+
+        function updateNicheChart(nicheData) {
+            const ctx = document.getElementById('nicheChart').getContext('2d');
+            const labels = nicheData.map(d => d.niche);
+            const data = nicheData.map(d => d.views);
+
+            if (myPieChart) {
+                myPieChart.data.labels = labels;
+                myPieChart.data.datasets[0].data = data;
+                myPieChart.update();
+            } else {
+                myPieChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: [
+                                '#8a2be2',
+                                '#ffd700',
+                                '#00ff64',
+                                '#ff3366',
+                                '#00ffff'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: '#a0a0c0',
+                                    boxWidth: 12,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
 
         function updateChart(trendData) {
             const ctx = document.getElementById('viewsChart').getContext('2d');
@@ -390,10 +513,87 @@
             }
         }
 
+        function inspectVideo(id) {
+            selectedVideoId = id;
+            const v = allVideos.find(video => video.id === id);
+            if (!v) return;
+
+            // Highlight row in table
+            document.querySelectorAll('.clickable-row').forEach(row => {
+                row.classList.remove('active-row');
+            });
+            const selectedRow = document.getElementById(`row-${id}`);
+            if (selectedRow) selectedRow.classList.add('active-row');
+
+            // Render details
+            const inspectorBox = document.getElementById('inspector-content');
+            const engagement = v.views > 0 ? ((v.likes + v.comments) / v.views * 100).toFixed(2) : 0;
+            const youtubeLinkHtml = v.youtube_id 
+                ? `<a class="youtube-link" href="https://youtube.com/shorts/${v.youtube_id}" target="_blank">View on YouTube ↗</a>`
+                : `<span style="color: var(--text-muted)">Offline Local File</span>`;
+                
+            let scriptHtml = v.script ? v.script : "No script stored in historical metrics database.";
+            
+            let hooksHtml = '';
+            if (v.hooks && v.hooks.length > 0) {
+                v.hooks.forEach(h => {
+                    const selectedClass = h.selected ? 'hook-selected' : '';
+                    const checkmark = h.selected ? '✓ SELECTED' : '';
+                    hooksHtml += `
+                        <div class="hook-item ${selectedClass}">
+                            <span class="hook-score">${h.score}%</span>
+                            <strong>${checkmark}</strong> ${h.text}
+                        </div>
+                    `;
+                });
+            } else {
+                hooksHtml = '<p style="color: var(--text-muted)">No hooks data stored in registry for this video.</p>';
+            }
+
+            inspectorBox.innerHTML = `
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 0.8rem;">
+                    <h3 style="font-family: 'Cinzel', serif; font-size: 1.1rem; color: #ffffff;">${v.title}</h3>
+                    <div>${youtubeLinkHtml}</div>
+                </div>
+                <div class="grid" style="margin-bottom: 1.5rem; grid-template-columns: repeat(4, 1fr);">
+                    <div style="background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted)">VIEWS</div>
+                        <strong style="color: #ffffff; font-size: 1.2rem;">${v.views.toLocaleString()}</strong>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted)">LIKES</div>
+                        <strong style="color: #ffffff; font-size: 1.2rem;">${v.likes.toLocaleString()}</strong>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted)">COMMENTS</div>
+                        <strong style="color: #ffffff; font-size: 1.2rem;">${v.comments.toLocaleString()}</strong>
+                    </div>
+                    <div style="background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 8px; text-align: center;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted)">ENG. RATE</div>
+                        <strong style="color: var(--accent); font-size: 1.2rem;">${engagement}%</strong>
+                    </div>
+                </div>
+                <div class="inspector-grid">
+                    <div>
+                        <div class="card-title">📜 Narration Script</div>
+                        <div class="inspector-script-box">${scriptHtml}</div>
+                    </div>
+                    <div>
+                        <div class="card-title">⚡ Hook Split-Testing (Predictive Quality)</div>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
+                            ${hooksHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         async function fetchStats() {
             try {
                 const res = await fetch('/api/stats');
                 const data = await res.json();
+
+                allVideos = data.videos;
 
                 // Set metrics
                 document.getElementById('uploads-val').innerText = data.total_uploads;
@@ -412,13 +612,11 @@
                     data.videos.forEach(v => {
                         const dateStr = new Date(v.created_at).toLocaleDateString();
                         const badgeStyle = v.status === 'uploaded' ? 'badge-success' : 'badge-warning';
-                        const titleDisplay = v.youtube_id 
-                            ? `<a class="youtube-link" href="https://youtube.com/shorts/${v.youtube_id}" target="_blank">${v.title}</a>`
-                            : v.title;
-                            
+                        const rowClass = v.id === selectedVideoId ? 'clickable-row active-row' : 'clickable-row';
+                        
                         tableBody.innerHTML += `
-                            <tr>
-                                <td><strong>${titleDisplay}</strong></td>
+                            <tr class="${rowClass}" id="row-${v.id}" onclick="inspectVideo(${v.id})">
+                                <td><strong>${v.title}</strong></td>
                                 <td><span class="badge ${badgeStyle}">${v.status}</span></td>
                                 <td>${v.views.toLocaleString()}</td>
                                 <td>${v.likes.toLocaleString()}</td>
@@ -426,6 +624,13 @@
                             </tr>
                         `;
                     });
+
+                    // Default inspect first video if nothing selected
+                    if (selectedVideoId === null && data.videos.length > 0) {
+                        inspectVideo(data.videos[0].id);
+                    } else if (selectedVideoId !== null) {
+                        inspectVideo(selectedVideoId);
+                    }
                 }
 
                 // Set insights
@@ -446,6 +651,10 @@
                 // Update charts
                 if (data.trend_data) {
                     updateChart(data.trend_data);
+                }
+                
+                if (data.niche_data) {
+                    updateNicheChart(data.niche_data);
                 }
 
                 // Update logs console
