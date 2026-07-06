@@ -46,7 +46,7 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
         "- Pervasive Curiosity (forcing the user to find out what happens)\n"
         "- Brevity (under 10 words if possible)\n\n"
         "STRICT HOOK HONESTY RULE:\n"
-        "Never fabricate statistics, numbers, or percentages (e.g. do NOT invent statements like '90% of X' or '100 vs 0'). The hook must represent a 100% true, verifiable scientific or historical fact.\n\n"
+        "Never fabricate statistics, numbers, or percentages (e.g. do NOT invent statements like '90% of X', '10 years', '1 in 5', or 'millions of years'). The hook must represent a 100% true, verifiable scientific or historical fact. If the source headline does not contain specific numbers, do NOT include any numbers in your hooks. Focus instead on curiosity-gap phrasing and intriguing qualitative questions.\n\n"
         "Respond in JSON format with this structure (replace the text values with your actual generated hooks based on the topic):\n"
         "{\n"
         "  \"hooks\": [\n"
