@@ -368,7 +368,7 @@ def start_background_harvester():
 
     t = threading.Thread(target=run_harvest_loop, daemon=True)
     t.start()
-    logger.info("Background YouTube stats harvester thread initialized successfully (Interval: 15m).")
+    logger.info("Background YouTube stats harvester thread initialized successfully (Interval: 2m).")
 
 def run_server():
     server_address = ("", PORT)
