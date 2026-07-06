@@ -392,6 +392,29 @@
                 </div>
             </div>
         </div>
+
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="section-title">📅 Day-by-Day Performance Ledger</div>
+            <div class="table-container" style="max-height: 250px;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Total Views (Cumulative)</th>
+                            <th>Daily View Growth</th>
+                            <th>Total Likes</th>
+                            <th>Daily Like Growth</th>
+                            <th>Total Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody id="daily-growth-table-body">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted)">Loading daily ledger...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <!-- TAB 2: Video Performance Deep-Dive -->
@@ -779,6 +802,36 @@
                 // Update charts
                 if (data.trend_data) {
                     updateChart(data.trend_data);
+                    
+                    const growthTableBody = document.getElementById('daily-growth-table-body');
+                    if (growthTableBody) {
+                        growthTableBody.innerHTML = '';
+                        for (let i = 0; i < data.trend_data.length; i++) {
+                            const cur = data.trend_data[i];
+                            let viewGrowth = 'Baseline';
+                            let likeGrowth = '-';
+                            
+                            if (i > 0) {
+                                const prev = data.trend_data[i - 1];
+                                const vDiff = cur.views - prev.views;
+                                const lDiff = cur.likes - prev.likes;
+                                
+                                viewGrowth = vDiff >= 0 ? `+${vDiff.toLocaleString()}` : `-${Math.abs(vDiff).toLocaleString()}`;
+                                likeGrowth = lDiff >= 0 ? `+${lDiff.toLocaleString()}` : `-${Math.abs(lDiff).toLocaleString()}`;
+                            }
+                            
+                            growthTableBody.innerHTML += `
+                                <tr>
+                                    <td><strong>${cur.date}</strong></td>
+                                    <td>${cur.views.toLocaleString()}</td>
+                                    <td style="color: ${viewGrowth.startsWith('+') ? 'var(--terminal-green)' : 'inherit'}; font-weight: 600;">${viewGrowth}</td>
+                                    <td>${cur.likes.toLocaleString()}</td>
+                                    <td style="color: ${likeGrowth.startsWith('+') ? 'var(--terminal-green)' : 'inherit'}; font-weight: 600;">${likeGrowth}</td>
+                                    <td>${cur.comments.toLocaleString()}</td>
+                                </tr>
+                            `;
+                        }
+                    }
                 }
                 
                 if (data.niche_data) {
