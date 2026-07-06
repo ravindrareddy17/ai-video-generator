@@ -98,7 +98,7 @@ def fetch_reddit_topics(subreddits: list[str]) -> list[dict]:
 def fetch_google_news() -> list[dict]:
     """Fetch top headlines from Google News RSS feed."""
     logger.info("Fetching Google News headlines...")
-    url = "https://news.google.com/rss/search?q=space+OR+science+OR+AI&hl=en-US&gl=US&ceid=US:en"
+    url = "https://news.google.com/rss/search?q=astronomy+OR+exoplanet+OR+astrophysics+OR+quantum+OR+robotics+OR+archaeology+OR+genetics&hl=en-US&gl=US&ceid=US:en"
     
     feed = feedparser.parse(url)
     topics = []
