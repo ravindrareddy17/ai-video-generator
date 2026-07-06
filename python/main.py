@@ -43,6 +43,18 @@ import self_learning
 logger = get_logger("orchestrator")
 
 
+def mark_pending_videos_failed():
+    try:
+        from utils.database import get_connection
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute("UPDATE videos SET status = 'failed' WHERE status = 'generating'")
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.warning(f"Could not update database status to failed: {e}")
+
+
 def run_pipeline() -> bool:
     """Run the entire 11-step pipeline from end to end."""
     start_time = time.time()
@@ -73,9 +85,11 @@ def run_pipeline() -> bool:
         logger.info(">>> Step 2.5: Running AI fact checking on script narration...")
         if not verify_facts.run():
             logger.warning("Fact checking flagged critical claims! Attempting script regeneration...")
+            mark_pending_videos_failed()
             content, metadata = generate_content.run(topic)
             if not verify_facts.run():
                 logger.critical("Regenerated script failed fact checking again. Aborting run for safety.")
+                mark_pending_videos_failed()
                 return False
         logger.info(f"Step 2.5 Complete. Script narration fact-verified. ({time.time() - step_start:.2f}s)")
         
@@ -84,6 +98,7 @@ def run_pipeline() -> bool:
         logger.info(">>> Step 2.6: Running script quality control...")
         if not quality_checker.run():
             logger.critical("Script failed quality control checks. Aborting run.")
+            mark_pending_videos_failed()
             return False
         logger.info(f"Step 2.6 Complete. Script quality verified. ({time.time() - step_start:.2f}s)")
         
@@ -184,6 +199,7 @@ def run_pipeline() -> bool:
         
     except Exception as e:
         logger.critical(f"Pipeline crashed during execution! Error: {e}", exc_info=True)
+        mark_pending_videos_failed()
         return False
 
 

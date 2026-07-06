@@ -309,7 +309,7 @@ def run() -> str | None:
                 cursor.execute("""
                     UPDATE videos 
                     SET youtube_id = ?, status = 'uploaded' 
-                    WHERE status = 'generating' AND youtube_id IS NULL
+                    WHERE id = (SELECT MAX(id) FROM videos WHERE status = 'generating')
                 """, (video_id,))
                 conn.commit()
                 conn.close()
