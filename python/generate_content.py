@@ -109,7 +109,7 @@ def generate_narration(topic_data: dict) -> dict:
         "}\n\n"
         "NON-NEGOTIABLE RULES:\n"
         "1. Start the narration exactly with the provided hook line.\n"
-        "2. Keep the script between 45 and 50 words for a strict 20-second pacing.\n"
+        "2. Keep the script between 45 and 55 words total for a strict 20-second pacing.\n"
         "3. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
@@ -122,20 +122,18 @@ def generate_narration(topic_data: dict) -> dict:
         f"Generate a script for this viral concept:\n"
         f"Hook Line: {chosen_hook}\n"
         f"Viral Angle (What to explain): {viral_angle}\n\n"
-        f"CRITICAL STRUCTURE REQUIREMENTS TO HIT THE 50-60 WORD RANGE:\n"
-        f"Your script must contain exactly 5 detailed sentences. Each sentence must be detailed and sophisticated (at least 10-15 words each):\n"
-        f"Sentence 1 (Hook): Start exactly with the hook line.\n"
-        f"Sentence 2 (Mechanism 1): Write a detailed sentence explaining the technical or scientific mechanism (how it works, neural networks, advanced physics, astronomical processes, etc.) related to: '{viral_angle}'.\n"
-        f"Sentence 3 (Mechanism 2): Write another detailed sentence describing the deep technical details, data, or processes involved in: '{viral_angle}'.\n"
-        f"Sentence 4 (Implication): Write a detailed sentence explaining the human, global, or cosmic implications of this topic.\n"
-        f"Sentence 5 (Rewatch Loop Climax & Comment Bait): Write a final mind-bending question (at least 10 words) that baits viewers to leave comments. Do NOT repeat or append the hook line here; the narration must end with the question. The loop is created by the phrasing of the question leading grammatically into the hook when the video loops back to the start.\n\n"
-        f"Count your words carefully. Ensure the script contains at least 40 words total!"
+        f"CRITICAL STRUCTURE REQUIREMENTS TO HIT THE 45-55 WORD RANGE:\n"
+        f"Your script must contain exactly 3 concise, high-impact sentences:\n"
+        f"Sentence 1 (Hook): Start exactly with the hook line (approx 8-12 words).\n"
+        f"Sentence 2 (Explanation): Write a single detailed sentence explaining the technical or scientific mechanism behind: '{viral_angle}' (approx 15-20 words).\n"
+        f"Sentence 3 (Loop Climax & Comment Bait): Write a final mind-bending question (approx 15-20 words) that baits viewers to leave comments. Do NOT repeat or append the hook line here. The narration must end with this question. The loop is created by the phrasing of the question leading grammatically into the hook when the video loops back to the start.\n\n"
+        f"Count your words carefully. Ensure the script contains between 40 and 60 words total!"
     )
     
     logger.info(f"Calling Groq to generate Shortest Orbit script...")
     
-    # Retry loop to guarantee a minimum length of 40 words
-    max_attempts = 4
+    # Retry loop to guarantee a minimum length of 40 words and max of 60 words
+    max_attempts = 5
     word_count = 0
     content = {}
     for attempt in range(max_attempts):
@@ -143,11 +141,11 @@ def generate_narration(topic_data: dict) -> dict:
             chat_completion = client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Your previous generation was only {word_count} words, which is too short! You MUST expand the narration to be between 45 and 50 words. Add more detail."}
+                    {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Your previous generation was {word_count} words. You MUST write a script that is strictly between 40 and 60 words total! Please write exactly 3 sentences."}
                 ],
                 model=model,
                 temperature=0.7 + (attempt * 0.05),
-                max_tokens=2000,
+                max_tokens=1000,
                 response_format={"type": "json_object"}
             )
             
@@ -158,7 +156,7 @@ def generate_narration(topic_data: dict) -> dict:
             word_count = len(content["narration"].split())
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
             
-            if word_count >= 40:
+            if 40 <= word_count <= 60:
                 import re
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
                 if not sentences:
@@ -170,7 +168,7 @@ def generate_narration(topic_data: dict) -> dict:
                 logger.info(f"Successfully generated script with adequate length: {content['title']}")
                 return content
             else:
-                logger.warning(f"Script word count ({word_count}) was under 40 words. Retrying...")
+                logger.warning(f"Script word count ({word_count}) was outside [40, 60] words. Retrying...")
                 
         except Exception as e:
             logger.error(f"Error on attempt {attempt+1}: {e}")
