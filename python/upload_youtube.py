@@ -37,6 +37,7 @@ from utils.paths import FINAL_VIDEO_FILE, THUMBNAIL_FILE, METADATA_FILE, CLIENT_
 from utils.config import get_setting
 from utils.logger import get_logger
 from utils.helpers import load_json
+from utils.database import get_connection
 
 logger = get_logger(__name__)
 
@@ -300,6 +301,22 @@ def run() -> str | None:
             video_id = video_id_holder[0]
             video_url = f"https://youtube.com/shorts/{video_id}"
             logger.info(f"Upload complete! Watch your video here: {video_url}")
+            
+            # Update SQLite DB
+            try:
+                conn = get_connection()
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE videos 
+                    SET youtube_id = ?, status = 'uploaded' 
+                    WHERE status = 'generating' AND youtube_id IS NULL
+                """, (video_id,))
+                conn.commit()
+                conn.close()
+                logger.info(f"Database video status updated to 'uploaded' for YouTube ID: {video_id}")
+            except Exception as e:
+                logger.warning(f"Database video upload update error: {e}")
+                
             return video_url
             
     except HttpError as e:

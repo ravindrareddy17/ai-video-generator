@@ -1,0 +1,89 @@
+{
+  "id": "1",
+  "name": "AI Video Generator V2 (The Shortest Orbit)",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e9faeb40-690a-48d1-9255-a0ed3fdf39db",
+      "name": "Start",
+      "type": "n8n-nodes-base.start",
+      "typeVersion": 1,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 13 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "0 17 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "30 19 * * *"
+            },
+            {
+              "field": "cronExpression",
+              "expression": "30 21 * * *"
+            }
+          ]
+        }
+      },
+      "id": "3b4f6259-7b2a-4389-bc3d-9d7a22e8316c",
+      "name": "Schedule Trigger (Cron)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        480
+      ],
+      "notesInFlow": true,
+      "notes": "Runs 5 times a day (9am, 1pm, 5pm, 7:30pm, 9:30pm)"
+    },
+    {
+      "parameters": {
+        "command": "cmd.exe /c E:\\ai_gen\\AI-VIDEO-V2\\run_pipeline.bat"
+      },
+      "id": "8dc71f84-9721-4f15-89f4-d57bb081fc3c",
+      "name": "Execute Pipeline",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        460,
+        480
+      ],
+      "notesInFlow": true,
+      "notes": "Runs the Python generator script"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger (Cron)": {
+      "main": [
+        [
+          {
+            "node": "Execute Pipeline",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "df14ec9e-f87c-47bc-ad74-3d02d338cba7"
+}

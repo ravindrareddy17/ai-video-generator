@@ -24,8 +24,60 @@ from utils.paths import VIRAL_TOPICS_FILE, CONTENT_FILE, METADATA_FILE
 from utils.config import get_groq_key, get_setting
 from utils.logger import get_logger
 from utils.helpers import save_json, load_json
+from utils.database import get_connection
 
 logger = get_logger(__name__)
+
+
+def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list[dict]]:
+    """Generate 3 hook variations, score them on shock value & brevity, and return the best."""
+    viral_angle = topic_data.get("viral_angle", "")
+    base_hook = topic_data.get("hook_line", "")
+    
+    system_prompt = (
+        "You are an elite copywriter specializing in viral hooks for YouTube Shorts.\n"
+        "Your task is to generate 3 different styles of hooks for this viral angle and score them.\n"
+        "Styles:\n"
+        "1. Curiosity Gap: Framed as a mystery, starts with an intriguing question or statement.\n"
+        "2. Shock/Awe: Highlight the single most extreme, unbelievable statistic or fact.\n"
+        "3. Urgency/Warning: Connects the topic directly to a risk, threat, or near-future impact.\n\n"
+        "Evaluate and score each hook variation on a scale of 0.0 to 100.0 based on:\n"
+        "- Shock Value / Stop-Scrolling Power\n"
+        "- Pervasive Curiosity (forcing the user to find out what happens)\n"
+        "- Brevity (under 10 words if possible)\n\n"
+        "Respond in JSON format with this structure:\n"
+        "{\n"
+        "  \"hooks\": [\n"
+        "    {\"style\": \"curiosity\", \"text\": \"The mystery hook...\", \"score\": 85.0},\n"
+        "    {\"style\": \"shock\", \"text\": \"The shocking statistic...\", \"score\": 90.0},\n"
+        "    {\"style\": \"warning\", \"text\": \"The warning statement...\", \"score\": 75.0}\n"
+        "  ]\n"
+        "}"
+    )
+    
+    user_prompt = f"Base Hook Line: {base_hook}\nViral Angle: {viral_angle}"
+    
+    try:
+        completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt}
+            ],
+            model=model,
+            temperature=0.7,
+            response_format={"type": "json_object"}
+        )
+        data = json.loads(completion.choices[0].message.content)
+        hooks = data.get("hooks", [])
+        
+        # Sort by score desc
+        hooks.sort(key=lambda x: x.get("score", 0.0), reverse=True)
+        best_hook = hooks[0]["text"]
+        logger.info(f"Optimized hook selected: '{best_hook}' (Score: {hooks[0]['score']})")
+        return best_hook, hooks
+    except Exception as e:
+        logger.error(f"Failed to generate optimized hooks: {e}")
+        return base_hook, [{"style": "default", "text": base_hook, "score": 50.0}]
 
 
 def generate_narration(topic_data: dict) -> dict:
@@ -34,6 +86,10 @@ def generate_narration(topic_data: dict) -> dict:
     model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     
     client = Groq(api_key=api_key)
+    
+    # Optimize hook first
+    chosen_hook, hooks_data = optimize_hook(topic_data, client, model)
+    
     system_prompt = (
         "SYSTEM PROMPT - THE SHORTEST ORBIT MASTER AI VIDEO PRODUCTION PROMPT (v3.0)\n\n"
         "You are an elite AI filmmaker, documentary editor, and storytelling expert.\n"
@@ -61,11 +117,10 @@ def generate_narration(topic_data: dict) -> dict:
     )
     
     viral_angle = topic_data.get("viral_angle", "")
-    hook_line = topic_data.get("hook_line", "")
     
     user_prompt = (
         f"Generate a script for this viral concept:\n"
-        f"Hook Line: {hook_line}\n"
+        f"Hook Line: {chosen_hook}\n"
         f"Viral Angle (What to explain): {viral_angle}\n\n"
         f"CRITICAL STRUCTURE REQUIREMENTS TO HIT THE 50-60 WORD RANGE:\n"
         f"Your script must contain exactly 5 detailed sentences. Each sentence must be detailed and sophisticated (at least 10-15 words each):\n"
@@ -79,9 +134,10 @@ def generate_narration(topic_data: dict) -> dict:
     
     logger.info(f"Calling Groq to generate Shortest Orbit script...")
     
-    # Retry loop to guarantee a minimum length of 40 words (which translates to ~20 seconds at slower speech rate)
+    # Retry loop to guarantee a minimum length of 40 words
     max_attempts = 4
     word_count = 0
+    content = {}
     for attempt in range(max_attempts):
         try:
             chat_completion = client.chat.completions.create(
@@ -90,13 +146,14 @@ def generate_narration(topic_data: dict) -> dict:
                     {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Your previous generation was only {word_count} words, which is too short! You MUST expand the narration to be between 45 and 50 words. Add more detail."}
                 ],
                 model=model,
-                temperature=0.7 + (attempt * 0.05),  # slightly increase temperature for variety if it fails
+                temperature=0.7 + (attempt * 0.05),
                 max_tokens=2000,
                 response_format={"type": "json_object"}
             )
             
             response_text = chat_completion.choices[0].message.content
             content = json.loads(response_text)
+            content["hooks_data"] = hooks_data
             
             word_count = len(content["narration"].split())
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
@@ -118,19 +175,18 @@ def generate_narration(topic_data: dict) -> dict:
         except Exception as e:
             logger.error(f"Error on attempt {attempt+1}: {e}")
             if attempt == max_attempts - 1:
-                # If we hit an exception on the last run, we raise it
                 raise
                 
-    # Fallback: if we exhausted all attempts but still have a script, use it rather than crashing the pipeline!
-    logger.warning(f"Failed to generate a script with at least 40 words after {max_attempts} attempts. Proceeding with the last generated script (word count: {word_count}) to avoid crashing.")
+    logger.warning(f"Failed to generate a script with at least 40 words after {max_attempts} attempts. Proceeding to avoid crashing.")
     
     import re
-    sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
+    sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content.get("narration", "")) if s.strip()]
     if not sentences:
-        sentences = [content["narration"]]
+        sentences = [content.get("narration", "")]
         
     content["sentences"] = sentences
     content["word_count"] = word_count
+    content["hooks_data"] = hooks_data
     return content
 
 
@@ -206,6 +262,44 @@ def run(topic_data: dict = None) -> tuple[dict, dict]:
     save_json(metadata, METADATA_FILE)
     logger.info(f"YouTube metadata saved to {METADATA_FILE}")
     
+    # Step 2c: Log to SQLite database
+    try:
+        conn = get_connection()
+        cursor = conn.cursor()
+        
+        # Insert video entry
+        cursor.execute("""
+            INSERT INTO videos (title, topic_id, script, status, visual_queries)
+            VALUES (?, (SELECT id FROM topics WHERE title = ?), ?, ?, ?)
+        """, (
+            content["title"],
+            topic_str,
+            content["narration"],
+            "generating",
+            json.dumps([]) # will be filled later in Step 5
+        ))
+        video_id = cursor.lastrowid
+        
+        # Insert hooks variations
+        hooks_list = content.get("hooks_data", [])
+        for h in hooks_list:
+            is_selected = 1 if h.get("text") == content.get("hook") else 0
+            cursor.execute("""
+                INSERT INTO hooks (video_id, text, score, selected)
+                VALUES (?, ?, ?, ?)
+            """, (
+                video_id,
+                h.get("text"),
+                float(h.get("score", 50.0)),
+                is_selected
+            ))
+            
+        conn.commit()
+        conn.close()
+        logger.info(f"Video #{video_id} and hooks logged to SQLite database.")
+    except Exception as e:
+        logger.warning(f"Failed to log video or hooks to database: {e}")
+        
     return content, metadata
 
 

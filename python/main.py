@@ -25,6 +25,8 @@ from utils.ffmpeg import verify_ffmpeg
 # Import step modules
 import find_viral_topics
 import generate_content
+import verify_facts
+import quality_checker
 import generate_voice
 import create_subtitles
 import generate_search_queries
@@ -35,6 +37,8 @@ import add_audio
 import burn_subtitles
 import generate_thumbnail
 import upload_youtube
+import harvest_analytics
+import self_learning
 
 logger = get_logger("orchestrator")
 
@@ -56,13 +60,32 @@ def run_pipeline() -> bool:
         step_start = time.time()
         logger.info(">>> Step 1: Searching for viral space/science/AI topics...")
         topic = find_viral_topics.run()
-        logger.info(f"Step 1 Complete. Selected topic: '{topic}' ({time.time() - step_start:.2f}s)")
+        logger.info(f"Step 1 Complete. Selected topic: '{topic.get('selected_topic')}' ({time.time() - step_start:.2f}s)")
         
         # ── Step 2: Generate Content ────────────────────────────────
         step_start = time.time()
         logger.info(">>> Step 2: Generating narration script and metadata...")
         content, metadata = generate_content.run(topic)
         logger.info(f"Step 2 Complete. Title: '{content.get('title')}' ({time.time() - step_start:.2f}s)")
+        
+        # ── Step 2.5: Verify Facts ──────────────────────────────────
+        step_start = time.time()
+        logger.info(">>> Step 2.5: Running AI fact checking on script narration...")
+        if not verify_facts.run():
+            logger.warning("Fact checking flagged critical claims! Attempting script regeneration...")
+            content, metadata = generate_content.run(topic)
+            if not verify_facts.run():
+                logger.critical("Regenerated script failed fact checking again. Aborting run for safety.")
+                return False
+        logger.info(f"Step 2.5 Complete. Script narration fact-verified. ({time.time() - step_start:.2f}s)")
+        
+        # ── Step 2.6: Run Quality Checker ───────────────────────────
+        step_start = time.time()
+        logger.info(">>> Step 2.6: Running script quality control...")
+        if not quality_checker.run():
+            logger.critical("Script failed quality control checks. Aborting run.")
+            return False
+        logger.info(f"Step 2.6 Complete. Script quality verified. ({time.time() - step_start:.2f}s)")
         
         # ── Step 3: Generate Voice ──────────────────────────────────
         step_start = time.time()
@@ -110,7 +133,7 @@ def run_pipeline() -> bool:
         step_start = time.time()
         logger.info(">>> Step 9: Hardcoding styled subtitles...")
         final_video = burn_subtitles.run()
-        logger.info(f"Step 9 Complete. Final subtitled Short generated at: {final_video.name} ({time.time() - step_start:.2f}s)")
+        logger.info(f"Step 9 Complete. Final Short generated at: {final_video.name} ({time.time() - step_start:.2f}s)")
         
         # ── Step 10: Generate Thumbnail ─────────────────────────────
         step_start = time.time()
@@ -123,6 +146,18 @@ def run_pipeline() -> bool:
         logger.info(">>> Step 11: Uploading video to YouTube...")
         youtube_url = upload_youtube.run()
         logger.info(f"Step 11 Complete. YouTube URL: {youtube_url} ({time.time() - step_start:.2f}s)")
+        
+        # ── Step 11.5: Harvest YouTube Analytics ────────────────────
+        step_start = time.time()
+        logger.info(">>> Step 11.5: Harvesting YouTube channel analytics...")
+        harvest_analytics.run()
+        logger.info(f"Step 11.5 Complete. Stats synced to database. ({time.time() - step_start:.2f}s)")
+        
+        # ── Step 12: Run Self-Learning Engine ───────────────────────
+        step_start = time.time()
+        logger.info(">>> Step 12: Running self-learning feedback optimization loop...")
+        self_learning.run()
+        logger.info(f"Step 12 Complete. Prompt optimization weights updated. ({time.time() - step_start:.2f}s)")
         
         # ── Pipeline Success Summary ────────────────────────────────
         total_time = time.time() - start_time

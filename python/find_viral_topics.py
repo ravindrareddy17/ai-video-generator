@@ -26,6 +26,7 @@ from utils.config import load_settings, get_setting, get_groq_key
 from utils.logger import get_logger
 from utils.helpers import save_json
 from utils.retry import retry
+from utils.database import get_connection
 
 logger = get_logger(__name__)
 
@@ -194,57 +195,62 @@ def get_recent_uploaded_titles() -> list[str]:
 
 
 def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> dict:
-    """Send topics to Groq LLM to extract viral angles and choose the best one."""
+    """Send topics to Groq LLM to score angles and select the best candidate."""
     if not topics:
         return {
             "selected_topic": "Scientists just found something hiding in our solar system.",
             "viral_angle": "Default fallback topic",
             "hook_line": "Scientists just found something hiding in our solar system.",
-            "source": "Fallback"
+            "source": "Fallback",
+            "trend_score": 50.0,
+            "engagement_potential": 50.0,
+            "retention_potential": 50.0
         }
         
     api_key = get_groq_key()
     model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     client = Groq(api_key=api_key)
     
-    # Take top 30 to limit token usage
+    # Take top 30 candidates to limit token usage
     topics_sorted = sorted(topics, key=lambda x: x["score_signal"], reverse=True)
     top_candidates = topics_sorted[:30]
     
     candidate_list_str = "\n".join([f"- {t['title']} (Source: {t['source']})" for t in top_candidates])
     
     system_prompt = (
-        "SYSTEM PROMPT — The Shortest Orbit: Viral Topic Scanner\n\n"
+        "SYSTEM PROMPT — The Shortest Orbit: Viral Topic Selector v3.0\n\n"
         "You take raw current news items about space, science, or AI and convert "
-        "each into a viral-ready Shorts concept. Your job is NOT to explain the news "
-        "like a journalist — it's to find the single most shocking, curiosity-driving "
-        "angle inside it that a general audience (not scientists) would stop scrolling for.\n\n"
+        "each into a viral-ready Shorts concept. Your job is to extract and score the single "
+        "most shocking, curiosity-driving angle inside it that a general audience would stop scrolling for.\n\n"
         "Input: a list of recent news headlines/summaries.\n"
-        "Output: valid JSON array, no preamble, no markdown fences.\n\n"
+        "Output: valid JSON array of objects, no preamble, no markdown fences.\n\n"
         "[\n"
         "  {\n"
         "    \"source_headline\": \"the original news item this is based on\",\n"
         "    \"viral_angle\": \"the ONE most surprising fact hiding in this story — stated in plain language a 12-year-old would understand\",\n"
         "    \"hook_line\": \"first 2 seconds — must sound almost unbelievable, framed as a question or shocking statement\",\n"
         "    \"why_it_could_go_viral\": \"1 sentence: what makes people want to comment, share, or argue about this\",\n"
+        "    \"trend_score\": 75.5, // Float between 0.0 and 100.0, scoring current public interest and growth velocity\n"
+        "    \"engagement_potential\": 80.0, // Float between 0.0 and 100.0, scoring potential to trigger comments/debates\n"
+        "    \"retention_potential\": 85.0, // Float between 0.0 and 100.0, scoring predictability, visual appeal, and simplicity\n"
         "    \"risk_flag\": \"note if this topic is too technical, too uncertain/early-stage research, or too niche to simplify honestly — flag rather than force it\"\n"
         "  }\n"
         "]\n\n"
         "RULES:\n"
-        "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify to the point of being wrong.\n"
-        "2. Prioritize stories with a \"wait, that's real?\" reaction over purely incremental research news. Shift focus towards 'bizarre science facts,' 'cosmic scale comparisons,' and 'sci-fi real-life tech'.\n"
+        "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify.\n"
+        "2. Prioritize stories with a 'wait, that's real?' reaction over purely incremental research news. Shift focus towards 'bizarre science facts,' 'cosmic scale comparisons,' and 'sci-fi real-life tech'.\n"
         "3. Never sensationalize to the point of inaccuracy — surprising != false.\n"
         "4. The hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking' to capture immediate viewer attention.\n"
         "5. CRITICAL: The chosen topic MUST bridge the intersection of all three: SPACE, SCIENCE, and AI (e.g., using AI to map Mars features, neural networks decoding deep space radio signals, AI analyzing exoplanet biosignatures). Frame or select the story to capture this powerful synergy!"
     )
     
-    user_prompt = f"Extract viral angles from these raw headlines:\n\n{candidate_list_str}"
+    user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}"
     
     if recent_titles:
         recent_titles_str = "\n".join([f"- {t}" for t in recent_titles])
         user_prompt += f"\n\nCRITICAL: DO NOT select any topic that overlaps or is similar to these recently uploaded videos on the channel:\n{recent_titles_str}"
     
-    logger.info("Calling Groq LLM to scan for viral topics...")
+    logger.info("Calling Groq LLM to scan and score viral topics...")
     try:
         chat_completion = client.chat.completions.create(
             messages=[
@@ -252,39 +258,84 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
                 {"role": "user", "content": user_prompt}
             ],
             model=model,
-            temperature=0.7
+            temperature=0.7,
+            response_format={"type": "json_object"}
         )
         
         response_text = chat_completion.choices[0].message.content
-        # Try to parse the JSON array
-        # Clean markdown fences if any slipped through
         clean_text = response_text.strip()
         if clean_text.startswith("```json"):
             clean_text = clean_text[7:-3]
         if clean_text.startswith("```"):
             clean_text = clean_text[3:-3]
             
-        concepts = json.loads(clean_text)
-        
+        result_dict = json.loads(clean_text)
+        # Handle cases where output might be nested under "topics" or is just a list
+        concepts = result_dict if isinstance(result_dict, list) else result_dict.get("topics", result_dict.get("concepts", []))
+        if not concepts and isinstance(result_dict, dict):
+            # If the LLM returned a single JSON object instead of an array of objects
+            concepts = [result_dict]
+            
         # Filter out concepts with a risk flag
         safe_concepts = []
         for c in concepts:
             risk = c.get("risk_flag", "")
-            if not risk or str(risk).lower() in ["none", "null", "false", "no"]:
+            if not risk or str(risk).lower() in ["none", "null", "false", "no", ""]:
                 safe_concepts.append(c)
                 
-        if safe_concepts:
-            best_concept = safe_concepts[0]  # Just take the first safe one
-        else:
-            best_concept = concepts[0] # Fallback if all are risky
+        if not safe_concepts:
+            safe_concepts = concepts if concepts else [{}]
             
-        logger.info(f"Groq selected topic hook: '{best_concept.get('hook_line')}'")
+        # Score each candidate and write to database
+        db_candidates = []
+        for c in safe_concepts:
+            ts = float(c.get("trend_score", 50.0))
+            ep = float(c.get("engagement_potential", 50.0))
+            rp = float(c.get("retention_potential", 50.0))
+            
+            final_score = (ts * 0.4) + (ep * 0.3) + (rp * 0.3)
+            c["final_score"] = final_score
+            c["selected_topic"] = f"{c.get('hook_line')} {c.get('viral_angle')}"
+            
+            db_candidates.append(c)
+            
+        # Sort by final score
+        db_candidates.sort(key=lambda x: x.get("final_score", 0.0), reverse=True)
+        best_concept = db_candidates[0]
+        
+        # Save all evaluated candidates into the database
+        conn = get_connection()
+        cursor = conn.cursor()
+        for cand in db_candidates:
+            try:
+                cursor.execute("""
+                    INSERT OR IGNORE INTO topics (title, source, trend_score, engagement_potential, retention_potential, status)
+                    VALUES (?, ?, ?, ?, ?, 'pending')
+                """, (
+                    cand.get("selected_topic"),
+                    cand.get("source_headline"),
+                    float(cand.get("trend_score", 50.0)),
+                    float(cand.get("engagement_potential", 50.0)),
+                    float(cand.get("retention_potential", 50.0))
+                ))
+            except Exception as e:
+                logger.warning(f"Database topic insertion error: {e}")
+                
+        # Set the chosen one to 'used'
+        cursor.execute("UPDATE topics SET status = 'used' WHERE title = ?", (best_concept.get("selected_topic"),))
+        conn.commit()
+        conn.close()
+        
+        logger.info(f"Groq selected and scored topic. Final Score: {best_concept.get('final_score'):.2f} | Hook: '{best_concept.get('hook_line')}'")
         
         return {
-            "selected_topic": f"{best_concept.get('hook_line')} {best_concept.get('viral_angle')}",
+            "selected_topic": best_concept.get("selected_topic"),
             "viral_angle": best_concept.get("viral_angle"),
             "hook_line": best_concept.get("hook_line"),
-            "source": best_concept.get("source_headline")
+            "source": best_concept.get("source_headline"),
+            "trend_score": float(best_concept.get("trend_score", 50.0)),
+            "engagement_potential": float(best_concept.get("engagement_potential", 50.0)),
+            "retention_potential": float(best_concept.get("retention_potential", 50.0))
         }
         
     except Exception as e:
@@ -294,7 +345,10 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             "selected_topic": best_fallback["title"],
             "viral_angle": best_fallback["title"],
             "hook_line": "Did you know about this?",
-            "source": best_fallback["source"]
+            "source": best_fallback["source"],
+            "trend_score": 50.0,
+            "engagement_potential": 50.0,
+            "retention_potential": 50.0
         }
 
 

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Shortest Orbit – V3 Dashboard</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Cinzel:wght@700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #0b071e;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary: #8a2be2;
+            --accent: #ffd700;
+            --text: #ffffff;
+            --text-muted: #a0a0c0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #050212 0%, #0d0a2d 50%, #15093b 100%);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.5rem;
+        }
+
+        .logo {
+            font-family: 'Cinzel', serif;
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #ffffff 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+        }
+
+        .sub-logo {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .card-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff 0%, #a0a0ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .section-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.4rem;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success { background: rgba(0, 255, 100, 0.15); color: #00ff64; border: 1px solid rgba(0, 255, 100, 0.3); }
+        .badge-warning { background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3); }
+
+        .recommendations {
+            list-style: none;
+        }
+
+        .recommendations li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .recommendations li::before {
+            content: "✦";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+
+        .youtube-link {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .youtube-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <div class="logo">The Shortest Orbit</div>
+            <div class="sub-logo">V3 Enterprise Content Engine</div>
+        </div>
+        <div style="text-align: right; color: var(--text-muted)">
+            <div>Autonomous Mode: <span style="color: #00ff64; font-weight: 600;">ACTIVE</span></div>
+            <div style="font-size: 0.8rem; margin-top: 0.2rem;" id="timestamp"></div>
+        </div>
+    </div>
+
+    <!-- Core Metrics Grid -->
+    <div class="grid">
+        <div class="card">
+            <div class="card-title">Total Uploads</div>
+            <div class="card-value" id="uploads-val">0</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Total Views</div>
+            <div class="card-value" id="views-val">0</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Total Likes</div>
+            <div class="card-value" id="likes-val">0</div>
+        </div>
+        <div class="card">
+            <div class="card-title">Engagement Rate</div>
+            <div class="card-value" id="engagement-val">0%</div>
+        </div>
+    </div>
+
+    <!-- Layout: Video History & AI Insights -->
+    <div class="main-layout">
+        <!-- Video List -->
+        <div class="card">
+            <div class="section-title">🎥 Upload History & Real-Time Performance</div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Video Title</th>
+                            <th>Status</th>
+                            <th>Views</th>
+                            <th>Likes</th>
+                            <th>Uploaded At</th>
+                        </tr>
+                    </thead>
+                    <tbody id="video-table-body">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted)">Loading stats...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- AI Insights Sidebar -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <!-- Self-Learning insights -->
+            <div class="card">
+                <div class="section-title" style="color: var(--accent);">✨ AI Self-Learning Insights</div>
+                <div class="card-title" style="margin-top: 1rem;">Niches to Focus:</div>
+                <ul class="recommendations" id="niches-list">
+                    <li>Data pending initial analytics collection.</li>
+                </ul>
+                <div class="card-title" style="margin-top: 1.5rem;">Keywords to Target:</div>
+                <ul class="recommendations" id="keywords-list">
+                    <li>Waiting for harvest data...</li>
+                </ul>
+            </div>
+
+            <!-- Loop retention explanation -->
+            <div class="card">
+                <div class="section-title">📈 Retention Optimizer</div>
+                <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+                    The loop algorithm checks previous viewers' dropdown frames. The system dynamically adjusts the hook length, narration tempo, and ducking ratio to maximize average watch percentage above 100%.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('timestamp').innerText = 'Last updated: ' + new Date().toLocaleString();
+
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+
+                // Set metrics
+                document.getElementById('uploads-val').innerText = data.total_uploads;
+                document.getElementById('views-val').innerText = data.total_views.toLocaleString();
+                document.getElementById('likes-val').innerText = data.total_likes.toLocaleString();
+
+                const rate = data.total_views > 0 ? ((data.total_likes + data.total_comments) / data.total_views * 100).toFixed(2) : 0;
+                document.getElementById('engagement-val').innerText = rate + '%';
+
+                // Set video list
+                const tableBody = document.getElementById('video-table-body');
+                tableBody.innerHTML = '';
+                if (data.videos.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted)">No uploads logged yet. Run pipeline to start.</td></tr>';
+                } else {
+                    data.videos.forEach(v => {
+                        const dateStr = new Date(v.created_at).toLocaleDateString();
+                        const badgeStyle = v.status === 'uploaded' ? 'badge-success' : 'badge-warning';
+                        const titleDisplay = v.youtube_id 
+                            ? `<a class="youtube-link" href="https://youtube.com/shorts/${v.youtube_id}" target="_blank">${v.title}</a>`
+                            : v.title;
+                            
+                        tableBody.innerHTML += `
+                            <tr>
+                                <td><strong>${titleDisplay}</strong></td>
+                                <td><span class="badge ${badgeStyle}">${v.status}</span></td>
+                                <td>${v.views.toLocaleString()}</td>
+                                <td>${v.likes.toLocaleString()}</td>
+                                <td>${dateStr}</td>
+                            </tr>
+                        `;
+                    });
+                }
+
+                // Set insights
+                if (data.insights && data.insights.high_interest_niches) {
+                    const nichesList = document.getElementById('niches-list');
+                    nichesList.innerHTML = '';
+                    data.insights.high_interest_niches.forEach(n => {
+                        nichesList.innerHTML += `<li>${n}</li>`;
+                    });
+
+                    const keywordsList = document.getElementById('keywords-list');
+                    keywordsList.innerHTML = '';
+                    data.insights.algorithm_boost_keywords.forEach(k => {
+                        keywordsList.innerHTML += `<li>${k}</li>`;
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to load dashboard data: ", err);
+            }
+        }
+
+        fetchStats();
+    </script>
+</body>
+</html>

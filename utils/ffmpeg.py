@@ -441,12 +441,14 @@ def mix_audio(
     # filter_complex:
     #   [1] voice -> volume adjust -> [v_audio]
     #   [2] music loop -> volume adjust -> [m_audio]
-    #   amix the two -> [mixed]
+    #   Apply sidechaincompress on music triggered by voice -> [ducked_music]
+    #   amix the voice and ducked music -> [mixed]
     filter_complex = (
         f"[1:a]volume={voice_vol}[v_audio];"
         f"[2:a]aloop=loop=-1:size=2e+09,atrim=0:{vid_duration},"
         f"volume={music_vol}[m_audio];"
-        f"[v_audio][m_audio]amix=inputs=2:duration=first:dropout_transition=2[mixed]"
+        f"[m_audio][v_audio]sidechaincompress=threshold=0.12:ratio=4.5:attack=50:release=300[ducked_music];"
+        f"[v_audio][ducked_music]amix=inputs=2:duration=first:dropout_transition=2[mixed]"
     )
 
     _run_ffmpeg([
