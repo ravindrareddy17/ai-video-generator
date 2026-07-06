@@ -22,13 +22,34 @@ def harvest_channel_stats():
         return False
         
     try:
-        # 1. Fetch channel's uploads playlist ID
-        channels_response = youtube.channels().list(mine=True, part="contentDetails").execute()
+        # 1. Fetch channel's uploads playlist ID and subscriber count statistics
+        channels_response = youtube.channels().list(mine=True, part="contentDetails,statistics").execute()
         if not channels_response.get("items"):
             logger.error("No channel found for current credentials.")
             return False
             
         uploads_playlist_id = channels_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        
+        # Extract subscriber count
+        stats = channels_response["items"][0].get("statistics", {})
+        subscribers = int(stats.get("subscriberCount", 0))
+        
+        # Save channel metadata
+        metadata_file = Path(__file__).resolve().parent.parent / "data" / "channel_metadata.json"
+        try:
+            metadata = {}
+            if metadata_file.exists():
+                try:
+                    with open(metadata_file, "r") as f:
+                        metadata = json.load(f)
+                except Exception:
+                    pass
+            metadata["subscribers"] = subscribers
+            with open(metadata_file, "w") as f:
+                json.dump(metadata, f, indent=2)
+            logger.info(f"Saved channel subscribers: {subscribers}")
+        except Exception as me:
+            logger.warning(f"Could not save channel metadata: {me}")
         
         # 2. Retrieve last 50 video IDs from uploads playlist
         playlist_response = youtube.playlistItems().list(

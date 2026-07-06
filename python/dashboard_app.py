@@ -198,6 +198,17 @@ class DashboardHandler(BaseHTTPRequestHandler):
             voice_volume = get_setting('audio', 'voice_volume', 1.0)
             speech_rate = get_setting('tts', 'rate', '+3%')
 
+            # Load channel subscribers
+            subscribers = 0
+            metadata_file = PROJECT_ROOT / "data" / "channel_metadata.json"
+            if metadata_file.exists():
+                try:
+                    with open(metadata_file, "r") as f:
+                        meta = json.load(f)
+                        subscribers = meta.get("subscribers", 0)
+                except Exception:
+                    pass
+
             return {
                 "total_uploads": total_uploads,
                 "total_views": total_views,
@@ -212,7 +223,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "log_size_kb": log_size_kb,
                 "music_volume": music_volume,
                 "voice_volume": voice_volume,
-                "speech_rate": speech_rate
+                "speech_rate": speech_rate,
+                "subscribers": subscribers
             }
         except Exception as e:
             logger.error(f"Error querying database stats: {e}")
