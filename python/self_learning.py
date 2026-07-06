@@ -55,7 +55,7 @@ def run_self_learning_loop() -> bool:
             "top_performing": [
                 {
                     "title": row["title"],
-                    "script": row["script"][:200] + "...",
+                    "script": (row["script"] or "")[:200] + "...",
                     "views": row["total_views"],
                     "likes": row["total_likes"],
                     "comments": row["total_comments"]
