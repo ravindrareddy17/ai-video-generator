@@ -67,6 +67,19 @@ class DashboardHandler(BaseHTTPRequestHandler):
             
     def get_stats_data(self) -> dict:
         try:
+            # Load metadata for subscribers and real-time total views
+            subscribers = 0
+            total_views_from_meta = None
+            metadata_file = PROJECT_ROOT / "data" / "channel_metadata.json"
+            if metadata_file.exists():
+                try:
+                    with open(metadata_file, "r") as f:
+                        meta = json.load(f)
+                        subscribers = meta.get("subscribers", 0)
+                        total_views_from_meta = meta.get("total_channel_views")
+                except Exception:
+                    pass
+
             conn = sqlite3.connect(DB_PATH)
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
@@ -85,7 +98,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 )
             """)
             agg_row = cursor.fetchone()
-            total_views = agg_row["total_views"] or 0
+            db_views = agg_row["total_views"] or 0
+            meta_views = total_views_from_meta if total_views_from_meta is not None else 0
+            total_views = max(db_views, meta_views)
             total_likes = agg_row["total_likes"] or 0
             total_comments = agg_row["total_comments"] or 0
             
@@ -203,16 +218,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             voice_volume = get_setting('audio', 'voice_volume', 1.0)
             speech_rate = get_setting('tts', 'rate', '+3%')
 
-            # Load channel subscribers
-            subscribers = 0
-            metadata_file = PROJECT_ROOT / "data" / "channel_metadata.json"
-            if metadata_file.exists():
-                try:
-                    with open(metadata_file, "r") as f:
-                        meta = json.load(f)
-                        subscribers = meta.get("subscribers", 0)
-                except Exception:
-                    pass
+            # Calculate daily gains first to enable proper period aggregations
 
             # Calculate daily gains first to enable proper period aggregations
             from datetime import datetime
@@ -348,7 +354,7 @@ def start_background_harvester():
     """Starts a background thread that periodically harvests YouTube statistics to keep the dashboard updated."""
     def run_harvest_loop():
         # Delay initial harvest slightly to allow dashboard server to start cleanly
-        time.sleep(15)
+        time.sleep(5)
         while True:
             try:
                 logger.info("Background thread triggering stats harvest from YouTube API...")
@@ -357,8 +363,8 @@ def start_background_harvester():
                 logger.info(f"Background stats harvest completed successfully: {success}")
             except Exception as e:
                 logger.error(f"Error in background stats harvester: {e}", exc_info=True)
-            # Sleep for 15 minutes before the next update
-            time.sleep(900)
+            # Sleep for 2 minutes before the next update
+            time.sleep(120)
 
     t = threading.Thread(target=run_harvest_loop, daemon=True)
     t.start()

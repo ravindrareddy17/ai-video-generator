@@ -30,9 +30,10 @@ def harvest_channel_stats():
             
         uploads_playlist_id = channels_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
         
-        # Extract subscriber count
+        # Extract subscriber count and total channel views
         stats = channels_response["items"][0].get("statistics", {})
         subscribers = int(stats.get("subscriberCount", 0))
+        total_channel_views = int(stats.get("viewCount", 0))
         
         # Save channel metadata
         metadata_file = Path(__file__).resolve().parent.parent / "data" / "channel_metadata.json"
@@ -45,9 +46,10 @@ def harvest_channel_stats():
                 except Exception:
                     pass
             metadata["subscribers"] = subscribers
+            metadata["total_channel_views"] = total_channel_views
             with open(metadata_file, "w") as f:
                 json.dump(metadata, f, indent=2)
-            logger.info(f"Saved channel subscribers: {subscribers}")
+            logger.info(f"Saved channel subscribers: {subscribers}, views: {total_channel_views}")
         except Exception as me:
             logger.warning(f"Could not save channel metadata: {me}")
         
