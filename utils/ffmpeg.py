@@ -439,16 +439,16 @@ def mix_audio(
     vid_duration = get_duration(video_path)
 
     # filter_complex:
-    #   [1] voice -> volume adjust -> [v_audio]
+    #   [1] voice -> volume adjust -> split -> [v_audio1], [v_audio2]
     #   [2] music loop -> volume adjust -> [m_audio]
     #   Apply sidechaincompress on music triggered by voice -> [ducked_music]
     #   amix the voice and ducked music -> [mixed]
     filter_complex = (
-        f"[1:a]volume={voice_vol}[v_audio];"
+        f"[1:a]volume={voice_vol},asplit=2[v_audio1][v_audio2];"
         f"[2:a]aloop=loop=-1:size=2e+09,atrim=0:{vid_duration},"
         f"volume={music_vol}[m_audio];"
-        f"[m_audio][v_audio]sidechaincompress=threshold=0.12:ratio=4.5:attack=50:release=300[ducked_music];"
-        f"[v_audio][ducked_music]amix=inputs=2:duration=first:dropout_transition=2[mixed]"
+        f"[m_audio][v_audio1]sidechaincompress=threshold=0.12:ratio=4.5:attack=50:release=300[ducked_music];"
+        f"[v_audio2][ducked_music]amix=inputs=2:duration=first:dropout_transition=2[mixed]"
     )
 
     _run_ffmpeg([
@@ -516,10 +516,10 @@ def burn_subtitles(
         f"PrimaryColour=&H00FFFFFF,"
         f"SecondaryColour=&H00000000,"
         f"OutlineColour=&H00000000,"
-        f"BackColour=&H60000000,"
+        f"BackColour=&H40000000,"
         f"BorderStyle=1,"
-        f"Outline=8,"
-        f"Shadow=3,"
+        f"Outline=2.5,"
+        f"Shadow=1,"
         f"Bold=1,"
         f"Alignment=2,"
         f"MarginV={margin_v}"
