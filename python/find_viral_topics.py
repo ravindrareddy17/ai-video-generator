@@ -243,7 +243,11 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "2. Prioritize stories with a 'wait, that's real?' reaction over purely incremental research news. Shift focus towards 'bizarre science facts,' 'cosmic scale comparisons,' and 'sci-fi real-life tech'.\n"
         "3. Never sensationalize to the point of inaccuracy — surprising != false.\n"
         "4. The hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking' to capture immediate viewer attention.\n"
-        "5. CRITICAL: The chosen topic MUST bridge the intersection of all three: SPACE, SCIENCE, and AI (e.g., using AI to map Mars features, neural networks decoding deep space radio signals, AI analyzing exoplanet biosignatures). Frame or select the story to capture this powerful synergy!"
+        "5. CRITICAL: The chosen topic MUST belong to one of these three solid science pillars:\n"
+        "   - Space & Astronomy (e.g., exoplanets, JWST discoveries, stars, black holes, moon/mars missions).\n"
+        "   - Hard Science & Physics (e.g., quantum computing, archaeological discoveries, biotechnology, materials science).\n"
+        "   - Advanced AI & Machine Learning (e.g., AI decoding ancient texts, AlphaFold mapping proteins, AI analyzing exoplanet data).\n"
+        "6. STRICT BAN: Do NOT select political news, geopolitical wars, financial stocks, lifestyle/beauty hacks (like hair loss or habits), or speculative pop-psychology. The topic must be verifiable and backed by hard scientific facts so that it passes fact-checking."
     )
     
     user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}"
