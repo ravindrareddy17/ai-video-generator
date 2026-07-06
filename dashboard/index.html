@@ -340,6 +340,7 @@
         </div>
         <div style="text-align: right; color: var(--text-muted)">
             <div>Autonomous Engine: <span style="color: #00ff64; font-weight: 600;">ACTIVE</span></div>
+            <div>Engine Status: <span style="font-weight: 600;" id="header-status-val">Loading...</span></div>
             <div style="font-size: 0.8rem; margin-top: 0.2rem;" id="timestamp"></div>
         </div>
     </div>
@@ -551,7 +552,8 @@
                         Database Brain: <span style="color: #ffffff; font-weight: 600;" id="db-size-val">0 KB</span><br>
                         Active Log File: <span style="color: #ffffff; font-weight: 600;" id="log-size-val">0 KB</span><br>
                         YouTube API: <span style="color: var(--terminal-green); font-weight: 600;">ONLINE (CONNECTED)</span><br>
-                        Next Posting Slot: <span style="color: var(--accent); font-weight: 600;" id="next-post-slot">Calculating...</span>
+                        Next Posting Slot: <span style="color: var(--accent); font-weight: 600;" id="next-post-slot">Calculating...</span><br>
+                        Engine Health: <span style="font-weight: 600;" id="engine-status-val">Loading...</span>
                     </div>
                 </div>
 
@@ -999,6 +1001,28 @@
                 }
                 if (data.music_volume !== undefined) {
                     document.getElementById('retention-music-volume').innerText = Math.round(data.music_volume * 100) + '%';
+                }
+                
+                // Update engine status styling
+                if (data.engine_status !== undefined) {
+                    const statusVal = document.getElementById('engine-status-val');
+                    const headerVal = document.getElementById('header-status-val');
+                    
+                    let color = 'var(--terminal-green)';
+                    if (data.engine_status.includes('WARNING')) {
+                        color = '#ffd700'; // Amber/Gold
+                    } else if (data.engine_status.includes('ERROR')) {
+                        color = '#ff3366'; // Red
+                    }
+                    
+                    if (statusVal) {
+                        statusVal.innerText = data.engine_status;
+                        statusVal.style.color = color;
+                    }
+                    if (headerVal) {
+                        headerVal.innerText = data.engine_status.split(':')[0]; // Show brief prefix
+                        headerVal.style.color = color;
+                    }
                 }
                 
                 // Calculate next posting slot

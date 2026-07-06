@@ -277,6 +277,28 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     pass
             yearly_data = [{"period": k, "views": v["views"], "likes": v["likes"], "comments": v["comments"]} for k, v in yearly_map.items()]
 
+            # Determine engine status
+            engine_status = "HEALTHY (100% OPERATIONAL)"
+            try:
+                # 1. Check if the latest video entry has 'failed' status
+                conn = sqlite3.connect(DB_PATH)
+                conn.row_factory = sqlite3.Row
+                cursor = conn.cursor()
+                cursor.execute("SELECT status, title FROM videos ORDER BY id DESC LIMIT 1")
+                latest_video_row = cursor.fetchone()
+                conn.close()
+                if latest_video_row and latest_video_row["status"] == "failed":
+                    engine_status = f"WARNING: Fact-Check / Quality Check failed on '{latest_video_row['title'][:25]}...'"
+            except Exception:
+                pass
+                
+            # 2. Check if the log contains critical errors
+            if logs:
+                for line in logs[-10:]:
+                    if "ERROR" in line or "CRITICAL" in line:
+                        engine_status = "ERROR: Exception detected in last run. Check engine console logs."
+                        break
+
             return {
                 "total_uploads": total_uploads,
                 "total_views": total_views,
@@ -295,7 +317,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "music_volume": music_volume,
                 "voice_volume": voice_volume,
                 "speech_rate": speech_rate,
-                "subscribers": subscribers
+                "subscribers": subscribers,
+                "engine_status": engine_status
             }
         except Exception as e:
             logger.error(f"Error querying database stats: {e}")
