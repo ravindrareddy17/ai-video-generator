@@ -69,7 +69,12 @@ def harvest_channel_stats():
         for item in items:
             title = item["snippet"]["title"]
             video_id = item["snippet"]["resourceId"]["videoId"]
-            video_map[video_id] = title
+            published_at_raw = item["snippet"].get("publishedAt", "")
+            published_at = published_at_raw.replace("T", " ").replace("Z", "")[:19]
+            video_map[video_id] = {
+                "title": title,
+                "published_at": published_at
+            }
             
         video_ids = list(video_map.keys())
         
@@ -99,11 +104,13 @@ def harvest_channel_stats():
             if row:
                 sqlite_video_id = row[0]
             else:
-                title = video_map.get(video_id, "Unknown Title")
+                video_info = video_map.get(video_id, {})
+                title = video_info.get("title", "Unknown Title")
+                published_at = video_info.get("published_at", today_date + " 00:00:00")
                 cursor.execute("""
-                    INSERT INTO videos (title, youtube_id, status)
-                    VALUES (?, ?, ?)
-                """, (title, video_id, "uploaded"))
+                    INSERT INTO videos (title, youtube_id, status, created_at)
+                    VALUES (?, ?, ?, ?)
+                """, (title, video_id, "uploaded", published_at))
                 sqlite_video_id = cursor.lastrowid
                 
             # Get top 5 comment threads for actual feedback analysis
