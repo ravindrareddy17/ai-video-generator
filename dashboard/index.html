@@ -558,6 +558,57 @@
                 </div>
 
                 <div class="card">
+                    <div class="section-title" style="color: #ffd700;">📅 Auto-Posting Schedule Time Table</div>
+                    <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.8rem; line-height: 1.5;">
+                        The AI engine operates 24/7. It generates and publishes fresh short-form videos 5 times daily at these exact optimized times:
+                    </p>
+                    <div class="table-container" style="max-height: 250px;">
+                        <table style="font-size: 0.8rem; border-collapse: collapse; width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th style="padding: 0.4rem;">Slot</th>
+                                    <th style="padding: 0.4rem;">UTC Time</th>
+                                    <th style="padding: 0.4rem;">Local Time (IST)</th>
+                                    <th style="padding: 0.4rem;">Niche Focus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td style="padding: 0.4rem;">☀️ <strong>Slot 1</strong></td>
+                                    <td style="padding: 0.4rem; color: var(--accent);">01:30 AM</td>
+                                    <td style="padding: 0.4rem; color: var(--terminal-green); font-weight: 600;">07:00 AM</td>
+                                    <td style="padding: 0.4rem;">AI & Tech Hub</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td style="padding: 0.4rem;">🌤️ <strong>Slot 2</strong></td>
+                                    <td style="padding: 0.4rem; color: var(--accent);">11:00 AM</td>
+                                    <td style="padding: 0.4rem; color: var(--terminal-green); font-weight: 600;">04:30 PM</td>
+                                    <td style="padding: 0.4rem;">Space & Physics</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td style="padding: 0.4rem;">🌇 <strong>Slot 3</strong></td>
+                                    <td style="padding: 0.4rem; color: var(--accent);">03:00 PM</td>
+                                    <td style="padding: 0.4rem; color: var(--terminal-green); font-weight: 600;">08:30 PM</td>
+                                    <td style="padding: 0.4rem;">Wildlife & Tech</td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid rgba(255,255,255,0.03);">
+                                    <td style="padding: 0.4rem;">🌌 <strong>Slot 4</strong></td>
+                                    <td style="padding: 0.4rem; color: var(--accent);">06:30 PM</td>
+                                    <td style="padding: 0.4rem; color: var(--terminal-green); font-weight: 600;">12:00 AM (Midnight)</td>
+                                    <td style="padding: 0.4rem;">Science Discoveries</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 0.4rem;">🌘 <strong>Slot 5</strong></td>
+                                    <td style="padding: 0.4rem; color: var(--accent);">10:00 PM</td>
+                                    <td style="padding: 0.4rem; color: var(--terminal-green); font-weight: 600;">03:30 AM</td>
+                                    <td style="padding: 0.4rem;">Space Exploration</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
                     <div class="section-title">🧠 Retention Optimizer</div>
                     <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
                         The loop algorithm checks previous viewers' dropdown frames. The system dynamically adjusts the hook length, narration tempo, and ducking ratio to maximize average watch percentage above 100%.
@@ -835,7 +886,7 @@
                     tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted)">No uploads logged yet. Run pipeline to start.</td></tr>';
                 } else {
                     data.videos.forEach(v => {
-                        const dateStr = new Date(v.created_at).toLocaleDateString();
+                        const dateStr = new Date(v.created_at).toLocaleString([], { month: 'numeric', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                         const badgeStyle = v.status === 'uploaded' ? 'badge-success' : 'badge-warning';
                         const rowClass = v.id === selectedVideoId ? 'clickable-row active-row' : 'clickable-row';
                         
