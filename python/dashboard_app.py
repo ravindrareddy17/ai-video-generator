@@ -192,6 +192,12 @@ class DashboardHandler(BaseHTTPRequestHandler):
             except Exception:
                 pass
                 
+            # Load settings for Retention Optimizer
+            from utils.config import get_setting
+            music_volume = get_setting('audio', 'music_volume', 0.1)
+            voice_volume = get_setting('audio', 'voice_volume', 1.0)
+            speech_rate = get_setting('tts', 'rate', '+3%')
+
             return {
                 "total_uploads": total_uploads,
                 "total_views": total_views,
@@ -203,7 +209,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "logs": logs,
                 "niche_data": niche_data,
                 "db_size_kb": db_size_kb,
-                "log_size_kb": log_size_kb
+                "log_size_kb": log_size_kb,
+                "music_volume": music_volume,
+                "voice_volume": voice_volume,
+                "speech_rate": speech_rate
             }
         except Exception as e:
             logger.error(f"Error querying database stats: {e}")
@@ -218,7 +227,10 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "logs": [],
                 "niche_data": [],
                 "db_size_kb": 0,
-                "log_size_kb": 0
+                "log_size_kb": 0,
+                "music_volume": 0.1,
+                "voice_volume": 1.0,
+                "speech_rate": "+3%"
             }
 
 def run_server():

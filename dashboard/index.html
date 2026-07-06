@@ -458,9 +458,31 @@
 
                 <div class="card">
                     <div class="section-title">🧠 Retention Optimizer</div>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6;">
+                    <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
                         The loop algorithm checks previous viewers' dropdown frames. The system dynamically adjusts the hook length, narration tempo, and ducking ratio to maximize average watch percentage above 100%.
                     </p>
+                    <div style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); padding: 0.8rem; border-radius: 8px; font-size: 0.85rem; line-height: 1.6;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                            <span style="color: var(--text-muted);">Loop Optimization:</span>
+                            <span style="color: var(--terminal-green); font-weight: 600;">ACTIVE (DYNAMIC)</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                            <span style="color: var(--text-muted);">Speech Rate:</span>
+                            <span style="color: #ffffff; font-weight: 600;" id="retention-speech-rate">Calculating...</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                            <span style="color: var(--text-muted);">Music Ducking:</span>
+                            <span style="color: #ffffff; font-weight: 600;">Threshold 0.12 (Active)</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                            <span style="color: var(--text-muted);">Music Volume:</span>
+                            <span style="color: var(--accent); font-weight: 600;" id="retention-music-volume">Calculating...</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="color: var(--text-muted);">Shorts Loop Strategy:</span>
+                            <span style="color: #ffffff; font-weight: 600;">Grammatical Transition</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="card">
@@ -775,6 +797,12 @@
                 }
                 if (data.log_size_kb !== undefined) {
                     document.getElementById('log-size-val').innerText = data.log_size_kb + ' KB';
+                }
+                if (data.speech_rate !== undefined) {
+                    document.getElementById('retention-speech-rate').innerText = data.speech_rate + ' (Fast-Paced)';
+                }
+                if (data.music_volume !== undefined) {
+                    document.getElementById('retention-music-volume').innerText = Math.round(data.music_volume * 100) + '%';
                 }
                 
                 // Calculate next posting slot
