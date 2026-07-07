@@ -84,6 +84,28 @@ def harvest_channel_stats():
             part="statistics"
         ).execute()
         
+        # Pre-cache comment threads from YouTube to avoid database locking during network requests
+        video_comments = {}
+        for video_stat in stats_response.get("items", []):
+            video_id = video_stat["id"]
+            stats = video_stat.get("statistics", {})
+            comments = int(stats.get("commentCount", 0))
+            comment_texts = []
+            if comments > 0:
+                try:
+                    comments_response = youtube.commentThreads().list(
+                        videoId=video_id,
+                        part="snippet",
+                        maxResults=5,
+                        textFormat="plainText"
+                    ).execute()
+                    for c_item in comments_response.get("items", []):
+                        top_comment = c_item["snippet"]["topLevelComment"]["snippet"]
+                        comment_texts.append(top_comment["textDisplay"])
+                except Exception as ce:
+                    logger.warning(f"Could not fetch comments for video {video_id}: {ce}")
+            video_comments[video_id] = comment_texts
+
         conn = get_connection()
         cursor = conn.cursor()
         
@@ -113,22 +135,7 @@ def harvest_channel_stats():
                 """, (title, video_id, "uploaded", published_at))
                 sqlite_video_id = cursor.lastrowid
                 
-            # Get top 5 comment threads for actual feedback analysis
-            comment_texts = []
-            if comments > 0:
-                try:
-                    comments_response = youtube.commentThreads().list(
-                        videoId=video_id,
-                        part="snippet",
-                        maxResults=5,
-                        textFormat="plainText"
-                    ).execute()
-                    for c_item in comments_response.get("items", []):
-                        top_comment = c_item["snippet"]["topLevelComment"]["snippet"]
-                        comment_texts.append(top_comment["textDisplay"])
-                except Exception as ce:
-                    logger.warning(f"Could not fetch comments for video {video_id}: {ce}")
-            
+            comment_texts = video_comments.get(video_id, [])
             retention_json = json.dumps(comment_texts)
 
             # Log video analytics snapshot for today

@@ -14,8 +14,12 @@ DB_PATH = DATA_DIR / "shortest_orbit_v3.db"
 
 def get_connection():
     """Get SQLite database connection."""
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=30.0)
     conn.row_factory = sqlite3.Row
+    try:
+        conn.execute("PRAGMA journal_mode=WAL")
+    except Exception:
+        pass
     return conn
 
 def init_db():
@@ -79,6 +83,21 @@ def init_db():
             retention_data TEXT,
             synced_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY(video_id) REFERENCES videos(id)
+        )
+    """)
+    
+    # Table: monetization_snapshots
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS monetization_snapshots (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT UNIQUE,
+            subscribers INTEGER,
+            shorts_views INTEGER,
+            watch_hours REAL,
+            uploads_90_days INTEGER,
+            progress_percentage REAL,
+            readiness_score REAL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
     
