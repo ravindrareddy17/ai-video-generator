@@ -151,7 +151,7 @@ def harvest_channel_stats():
                     VALUES (?, ?, ?, ?, ?, ?)
                 """, (sqlite_video_id, today_date, views, likes, comments, retention_json))
                 
-            logger.info(f"Synced stats and comments for video '{video_map.get(video_id)[:40]}...': Views: {views} | Likes: {likes} | Comments: {comments}")
+            logger.info(f"Synced stats and comments for video '{video_map.get(video_id, {}).get('title', '')[:40]}...': Views: {views} | Likes: {likes} | Comments: {comments}")
             
         # Update the overall channel metrics (views, subscribers) in settings if needed, or simply log them
         conn.commit()
