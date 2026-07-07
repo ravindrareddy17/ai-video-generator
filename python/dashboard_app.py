@@ -10,11 +10,165 @@ import urllib.parse
 # Project imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from utils.database import DB_PATH
+from utils.database import DB_PATH, get_connection
 from utils.paths import DATA_DIR, PROJECT_ROOT
+from datetime import datetime, timedelta
 from utils.logger import get_logger
 
 logger = get_logger("dashboard_server")
+
+def calculate_growth_forecasts(conn, current_subs, current_views, current_watch_hours):
+    # Retrieve all historic snapshots
+    cursor = conn.cursor()
+    cursor.execute("SELECT date, subscribers, shorts_views, watch_hours FROM monetization_snapshots ORDER BY date ASC")
+    rows = cursor.fetchall()
+    
+    # Defaults
+    daily_subs_rate = 1.0  # 1 sub per day default
+    daily_views_rate = 150.0  # 150 views per day default
+    
+    # Calculate views growth from trend_data if available
+    cursor.execute("""
+        SELECT date, SUM(views) as views
+        FROM (
+            SELECT date, video_id, MAX(views) as views
+            FROM analytics
+            GROUP BY date, video_id
+        )
+        GROUP BY date
+        ORDER BY date ASC
+    """)
+    trend_rows = cursor.fetchall()
+    if len(trend_rows) >= 2:
+        try:
+            first_views = trend_rows[0]["views"] or 0
+            last_views = trend_rows[-1]["views"] or 0
+            
+            d1 = datetime.strptime(trend_rows[0]["date"], "%Y-%m-%d")
+            d2 = datetime.strptime(trend_rows[-1]["date"], "%Y-%m-%d")
+            days = (d2 - d1).days
+            if days > 0:
+                daily_views_rate = max(1.0, (last_views - first_views) / days)
+        except Exception:
+            pass
+            
+    # Calculate subscribers growth from monetization snapshots
+    if len(rows) >= 2:
+        try:
+            d1 = datetime.strptime(rows[0]["date"], "%Y-%m-%d")
+            d2 = datetime.strptime(rows[-1]["date"], "%Y-%m-%d")
+            days = (d2 - d1).days
+            if days > 0:
+                daily_subs_rate = max(0.1, (rows[-1]["subscribers"] - rows[0]["subscribers"]) / days)
+        except Exception:
+            pass
+    else:
+        # Fallback based on channel age / uploads
+        cursor.execute("SELECT COUNT(*) FROM videos WHERE status = 'uploaded'")
+        uploads_count = cursor.fetchone()[0]
+        if uploads_count > 0:
+            daily_subs_rate = max(0.2, current_subs / max(1, uploads_count * 2))
+            
+    # Ensure rates are strictly positive
+    daily_subs_rate = max(0.01, daily_subs_rate)
+    daily_views_rate = max(1.0, daily_views_rate)
+    
+    # Estimate Target Dates
+    now = datetime.now()
+    
+    # 500 Subs
+    days_to_500 = max(0, (500 - current_subs) / daily_subs_rate)
+    date_500 = (now + timedelta(days=days_to_500)).strftime("%d %B %Y")
+    conf_500 = min(95, max(50, int(80 + (len(rows) * 1.5) - (days_to_500 / 100))))
+    
+    # 1000 Subs
+    days_to_1000 = max(0, (1000 - current_subs) / daily_subs_rate)
+    date_1000 = (now + timedelta(days=days_to_1000)).strftime("%d %B %Y")
+    conf_1000 = min(95, max(45, int(75 + (len(rows) * 1.5) - (days_to_1000 / 150))))
+    
+    # 3M Views
+    days_to_3m = max(0, (3000000 - current_views) / daily_views_rate)
+    date_3m = (now + timedelta(days=days_to_3m)).strftime("%d %B %Y")
+    conf_3m = min(95, max(50, int(78 + (len(trend_rows) * 0.5) - (days_to_3m / 300))))
+    
+    # 10M Views
+    days_to_10m = max(0, (10000000 - current_views) / daily_views_rate)
+    date_10m = (now + timedelta(days=days_to_10m)).strftime("%d %B %Y")
+    conf_10m = min(95, max(40, int(70 + (len(trend_rows) * 0.5) - (days_to_10m / 500))))
+    
+    return {
+        "subs_500": {"date": date_500, "confidence": conf_500, "days": int(days_to_500), "rate": round(daily_subs_rate, 2)},
+        "subs_1000": {"date": date_1000, "confidence": conf_1000, "days": int(days_to_1000), "rate": round(daily_subs_rate, 2)},
+        "views_3m": {"date": date_3m, "confidence": conf_3m, "days": int(days_to_3m), "rate": round(daily_views_rate, 0)},
+        "views_10m": {"date": date_10m, "confidence": conf_10m, "days": int(days_to_10m), "rate": round(daily_views_rate, 0)}
+    }
+
+def get_cached_coach_advice(current_subs, current_views, niche_data, speech_rate):
+    cache_path = PROJECT_ROOT / "data" / "monetization_coach.json"
+    
+    # Check cache freshness
+    if cache_path.exists():
+        try:
+            mtime = cache_path.stat().st_mtime
+            if time.time() - mtime < 21600:  # 6 hours cache
+                with open(cache_path, "r") as f:
+                    return json.load(f)
+        except Exception:
+            pass
+            
+    # Default fallbacks
+    fallback = {
+        "best_upload_time": "08:30 PM IST",
+        "best_niche": "AI & Tech",
+        "worst_niche": "Wildlife",
+        "advice": [
+            "Leverage Curiosity Gap hooks to increase viewer swipe-away resistance in the first 2 seconds.",
+            "Double down on AI & Tech topics as they have the highest view count on your channel.",
+            "Optimize call-to-actions (CTAs) at the 15-second mark to boost subscriber conversion rate."
+        ]
+    }
+    
+    try:
+        from utils.config import get_groq_key, get_setting
+        api_key = get_groq_key()
+        model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
+        if not api_key:
+            return fallback
+            
+        from groq import Groq
+        client = Groq(api_key=api_key, timeout=10.0)
+        
+        system_prompt = (
+            "You are the 'Shorts Orbit AI Monetization Coach'. Your job is to analyze the channel's performance statistics "
+            "and provide 3 highly actionable, bulleted recommendations to help the creator reach monetization faster.\n\n"
+            "Inputs:\n"
+            f"- Subscribers: {current_subs}/1000\n"
+            f"- Total Views: {current_views}/10,000,000\n"
+            f"- Niche Performance: {json.dumps(niche_data)}\n"
+            f"- Voiceover Pacing: {speech_rate}\n\n"
+            "Provide your response in JSON format with exactly these keys:\n"
+            "- best_upload_time: specific IST time string\n"
+            "- best_niche: name of the top niche\n"
+            "- worst_niche: name of the lowest performing niche\n"
+            "- advice: array of 3 strings containing concise recommendations."
+        )
+        
+        completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": "Analyze stats and generate advice."}
+            ],
+            model=model,
+            temperature=0.7,
+            response_format={"type": "json_object"}
+        )
+        
+        advice_data = json.loads(completion.choices[0].message.content)
+        with open(cache_path, "w") as f:
+            json.dump(advice_data, f, indent=2)
+        return advice_data
+    except Exception:
+        return fallback
 
 PORT = 8080
 
@@ -66,6 +220,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
             self.wfile.write(b"Not Found")
             
     def get_stats_data(self) -> dict:
+        conn = None
         try:
             # Load metadata for subscribers and real-time total views
             subscribers = 0
@@ -80,7 +235,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
 
-            conn = sqlite3.connect(DB_PATH)
+            conn = get_connection()
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             
@@ -188,7 +343,6 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 except Exception:
                     pass
                     
-            conn.close()
             
             # Tailing the log file
             logs = []
@@ -292,23 +446,157 @@ class DashboardHandler(BaseHTTPRequestHandler):
             engine_status = "HEALTHY (100% OPERATIONAL)"
             try:
                 # 1. Check if the latest video entry has 'failed' status
-                conn = sqlite3.connect(DB_PATH)
-                conn.row_factory = sqlite3.Row
-                cursor = conn.cursor()
                 cursor.execute("SELECT status, title FROM videos ORDER BY id DESC LIMIT 1")
                 latest_video_row = cursor.fetchone()
-                conn.close()
                 if latest_video_row and latest_video_row["status"] == "failed":
                     engine_status = f"WARNING: Fact-Check / Quality Check failed on '{latest_video_row['title'][:25]}...'"
             except Exception:
                 pass
                 
-            # 2. Check if the log contains critical errors
-            if logs:
-                for line in logs[-10:]:
-                    if "ERROR" in line or "CRITICAL" in line:
-                        engine_status = "ERROR: Exception detected in last run. Check engine console logs."
-                        break
+            # Calculate rolling 90-day uploads
+            cursor.execute("SELECT COUNT(*) FROM videos WHERE status = 'uploaded' AND datetime(created_at) >= datetime('now', '-90 days')")
+            uploads_90 = cursor.fetchone()[0]
+
+            # Estimated watch hours
+            estimated_watch_hours = round(total_views * 0.0044, 1)
+
+            # Growth forecasts
+            forecasts = calculate_growth_forecasts(conn, subscribers, total_views, estimated_watch_hours)
+            
+            # Fan Funding Eligibility
+            fan_funding_subs_pct = min(100.0, (subscribers / 500.0) * 100.0)
+            fan_funding_uploads_pct = min(100.0, (uploads_90 / 3.0) * 100.0)
+            
+            # Whichever is growing faster between watch hours and views
+            views_3m_pct = (total_views / 3000000.0) * 100.0
+            wh_3k_pct = (estimated_watch_hours / 3000.0) * 100.0
+            
+            if views_3m_pct >= wh_3k_pct:
+                fan_funding_views_pct = min(100.0, views_3m_pct)
+                fan_funding_views_current = total_views
+                fan_funding_views_target = 3000000
+                fan_funding_views_label = "Shorts Views"
+                fan_funding_views_remaining = max(0, 3000000 - total_views)
+            else:
+                fan_funding_views_pct = min(100.0, wh_3k_pct)
+                fan_funding_views_current = estimated_watch_hours
+                fan_funding_views_target = 3000
+                fan_funding_views_label = "Watch Hours"
+                fan_funding_views_remaining = max(0.0, 3000.0 - estimated_watch_hours)
+                
+            fan_funding_progress = (fan_funding_subs_pct + fan_funding_uploads_pct + fan_funding_views_pct) / 3.0
+            fan_funding_eligible = subscribers >= 500 and uploads_90 >= 3 and (total_views >= 3000000 or estimated_watch_hours >= 3000)
+            
+            # Full Monetization Eligibility
+            full_subs_pct = min(100.0, (subscribers / 1000.0) * 100.0)
+            
+            views_10m_pct = (total_views / 10000000.0) * 100.0
+            wh_4k_pct = (estimated_watch_hours / 4000.0) * 100.0
+            
+            if views_10m_pct >= wh_4k_pct:
+                full_views_pct = min(100.0, views_10m_pct)
+                full_views_current = total_views
+                full_views_target = 10000000
+                full_views_label = "Shorts Views"
+                full_views_remaining = max(0, 10000000 - total_views)
+            else:
+                full_views_pct = min(100.0, wh_4k_pct)
+                full_views_current = estimated_watch_hours
+                full_views_target = 4000
+                full_views_label = "Watch Hours"
+                full_views_remaining = max(0.0, 4000.0 - estimated_watch_hours)
+                
+            full_progress = (full_subs_pct + full_views_pct) / 2.0
+            full_eligible = subscribers >= 1000 and (total_views >= 10000000 or estimated_watch_hours >= 4000)
+            
+            readiness_score = round((fan_funding_progress + full_progress) / 2.0, 1)
+
+            # AI Monetization Coach advice
+            coach_data = get_cached_coach_advice(subscribers, total_views, niche_data, speech_rate)
+
+            # Live Eligibility Check details
+            reasons = []
+            if subscribers < 500:
+                reasons.append("Subscribers Missing")
+            if uploads_90 < 3:
+                reasons.append("Uploads Count Missing")
+            if total_views < 3000000 and estimated_watch_hours < 3000:
+                reasons.append("Views or Watch Hours Missing")
+                
+            next_milestone = "Fan Funding Eligibility"
+            if subscribers >= 500 and uploads_90 >= 3 and (total_views >= 3000000 or estimated_watch_hours >= 3000):
+                next_milestone = "Full Monetization Partner"
+                reasons = []
+                if subscribers < 1000:
+                    reasons.append("Subscribers Missing")
+                if total_views < 10000000 and estimated_watch_hours < 4000:
+                    reasons.append("Views or Watch Hours Missing")
+            if subscribers >= 1000 and (total_views >= 10000000 or estimated_watch_hours >= 4000):
+                next_milestone = "All Milestones Achieved!"
+                reasons = []
+                
+            # Log today's snapshot
+            try:
+                today_str = datetime.now().strftime("%Y-%m-%d")
+                cursor.execute("SELECT id FROM monetization_snapshots WHERE date = ?", (today_str,))
+                if not cursor.fetchone():
+                    cursor.execute("""
+                        INSERT INTO monetization_snapshots (date, subscribers, shorts_views, watch_hours, uploads_90_days, progress_percentage, readiness_score)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        today_str,
+                        subscribers,
+                        total_views,
+                        estimated_watch_hours,
+                        uploads_90,
+                        round(fan_funding_progress, 1),
+                        readiness_score
+                    ))
+                    conn.commit()
+            except Exception as se:
+                logger.warning(f"Failed to save monetization snapshot: {se}")
+
+            # Assemble monetization dictionary
+            monetization = {
+                "fan_funding": {
+                    "eligible": fan_funding_eligible,
+                    "progress_pct": round(fan_funding_progress, 1),
+                    "subscribers": subscribers,
+                    "subscribers_target": 500,
+                    "subscribers_remaining": max(0, 500 - subscribers),
+                    "uploads_90": uploads_90,
+                    "uploads_target": 3,
+                    "uploads_eligible": uploads_90 >= 3,
+                    "views_current": fan_funding_views_current,
+                    "views_target": fan_funding_views_target,
+                    "views_pct": round(fan_funding_views_pct, 1),
+                    "views_remaining": fan_funding_views_remaining,
+                    "views_label": fan_funding_views_label,
+                    "status_text": "Eligible" if fan_funding_eligible else "In Progress"
+                },
+                "full_monetization": {
+                    "eligible": full_eligible,
+                    "progress_pct": round(full_progress, 1),
+                    "subscribers": subscribers,
+                    "subscribers_target": 1000,
+                    "subscribers_remaining": max(0, 1000 - subscribers),
+                    "views_current": full_views_current,
+                    "views_target": full_views_target,
+                    "views_pct": round(full_views_pct, 1),
+                    "views_remaining": full_views_remaining,
+                    "views_label": full_views_label,
+                    "status_text": "Eligible" if full_eligible else ("In Progress" if subscribers >= 500 else "Not Eligible")
+                },
+                "readiness_score": readiness_score,
+                "forecasts": forecasts,
+                "coach": coach_data,
+                "live_eligibility": {
+                    "eligible": full_eligible,
+                    "reasons": reasons,
+                    "next_milestone": next_milestone,
+                    "status_text": "Eligible" if full_eligible else "Not Eligible"
+                }
+            }
 
             return {
                 "total_uploads": total_uploads,
@@ -329,7 +617,8 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "voice_volume": voice_volume,
                 "speech_rate": speech_rate,
                 "subscribers": subscribers,
-                "engine_status": engine_status
+                "engine_status": engine_status,
+                "monetization": monetization
             }
         except Exception as e:
             logger.error(f"Error querying database stats: {e}")
@@ -347,8 +636,17 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "log_size_kb": 0,
                 "music_volume": 0.1,
                 "voice_volume": 1.0,
-                "speech_rate": "+3%"
+                "speech_rate": "+3%",
+                "subscribers": 0,
+                "engine_status": "HEALTHY",
+                "monetization": {}
             }
+        finally:
+            if conn:
+                try:
+                    conn.close()
+                except Exception:
+                    pass
 
 def start_background_harvester():
     """Starts a background thread that periodically harvests YouTube statistics to keep the dashboard updated."""
