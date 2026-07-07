@@ -535,27 +535,6 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 next_milestone = "All Milestones Achieved!"
                 reasons = []
                 
-            # Log today's snapshot
-            try:
-                today_str = datetime.now().strftime("%Y-%m-%d")
-                cursor.execute("SELECT id FROM monetization_snapshots WHERE date = ?", (today_str,))
-                if not cursor.fetchone():
-                    cursor.execute("""
-                        INSERT INTO monetization_snapshots (date, subscribers, shorts_views, watch_hours, uploads_90_days, progress_percentage, readiness_score)
-                        VALUES (?, ?, ?, ?, ?, ?, ?)
-                    """, (
-                        today_str,
-                        subscribers,
-                        total_views,
-                        estimated_watch_hours,
-                        uploads_90,
-                        round(fan_funding_progress, 1),
-                        readiness_score
-                    ))
-                    conn.commit()
-            except Exception as se:
-                logger.warning(f"Failed to save monetization snapshot: {se}")
-
             # Assemble monetization dictionary
             monetization = {
                 "fan_funding": {

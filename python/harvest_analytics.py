@@ -160,6 +160,49 @@ def harvest_channel_stats():
                 
             logger.info(f"Synced stats and comments for video '{video_map.get(video_id, {}).get('title', '')[:40]}...': Views: {views} | Likes: {likes} | Comments: {comments}")
             
+        # Log a daily snapshot of monetization progress if it doesn't exist yet
+        try:
+            # Query rolling 90-day uploads
+            cursor.execute("SELECT COUNT(*) FROM videos WHERE status = 'uploaded' AND datetime(created_at) >= datetime('now', '-90 days')")
+            uploads_90 = cursor.fetchone()[0]
+            
+            # Watch hours estimate
+            estimated_watch_hours = round(total_channel_views * 0.0044, 1)
+            
+            # Progress percentages
+            fan_funding_subs_pct = min(100.0, (subscribers / 500.0) * 100.0)
+            fan_funding_uploads_pct = min(100.0, (uploads_90 / 3.0) * 100.0)
+            views_3m_pct = (total_channel_views / 3000000.0) * 100.0
+            wh_3k_pct = (estimated_watch_hours / 3000.0) * 100.0
+            fan_funding_views_pct = min(100.0, max(views_3m_pct, wh_3k_pct))
+            fan_funding_progress = round(min(100.0, (fan_funding_subs_pct + fan_funding_uploads_pct + fan_funding_views_pct) / 3.0), 1)
+            
+            full_subs_pct = min(100.0, (subscribers / 1000.0) * 100.0)
+            views_10m_pct = (total_channel_views / 10000000.0) * 100.0
+            wh_4k_pct = (estimated_watch_hours / 4000.0) * 100.0
+            full_views_pct = min(100.0, max(views_10m_pct, wh_4k_pct))
+            full_progress = round(min(100.0, (full_subs_pct + full_views_pct) / 2.0), 1)
+            
+            readiness_score = int(round((fan_funding_progress + full_progress) / 2.0))
+
+            cursor.execute("SELECT id FROM monetization_snapshots WHERE date = ?", (today_date,))
+            if not cursor.fetchone():
+                cursor.execute("""
+                    INSERT INTO monetization_snapshots (date, subscribers, shorts_views, watch_hours, uploads_90_days, progress_percentage, readiness_score)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    today_date,
+                    subscribers,
+                    total_channel_views,
+                    estimated_watch_hours,
+                    uploads_90,
+                    fan_funding_progress,
+                    readiness_score
+                ))
+                logger.info(f"Logged daily monetization snapshot for {today_date} (Readiness: {readiness_score}%)")
+        except Exception as se:
+            logger.warning(f"Failed to log monetization snapshot: {se}", exc_info=True)
+            
         # Update the overall channel metrics (views, subscribers) in settings if needed, or simply log them
         conn.commit()
         conn.close()
