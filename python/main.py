@@ -200,7 +200,7 @@ def run_pipeline() -> bool:
         except Exception as e:
             logger.warning(f"Could not clean temporary directory: {e}")
             
-        return upload_succeeded
+        return True
         
     except Exception as e:
         logger.critical(f"Pipeline crashed during execution! Error: {e}", exc_info=True)

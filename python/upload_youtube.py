@@ -180,16 +180,16 @@ class RequestsHttpAdapter:
         self.session = session
         
     def request(self, uri, method="GET", body=None, headers=None, **kwargs):
-        print(f"[API Request] {method} {uri}", flush=True)
+        logger.debug(f"[API Request] {method} {uri}")
         r = self.session.request(
             method=method,
             url=uri,
             data=body,
             headers=headers
         )
-        print(f"[API Response] Status: {r.status_code}", flush=True)
+        logger.debug(f"[API Response] Status: {r.status_code}")
         if r.status_code >= 400:
-            print(f"[API Error Body] {r.text[:500]}", flush=True)
+            logger.error(f"[API Error Body] {r.text[:500]}")
             
         import httplib2
         resp = httplib2.Response(dict(r.headers))
