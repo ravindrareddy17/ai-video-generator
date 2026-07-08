@@ -218,7 +218,7 @@ def generate_narration(topic_data: dict) -> dict:
 def generate_metadata(topic: str, title: str) -> dict:
     """Generate YouTube metadata (description, tags, hashtags, translations) via Groq LLM."""
     api_key = get_groq_key()
-    model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
+    model = 'llama-3.3-70b-versatile' # Hardcode 70B for high-quality translations
     client = Groq(api_key=api_key)
     
     system_prompt = (
