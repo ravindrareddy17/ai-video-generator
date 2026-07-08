@@ -400,13 +400,19 @@ def run() -> str | None:
             "title": metadata.get("title", "AI Generated Short #Shorts")[:100], # title limit 100 chars
             "description": final_description,
             "tags": metadata.get("keywords", ["#Shorts"]),
-            "categoryId": category_id
+            "categoryId": category_id,
+            "defaultLanguage": "en",
+            "defaultAudioLanguage": "en"
         },
         "status": {
             "privacyStatus": privacy_status,
             "selfDeclaredMadeForKids": False
         }
     }
+    
+    # Add localizations if generated
+    if "localizations" in metadata and metadata["localizations"]:
+        body["localizations"] = metadata["localizations"]
     
     logger.info(f"Video Title: '{body['snippet']['title']}'")
     logger.info(f"Privacy Status: '{body['status']['privacyStatus']}'")

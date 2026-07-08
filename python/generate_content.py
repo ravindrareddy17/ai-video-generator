@@ -216,22 +216,30 @@ def generate_narration(topic_data: dict) -> dict:
 
 
 def generate_metadata(topic: str, title: str) -> dict:
-    """Generate YouTube metadata (description, tags, hashtags) via Groq LLM."""
+    """Generate YouTube metadata (description, tags, hashtags, translations) via Groq LLM."""
     api_key = get_groq_key()
     model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     client = Groq(api_key=api_key)
     
     system_prompt = (
-        "You are an expert YouTube SEO manager.\n"
-        "Your task is to generate metadata for a YouTube Short video.\n"
+        "You are an elite YouTube SEO manager.\n"
+        "Your task is to generate metadata for a YouTube Short video, including translations for international auto-dubbing.\n"
         "Keep the title engaging and relevant, and ensure it contains the hashtag #Shorts.\n"
-        "Create a description that invites clicks explaining the video clearly without hashtags.\n\n"
+        "Create a description that invites clicks explaining the video clearly without hashtags.\n"
+        "Translate the final English title and description into Spanish (es), Hindi (hi), French (fr), and Portuguese (pt).\n\n"
         "Respond in JSON format with the following keys:\n"
-        "- title: catchy YouTube video title (must end with #Shorts or contain #Shorts)\n"
-        "- description: a 2-3 sentence description explaining the video, without adding hashtags\n"
+        "- title: catchy YouTube video title in English (must end with #Shorts or contain #Shorts)\n"
+        "- description: a 2-3 sentence description explaining the video in English, without adding hashtags\n"
         "- hashtags: an array of exactly 5-6 highly relevant, viral hashtags starting with # (e.g. ['#Shorts', '#Science', '#Space', '#AI', '#Physics', '#Technology'])\n"
         "- keywords: an array of 6-10 search keywords for tagging\n"
-        "- category: standard YouTube category ID. Choose '28' (Science & Technology) if scientific, otherwise '22' (People & Blogs)"
+        "- category: standard YouTube category ID. Choose '28' (Science & Technology) if scientific, otherwise '22' (People & Blogs)\n"
+        "- localizations: a dictionary containing translated titles and descriptions for 'es', 'hi', 'fr', and 'pt'. Follow this structure:\n"
+        "  {\n"
+        "    \"es\": { \"title\": \"catchy Spanish title ending with #Shorts\", \"description\": \"Spanish description\" },\n"
+        "    \"hi\": { \"title\": \"catchy Hindi title ending with #Shorts\", \"description\": \"Hindi description\" },\n"
+        "    \"fr\": { \"title\": \"catchy French title ending with #Shorts\", \"description\": \"French description\" },\n"
+        "    \"pt\": { \"title\": \"catchy Portuguese title ending with #Shorts\", \"description\": \"Portuguese description\" }\n"
+        "  }"
     )
     
     user_prompt = f"Generate SEO metadata for a video on topic '{topic}' with script title '{title}'"
@@ -255,6 +263,12 @@ def generate_metadata(topic: str, title: str) -> dict:
         if "#shorts" not in metadata.get("title", "").lower():
             metadata["title"] = f"{metadata.get('title', 'Interesting Topic')} #Shorts"
             
+        # Ensure #Shorts is in localized titles as well
+        localizations = metadata.get("localizations", {})
+        for lang, loc in localizations.items():
+            if "title" in loc and "#shorts" not in loc["title"].lower():
+                loc["title"] = f"{loc['title']} #Shorts"
+            
         return metadata
     except Exception as e:
         logger.error(f"Error generating SEO metadata: {e}")
@@ -264,7 +278,8 @@ def generate_metadata(topic: str, title: str) -> dict:
             "description": f"An educational look at {topic}. Discover the science behind this viral topic! #shorts #education #viral",
             "hashtags": ["#Shorts", "#Education", "#Science", "#Viral"],
             "keywords": [topic, "education", "science", "facts", "mystery"],
-            "category": "28"
+            "category": "28",
+            "localizations": {}
         }
 
 
