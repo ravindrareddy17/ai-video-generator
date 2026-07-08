@@ -410,9 +410,17 @@ def run() -> str | None:
         }
     }
     
-    # Add localizations if generated
+    # Add localizations if generated (cleaning up any non-standard keys from LLM)
     if "localizations" in metadata and metadata["localizations"]:
-        body["localizations"] = metadata["localizations"]
+        clean_localizations = {}
+        for lang, loc_data in metadata["localizations"].items():
+            if isinstance(loc_data, dict) and "title" in loc_data and "description" in loc_data:
+                clean_localizations[lang] = {
+                    "title": loc_data["title"][:100],  # Title limit 100 chars
+                    "description": loc_data["description"]
+                }
+        if clean_localizations:
+            body["localizations"] = clean_localizations
     
     logger.info(f"Video Title: '{body['snippet']['title']}'")
     logger.info(f"Privacy Status: '{body['status']['privacyStatus']}'")
