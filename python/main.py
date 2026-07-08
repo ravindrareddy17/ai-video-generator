@@ -58,6 +58,7 @@ def mark_pending_videos_failed():
 def run_pipeline() -> bool:
     """Run the entire 11-step pipeline from end to end."""
     start_time = time.time()
+    upload_succeeded = False
     logger.info("==================================================")
     logger.info("   STARTING AI VIDEO GENERATOR V2 PIPELINE        ")
     logger.info("==================================================")
@@ -160,6 +161,7 @@ def run_pipeline() -> bool:
         step_start = time.time()
         logger.info(">>> Step 11: Uploading video to YouTube...")
         youtube_url = upload_youtube.run()
+        upload_succeeded = bool(youtube_url)
         logger.info(f"Step 11 Complete. YouTube URL: {youtube_url} ({time.time() - step_start:.2f}s)")
         
         # ── Step 11.5: Harvest YouTube Analytics ────────────────────
@@ -177,7 +179,10 @@ def run_pipeline() -> bool:
         # ── Pipeline Success Summary ────────────────────────────────
         total_time = time.time() - start_time
         logger.info("==================================================")
-        logger.info("   PIPELINE COMPLETED SUCCESSFULLY!              ")
+        if upload_succeeded:
+            logger.info("   PIPELINE COMPLETED SUCCESSFULLY!              ")
+        else:
+            logger.warning("   PIPELINE PARTIALLY COMPLETED                  ")
         logger.info("==================================================")
         logger.info(f"Total time elapsed: {total_time // 60:.0f}m {total_time % 60:.2f}s")
         logger.info(f"Final Video File: {FINAL_VIDEO_FILE}")
@@ -185,7 +190,7 @@ def run_pipeline() -> bool:
         if youtube_url:
             logger.info(f"Watch live on YouTube: {youtube_url}")
         else:
-            logger.info("YouTube upload was skipped. You can upload the generated short.mp4 manually.")
+            logger.error("YouTube upload failed or was skipped. Local assets were generated, but automation did not finish end-to-end.")
             
         # Clean up temporary processing directories/files
         try:
@@ -195,7 +200,7 @@ def run_pipeline() -> bool:
         except Exception as e:
             logger.warning(f"Could not clean temporary directory: {e}")
             
-        return True
+        return upload_succeeded
         
     except Exception as e:
         logger.critical(f"Pipeline crashed during execution! Error: {e}", exc_info=True)

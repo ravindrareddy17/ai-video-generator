@@ -22,6 +22,8 @@ import http.client
 import httplib2
 import random
 import time
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 # Google API imports
 from googleapiclient.discovery import build
@@ -92,6 +94,110 @@ RETRIABLE_EXCEPTIONS = (
 )
 
 
+def get_daily_upload_cap() -> int | None:
+    """Return the configured daily upload cap, or None when disabled."""
+    raw_cap = get_setting("upload", "daily_upload_cap", 5)
+    try:
+        daily_cap = int(raw_cap)
+    except (TypeError, ValueError):
+        logger.warning(f"Invalid upload.daily_upload_cap value '{raw_cap}'. Falling back to 5.")
+        return 5
+
+    if daily_cap < 1:
+        logger.info("Daily upload cap is disabled in settings.")
+        return None
+
+    return daily_cap
+
+
+def get_upload_timezone() -> timezone | ZoneInfo:
+    """Return the configured timezone used for daily upload counting."""
+    timezone_name = get_setting("upload", "timezone", "Asia/Kolkata")
+    try:
+        return ZoneInfo(timezone_name)
+    except Exception:
+        fallback_timezones = {
+            "UTC": timezone.utc,
+            "Asia/Kolkata": timezone(timedelta(hours=5, minutes=30)),
+            "Asia/Calcutta": timezone(timedelta(hours=5, minutes=30)),
+        }
+        fallback_timezone = fallback_timezones.get(timezone_name)
+        if fallback_timezone is not None:
+            logger.info(
+                f"Using fixed-offset fallback for upload.timezone '{timezone_name}'."
+            )
+            return fallback_timezone
+        logger.warning(
+            f"Invalid upload.timezone value '{timezone_name}'. Falling back to UTC."
+        )
+        return timezone.utc
+
+
+def parse_db_timestamp(timestamp_text: str) -> datetime | None:
+    """Parse SQLite timestamps, which are stored as UTC strings."""
+    if not timestamp_text:
+        return None
+
+    normalized = timestamp_text.strip()
+    try:
+        if normalized.endswith("Z"):
+            return datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+        if "T" in normalized and ("+" in normalized[10:] or "-" in normalized[10:]):
+            return datetime.fromisoformat(normalized)
+        return datetime.strptime(normalized, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+    except ValueError:
+        logger.warning(f"Could not parse upload timestamp '{timestamp_text}'.")
+        return None
+
+
+def count_uploaded_videos_today() -> int:
+    """Count videos already uploaded today using the configured upload timezone."""
+    upload_timezone = get_upload_timezone()
+    today_in_timezone = datetime.now(upload_timezone).date()
+
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        rows = cursor.execute("""
+            SELECT COALESCE(uploaded_at, created_at) AS uploaded_on
+            FROM videos
+            WHERE status = 'uploaded'
+        """).fetchall()
+
+        total = 0
+        for row in rows:
+            uploaded_at = parse_db_timestamp(row["uploaded_on"])
+            if uploaded_at and uploaded_at.astimezone(upload_timezone).date() == today_in_timezone:
+                total += 1
+
+        return total
+    finally:
+        conn.close()
+
+
+class RequestsHttpAdapter:
+    def __init__(self, session):
+        self.session = session
+        
+    def request(self, uri, method="GET", body=None, headers=None, **kwargs):
+        print(f"[API Request] {method} {uri}", flush=True)
+        r = self.session.request(
+            method=method,
+            url=uri,
+            data=body,
+            headers=headers
+        )
+        print(f"[API Response] Status: {r.status_code}", flush=True)
+        if r.status_code >= 400:
+            print(f"[API Error Body] {r.text[:500]}", flush=True)
+            
+        import httplib2
+        resp = httplib2.Response(dict(r.headers))
+        resp.status = r.status_code
+        resp.reason = r.reason
+        return resp, r.content
+
+
 def get_authenticated_service():
     """Authenticate the user and return the YouTube API client service."""
     credentials = None
@@ -110,7 +216,12 @@ def get_authenticated_service():
         if credentials and credentials.expired and credentials.refresh_token:
             logger.info("Refreshing expired YouTube access token...")
             try:
-                credentials.refresh(Request())
+                import requests
+                import urllib3
+                urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                session = requests.Session()
+                session.verify = False
+                credentials.refresh(Request(session=session))
             except Exception as e:
                 logger.error(f"Failed to refresh access token: {e}. Initiating full OAuth flow.")
                 credentials = None
@@ -145,7 +256,15 @@ def get_authenticated_service():
             pickle.dump(credentials, token)
             logger.info(f"Cached authenticated credentials to {TOKEN_FILE}")
             
-    return build("youtube", "v3", credentials=credentials)
+    # Use modern requests-based AuthorizedSession to bypass TLS/handshake block issues with httplib2
+    from google.auth.transport.requests import AuthorizedSession
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    
+    session = AuthorizedSession(credentials)
+    session.verify = False
+    http_adapter = RequestsHttpAdapter(session)
+    return build("youtube", "v3", http=http_adapter)
 
 
 def resumable_upload(insert_request, thumbnail_path: Path = None, youtube_client=None, video_id_holder=None):
@@ -229,15 +348,35 @@ def run() -> str | None:
             "Your finished video is ready locally at: " + str(FINAL_VIDEO_FILE)
         )
         return None
+
+    # 3. Respect the configured per-day upload cap before touching the API.
+    daily_upload_cap = get_daily_upload_cap()
+    if daily_upload_cap is not None:
+        try:
+            uploads_today = count_uploaded_videos_today()
+        except Exception as e:
+            logger.warning(f"Could not verify today's upload count: {e}. Continuing with upload attempt.")
+        else:
+            configured_timezone = get_setting("upload", "timezone", "Asia/Kolkata")
+            logger.info(
+                f"Daily upload usage: {uploads_today}/{daily_upload_cap} completed today "
+                f"in timezone {configured_timezone}."
+            )
+            if uploads_today >= daily_upload_cap:
+                logger.warning(
+                    f"Daily upload cap reached ({uploads_today}/{daily_upload_cap}). "
+                    "Skipping YouTube upload until the next configured day window."
+                )
+                return None
         
-    # 3. Authenticate with YouTube API
+    # 4. Authenticate with YouTube API
     try:
         youtube = get_authenticated_service()
     except Exception as e:
         logger.error(f"YouTube authentication failed: {e}. Skipping upload.")
         return None
         
-    # 4. Prepare upload body
+    # 5. Prepare upload body
     privacy_status = get_setting('upload', 'privacy', 'unlisted')
     category_id = metadata.get("category", get_setting('upload', 'category', '22'))
     
@@ -287,7 +426,7 @@ def run() -> str | None:
         media_body=media
     )
     
-    # 5. Start uploading
+    # 6. Start uploading
     video_id_holder = []
     try:
         resumable_upload(
@@ -308,7 +447,7 @@ def run() -> str | None:
                 cursor = conn.cursor()
                 cursor.execute("""
                     UPDATE videos 
-                    SET youtube_id = ?, status = 'uploaded' 
+                    SET youtube_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
                     WHERE id = (SELECT MAX(id) FROM videos WHERE status = 'generating')
                 """, (video_id,))
                 conn.commit()

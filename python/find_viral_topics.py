@@ -98,7 +98,7 @@ def fetch_reddit_topics(subreddits: list[str]) -> list[dict]:
 def fetch_google_news() -> list[dict]:
     """Fetch top headlines from Google News RSS feed."""
     logger.info("Fetching Google News headlines...")
-    url = "https://news.google.com/rss/search?q=astronomy+OR+exoplanet+OR+astrophysics+OR+quantum+OR+robotics+OR+archaeology+OR+genetics&hl=en-US&gl=US&ceid=US:en"
+    url = "https://news.google.com/rss/search?q=(artificial+intelligence+OR+robotics+OR+biotechnology+OR+genetics+OR+biology+OR+zoology+OR+evolutionary+biology+OR+quantum+OR+astronomy+OR+exoplanet)&hl=en-US&gl=US&ceid=US:en"
     
     feed = feedparser.parse(url)
     topics = []
@@ -122,7 +122,7 @@ def fetch_google_news() -> list[dict]:
 def collect_all_topics() -> list[dict]:
     """Gather topics from all sources and deduplicate them."""
     settings = load_settings()
-    subreddits = ['space', 'science', 'Futurology', 'artificial']
+    subreddits = ['space', 'science', 'Futurology', 'artificial', 'nature', 'biology']
     geo = get_setting('trending', 'google_trends_geo', 'US')
     
     all_topics = []
@@ -243,12 +243,13 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "2. Prioritize stories with a 'wait, that's real?' reaction over purely incremental research news. Shift focus towards 'bizarre science facts,' 'cosmic scale comparisons,' and 'sci-fi real-life tech'.\n"
         "3. Never sensationalize to the point of inaccuracy — surprising != false.\n"
         "4. The hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking' to capture immediate viewer attention.\n"
-        "5. CRITICAL: The chosen topic MUST belong to one of these three solid science pillars:\n"
-        "   - Space & Astronomy (e.g., exoplanets, JWST discoveries, stars, black holes, moon/mars missions).\n"
-        "   - Hard Science & Physics (e.g., quantum computing, archaeological discoveries, biotechnology, materials science).\n"
-        "   - Advanced AI & Machine Learning (e.g., AI decoding ancient texts, AlphaFold mapping proteins, AI analyzing exoplanet data).\n"
+        "5. CRITICAL: The chosen topic MUST belong to one of these three solid science pillars, with a strong bias toward the top two:\n"
+        "   - Advanced AI, Robotics & Technology (Highest Priority: e.g., AI decoding ancient texts, protein mapping, LLMs, neural networks, robotics advances).\n"
+        "   - Wildlife, Animal Behavior & Biology (Highest Priority: e.g., bizarre animal behaviors, evolutionary traits, genetic discoveries, biology mysteries).\n"
+        "   - Space, Astronomy & Hard Physics (Secondary Priority: e.g., exoplanet discoveries, JWST, black holes, fusion energy, quantum physics. Keep a healthy supply of these topics as they have great international appeal for auto-dubbing).\n"
         "6. STRICT BAN: Do NOT select political news, geopolitical wars, financial stocks, lifestyle/beauty hacks (like hair loss or habits), or speculative pop-psychology. The topic must be verifiable and backed by hard scientific facts so that it passes fact-checking.\n"
-        "7. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers (e.g., do NOT say '90% of documents' or '1 in 5 people' unless that is a direct, verified fact from the news story)."
+        "7. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers (e.g., do NOT say '90% of documents' or '1 in 5 people' unless that is a direct, verified fact from the news story).\n"
+        "8. NICHE BIAS RULE: Favor topics from Advanced AI & Tech and Wildlife & Biology. If a topic falls into one of these two pillars, it should receive a high score to prioritize it for content generation. However, ensure we still generate Space & Astronomy topics regularly."
     )
     
     user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}"
@@ -300,7 +301,18 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             ep = float(c.get("engagement_potential", 50.0))
             rp = float(c.get("retention_potential", 50.0))
             
+            # Base final score calculation
             final_score = (ts * 0.4) + (ep * 0.3) + (rp * 0.3)
+            
+            # Apply priority boost for AI and Biology niches
+            text_to_check = (c.get("viral_angle", "") + " " + c.get("hook_line", "")).lower()
+            is_priority = any(keyword in text_to_check for keyword in [
+                "ai", "robot", "machine learning", "neural network", "algorithm",
+                "biology", "animal", "creature", "evolution", "genetics", "wildlife", "biotech", "dna", "species"
+            ])
+            if is_priority:
+                final_score += 15.0  # +15 point boost
+                
             c["final_score"] = final_score
             c["selected_topic"] = f"{c.get('hook_line')} {c.get('viral_angle')}"
             

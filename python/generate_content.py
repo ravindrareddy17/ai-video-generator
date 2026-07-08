@@ -59,27 +59,50 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
     
     user_prompt = f"Base Hook Line: {base_hook}\nViral Angle: {viral_angle}"
     
-    try:
-        completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            model=model,
-            temperature=0.7,
-            response_format={"type": "json_object"}
-        )
-        data = json.loads(completion.choices[0].message.content)
-        hooks = data.get("hooks", [])
+    best_hook = base_hook
+    all_attempts_hooks = []
+    
+    # Retry loop to get a hook that scores at least 85.0 (8.5/10)
+    for attempt in range(3):
+        try:
+            logger.info(f"Generating optimized hooks (attempt {attempt + 1}/3)...")
+            completion = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Make sure the hooks are highly engaging and score at least 85.0!"}
+                ],
+                model=model,
+                temperature=0.7 + (attempt * 0.1),
+                response_format={"type": "json_object"}
+            )
+            data = json.loads(completion.choices[0].message.content)
+            hooks = data.get("hooks", [])
+            if not hooks:
+                continue
+                
+            # Sort by score desc
+            hooks.sort(key=lambda x: x.get("score", 0.0), reverse=True)
+            all_attempts_hooks.extend(hooks)
+            
+            top_score = hooks[0].get("score", 0.0)
+            if top_score >= 85.0:
+                best_hook = hooks[0]["text"]
+                logger.info(f"Optimized hook accepted on attempt {attempt + 1}: '{best_hook}' (Score: {top_score})")
+                return best_hook, hooks
+            else:
+                logger.warning(f"Attempt {attempt + 1} best hook score was {top_score} (under target 85.0). Retrying...")
+                
+        except Exception as e:
+            logger.error(f"Failed to generate optimized hooks on attempt {attempt + 1}: {e}")
+            
+    # Fallback to the highest scoring hook generated across all attempts
+    if all_attempts_hooks:
+        all_attempts_hooks.sort(key=lambda x: x.get("score", 0.0), reverse=True)
+        best_hook = all_attempts_hooks[0]["text"]
+        logger.warning(f"Could not generate a hook scoring >= 85.0. Falling back to best available: '{best_hook}' (Score: {all_attempts_hooks[0].get('score', 0.0)})")
+        return best_hook, all_attempts_hooks[:3]
         
-        # Sort by score desc
-        hooks.sort(key=lambda x: x.get("score", 0.0), reverse=True)
-        best_hook = hooks[0]["text"]
-        logger.info(f"Optimized hook selected: '{best_hook}' (Score: {hooks[0]['score']})")
-        return best_hook, hooks
-    except Exception as e:
-        logger.error(f"Failed to generate optimized hooks: {e}")
-        return base_hook, [{"style": "default", "text": base_hook, "score": 50.0}]
+    return base_hook, [{"style": "default", "text": base_hook, "score": 50.0}]
 
 
 def generate_narration(topic_data: dict) -> dict:
@@ -116,7 +139,8 @@ def generate_narration(topic_data: dict) -> dict:
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
         "6. REWATCH LOOP & COMMENT BAITING: The script's final sentence MUST be a mind-bending question designed to bait user comments. Do NOT append or repeat the hook sentence at the end of the narration. The script must end with the question itself. The loop effect is created by the phrasing of the question leading grammatically into the hook, NOT by repeating the hook.\n"
-        "7. EXOPLANET ACCURACY: Exoplanets are planets outside our solar system that orbit other stars, NOT our Sun. They are light-years away, NOT in our solar system or 'cosmic backyard'. Never state that an exoplanet orbits our Sun or is in our solar system. Always describe them as orbiting distant stars in other star systems."
+        "7. EXOPLANET ACCURACY: Exoplanets are planets outside our solar system that orbit other stars, NOT our Sun. They are light-years away, NOT in our solar system or 'cosmic backyard'. Never state that an exoplanet orbits our Sun or is in our solar system. Always describe them as orbiting distant stars in other star systems.\n"
+        "8. AUTO-DUBBING & TRANSLATION FRIENDLINESS: The script must be optimized for YouTube's international auto-dubbing. Avoid complex local idioms, localized slang, culturally specific wordplay, or confusing metaphors that cannot be directly translated. Use clean, globally standard grammar and vocabulary so that automatic translation into Spanish, Hindi, French, Portuguese, etc., is completely seamless and natural."
     )
     
     viral_angle = topic_data.get("viral_angle", "")

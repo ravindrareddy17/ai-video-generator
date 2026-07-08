@@ -127,6 +127,22 @@
             border-color: rgba(255, 215, 0, 0.2);
         }
 
+        .glowing-target-card {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glowing-target-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+        }
+
         .card-title {
             font-size: 0.85rem;
             color: var(--text-muted);
@@ -228,6 +244,7 @@
 
         .badge-success { background: rgba(0, 255, 100, 0.15); color: #00ff64; border: 1px solid rgba(0, 255, 100, 0.3); }
         .badge-warning { background: rgba(255, 215, 0, 0.15); color: #ffd700; border: 1px solid rgba(255, 215, 0, 0.3); }
+        .badge-danger { background: rgba(255, 75, 75, 0.15); color: #ff4b4b; border: 1px solid rgba(255, 75, 75, 0.3); }
 
         .recommendations {
             list-style: none;
@@ -329,6 +346,224 @@
             font-weight: 600;
             color: var(--accent);
         }
+
+        /* Monetization Tracker Custom Styles */
+        .monetization-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .monetization-row {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .monetization-timeline-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem 1rem;
+            margin-top: 1rem;
+            position: relative;
+        }
+
+        .monetization-timeline-container::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            right: 5%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .timeline-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            width: 14%;
+        }
+
+        .timeline-dot {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.85rem;
+            background: #151525;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .timeline-dot.completed {
+            background: rgba(0, 255, 100, 0.2);
+            border-color: #00ff64;
+            color: #00ff64;
+            box-shadow: 0 0 12px rgba(0, 255, 100, 0.4);
+        }
+
+        .timeline-dot.pending {
+            background: rgba(138, 43, 226, 0.2);
+            border-color: #8a2be2;
+            color: #d8b4fe;
+            box-shadow: 0 0 12px rgba(138, 43, 226, 0.3);
+        }
+
+        .timeline-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 0.5rem;
+            font-weight: 600;
+        }
+
+        .timeline-step.active-step .timeline-label {
+            color: #ffffff;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 5px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--primary) 0%, #00ff64 100%);
+            border-radius: 5px;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .status-badge.green {
+            background: rgba(0, 255, 100, 0.1);
+            color: #00ff64;
+            border: 1px solid rgba(0, 255, 100, 0.3);
+        }
+
+        .status-badge.yellow {
+            background: rgba(255, 215, 0, 0.1);
+            color: #ffd700;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
+        .status-badge.red {
+            background: rgba(255, 75, 75, 0.1);
+            color: #ff4b4b;
+            border: 1px solid rgba(255, 75, 75, 0.3);
+        }
+
+        .circle-gauge-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 1rem;
+        }
+
+        .circle-gauge {
+            position: relative;
+            width: 150px;
+            height: 150px;
+        }
+
+        .circle-gauge svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.03);
+            stroke-width: 12px;
+        }
+
+        .circle-fill {
+            fill: none;
+            stroke: var(--primary);
+            stroke-width: 12px;
+            stroke-linecap: round;
+            stroke-dasharray: 440;
+            stroke-dashoffset: 440;
+            transition: stroke-dashoffset 1s ease-in-out, stroke 1s;
+        }
+
+        .circle-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffffff;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .glowing-target-card {
+            background: rgba(255, 215, 0, 0.02);
+            border: 1px solid rgba(255, 215, 0, 0.1);
+            border-radius: 12px;
+            padding: 1.2rem;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.03);
+            transition: all 0.3s ease;
+        }
+
+        .glowing-target-card:hover {
+            border-color: rgba(255, 215, 0, 0.3);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.08);
+        }
+
+        .coach-card {
+            border: 1px dashed rgba(138, 43, 226, 0.4) !important;
+            background: rgba(138, 43, 226, 0.02) !important;
+            box-shadow: 0 0 15px rgba(138, 43, 226, 0.05);
+        }
+
+        .coach-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #d8b4fe;
+            margin-bottom: 0.8rem;
+        }
     </style>
 </head>
 <body>
@@ -374,6 +609,7 @@
         <button class="menu-tab active" id="btn-overview" onclick="switchTab('overview')">📊 Channel Overview</button>
         <button class="menu-tab" id="btn-growth" onclick="switchTab('growth')">📈 Growth Ledgers</button>
         <button class="menu-tab" id="btn-videos" onclick="switchTab('videos')">🎥 Video Performance</button>
+        <button class="menu-tab" id="btn-monetization" onclick="switchTab('monetization')">💰 Monetization</button>
         <button class="menu-tab" id="btn-insights" onclick="switchTab('insights')">✨ AI Self-Learning</button>
         <button class="menu-tab" id="btn-logs" onclick="switchTab('logs')">⚙️ Live System Logs</button>
     </div>
@@ -524,6 +760,359 @@
         </div>
     </div>
 
+    <!-- TAB 2.5: Monetization Tracker -->
+    <div class="tab-content" id="tab-monetization">
+        <!-- Status Row: Fan Funding vs Full Monetization & Readiness Ring -->
+        <div class="monetization-row">
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <div class="monetization-grid">
+                    <!-- Card 1: Fan Funding -->
+                    <div class="card">
+                        <div class="card-title">Fan Funding Eligibility</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                            <span class="status-badge" id="mon-fan-badge">Loading...</span>
+                            <span style="font-size: 1.2rem; font-weight: 700; color: #ffffff;" id="mon-fan-progress-val">0%</span>
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.82rem; color: var(--text-muted);">
+                            <div>Remaining Subs: <strong style="color: #ffffff;" id="mon-fan-rem-subs">0</strong></div>
+                            <div>Remaining Views: <strong style="color: #ffffff;" id="mon-fan-rem-views">0</strong></div>
+                            <div style="margin-top: 0.5rem; color: var(--accent);">Est. Date: <span id="mon-fan-est-date" style="font-weight: 600;">Calculating...</span></div>
+                        </div>
+                    </div>
+                    <!-- Card 2: Full Monetization -->
+                    <div class="card">
+                        <div class="card-title">Full Monetization Eligibility</div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                            <span class="status-badge" id="mon-full-badge">Loading...</span>
+                            <span style="font-size: 1.2rem; font-weight: 700; color: #ffffff;" id="mon-full-progress-val">0%</span>
+                        </div>
+                        <div style="margin-top: 1rem; font-size: 0.82rem; color: var(--text-muted);">
+                            <div>Remaining Subs: <strong style="color: #ffffff;" id="mon-full-rem-subs">0</strong></div>
+                            <div>Remaining Views: <strong style="color: #ffffff;" id="mon-full-rem-views">0</strong></div>
+                            <div style="margin-top: 0.5rem; color: var(--accent);">Est. Date: <span id="mon-full-est-date" style="font-weight: 600;">Calculating...</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Live Requirements Progress Bars -->
+                <div class="card">
+                    <div class="section-title">📊 Live Progress & Requirements</div>
+                    
+                    <div style="margin-bottom: 1.2rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                            <span style="font-weight: 600;">Subscribers (Fan Funding)</span>
+                            <span id="progress-fan-subs-text">0 / 500</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progress-fan-subs-bar"></div>
+                        </div>
+                        <div class="progress-meta">
+                            <span>Remaining: <strong id="progress-fan-subs-rem">0</strong></span>
+                            <span style="color: #00ff64;">Min: 500</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.2rem;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                            <span style="font-weight: 600;">Uploads (Last 90 Days)</span>
+                            <span id="progress-fan-uploads-text">0 / 3</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progress-fan-uploads-bar"></div>
+                        </div>
+                        <div class="progress-meta">
+                            <span>Status: <strong id="progress-fan-uploads-status">Incomplete</strong></span>
+                            <span style="color: #00ff64;">Min: 3</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                            <span style="font-weight: 600;" id="progress-fan-views-label">Views / Watch Hours</span>
+                            <span id="progress-fan-views-text">0 / 3,000,000</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="progress-fan-views-bar"></div>
+                        </div>
+                        <div class="progress-meta">
+                            <span>Remaining: <strong id="progress-fan-views-rem">0</strong></span>
+                            <span style="color: #00ff64;">Min: 3M Views / 3k WH</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Large Circular Progress Ring -->
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div class="section-title" style="text-align: center;">Monetization Readiness</div>
+                <div class="circle-gauge-box">
+                    <div class="circle-gauge">
+                        <svg>
+                            <circle class="circle-bg" cx="75" cy="75" r="70"></circle>
+                            <circle class="circle-fill" id="readiness-circle" cx="75" cy="75" r="70"></circle>
+                        </svg>
+                        <div class="circle-text" id="readiness-pct-val">0%</div>
+                    </div>
+                    <div style="margin-top: 1rem; text-align: center; font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+                        Overall progress toward full Ads Partner status based on views, subscribers, and uploads.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Targets, Timeline & Coach -->
+        <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <!-- Forecasting & Targets -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Section 4: Estimated Dates -->
+                <div class="card">
+                    <div class="section-title">🔮 Linear Forecasting & Target Dates</div>
+                    <div class="table-container">
+                        <table style="font-size: 0.85rem; width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Milestone</th>
+                                    <th>Estimated Date</th>
+                                    <th>Confidence</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>500 Subscribers Goal</strong></td>
+                                    <td id="fore-500-date" style="font-weight: 600; color: #ffffff;">Calculating...</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div class="progress-bar-container" style="width: 80px; height: 8px; margin: 0;">
+                                                <div class="progress-bar-fill" id="fore-500-conf-bar" style="background: var(--accent);"></div>
+                                            </div>
+                                            <span id="fore-500-conf-val">0%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>1,000 Subscribers Goal</strong></td>
+                                    <td id="fore-1000-date" style="font-weight: 600; color: #ffffff;">Calculating...</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div class="progress-bar-container" style="width: 80px; height: 8px; margin: 0;">
+                                                <div class="progress-bar-fill" id="fore-1000-conf-bar" style="background: var(--accent);"></div>
+                                            </div>
+                                            <span id="fore-1000-conf-val">0%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>3M Shorts Views Goal</strong></td>
+                                    <td id="fore-3m-date" style="font-weight: 600; color: #ffffff;">Calculating...</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div class="progress-bar-container" style="width: 80px; height: 8px; margin: 0;">
+                                                <div class="progress-bar-fill" id="fore-3m-conf-bar" style="background: var(--accent);"></div>
+                                            </div>
+                                            <span id="fore-3m-conf-val">0%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>10M Shorts Views Goal</strong></td>
+                                    <td id="fore-10m-date" style="font-weight: 600; color: #ffffff;">Calculating...</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            <div class="progress-bar-container" style="width: 80px; height: 8px; margin: 0;">
+                                                <div class="progress-bar-fill" id="fore-10m-conf-bar" style="background: var(--accent);"></div>
+                                            </div>
+                                            <span id="fore-10m-conf-val">0%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Section 5: Daily Target Cards -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="glowing-target-card">
+                        <div class="card-title" style="color: #ffd700;">Daily Subscribers Needed</div>
+                        <div class="card-value" id="target-daily-subs" style="font-size: 2.2rem; background: linear-gradient(135deg, #ffd700 0%, #ffffff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">To reach 1,000 milestone on time</div>
+                    </div>
+                    <div class="glowing-target-card">
+                        <div class="card-title" style="color: #ffd700;">Daily Shorts Views Needed</div>
+                        <div class="card-value" id="target-daily-views" style="font-size: 2.2rem; background: linear-gradient(135deg, #ffd700 0%, #ffffff 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">0</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.3rem;">To reach 10M milestone on time</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI coach & Live checker -->
+            <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                <!-- Section 6: AI Monetization Coach -->
+                <div class="card coach-card">
+                    <div class="coach-header">✨ AI Monetization Coach</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                        Best Niche: <strong id="coach-best-niche" style="color: #ffffff;">AI</strong> | Worst Niche: <strong id="coach-worst-niche" style="color: #ffffff;">Tech</strong>
+                    </div>
+                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                        Recommended Posting Time: <strong id="coach-best-time" style="color: var(--accent);">08:30 PM IST</strong>
+                    </div>
+                    <div class="card-title" style="margin-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; color: #ffffff;">Today's Advice:</div>
+                    <ul class="recommendations" id="coach-advice-list" style="margin-top: 0.5rem; font-size: 0.82rem; line-height: 1.5;">
+                        <li>Calculating recommendations...</li>
+                    </ul>
+                </div>
+
+                <!-- Section 8: Live Eligibility Check -->
+                <div class="card">
+                    <div class="section-title">📋 Live Eligibility Checklist</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+                        <span style="font-size: 0.85rem; font-weight: 600;">Current Status</span>
+                        <span class="status-badge" id="checker-status-badge">Not Eligible</span>
+                    </div>
+                    <div style="font-size: 0.85rem; font-weight: 600; margin-top: 0.8rem; color: #ffffff;">Missing Requirements:</div>
+                    <ul id="checker-reasons-list" style="margin-top: 0.4rem; padding-left: 1.2rem; font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+                        <li>Checking...</li>
+                    </ul>
+                    <div style="font-size: 0.8rem; color: var(--accent); margin-top: 0.8rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem;">
+                        Next Milestone: <strong id="checker-next-milestone" style="color: #ffffff;">Fan Funding Eligibility</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 7: Monetization Timeline -->
+        <div class="card">
+            <div class="section-title" style="text-align: center;">📅 YouTube Partner Program Milestone Timeline</div>
+            <div class="monetization-timeline-container">
+                <div class="timeline-step" id="step-start">
+                    <div class="timeline-dot completed">✓</div>
+                    <div class="timeline-label">Current Position</div>
+                </div>
+                <div class="timeline-step" id="step-500">
+                    <div class="timeline-dot" id="timeline-dot-500">1</div>
+                    <div class="timeline-label">500 Subscribers</div>
+                </div>
+                <div class="timeline-step" id="step-3m">
+                    <div class="timeline-dot" id="timeline-dot-3m">2</div>
+                    <div class="timeline-label">3M Shorts Views</div>
+                </div>
+                <div class="timeline-step" id="step-fan">
+                    <div class="timeline-dot" id="timeline-dot-fan">3</div>
+                    <div class="timeline-label">Fan Funding</div>
+                </div>
+                <div class="timeline-step" id="step-1000">
+                    <div class="timeline-dot" id="timeline-dot-1000">4</div>
+                    <div class="timeline-label">1000 Subscribers</div>
+                </div>
+                <div class="timeline-step" id="step-10m">
+                    <div class="timeline-dot" id="timeline-dot-10m">5</div>
+                    <div class="timeline-label">10M Shorts Views</div>
+                </div>
+                <div class="timeline-step" id="step-ads">
+                    <div class="timeline-dot" id="timeline-dot-ads">6</div>
+                    <div class="timeline-label">Ads Enabled</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 8: Daily Monetization Targets -->
+        <div class="card" style="margin-top: 1.5rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 0.8rem; margin-bottom: 1.2rem;">
+                <div>
+                    <div class="section-title" style="margin-bottom: 0.2rem;">🎯 Daily Monetization Targets</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        Calculate growth required daily to reach monetization milestones within the rolling 90-day window.
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <button class="menu-tab active" id="btn-target-fan" onclick="switchTargetMilestone('fan_funding')" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 20px;">Fan Funding</button>
+                    <button class="menu-tab" id="btn-target-full" onclick="switchTargetMilestone('full_monetization')" style="padding: 0.4rem 1rem; font-size: 0.8rem; border-radius: 20px;">Full Ads Partner</button>
+                </div>
+            </div>
+
+            <!-- Remaining Days Status Banner -->
+            <div id="target-days-banner" style="background: rgba(138, 43, 226, 0.05); border: 1px solid rgba(138, 43, 226, 0.2); padding: 0.8rem 1.2rem; border-radius: 10px; margin-bottom: 1.5rem; font-weight: 600; font-size: 0.9rem; text-align: center;">
+                Remaining days in rolling 90-day window: <span id="target-remaining-days-val" style="color: var(--accent); font-size: 1rem;">90</span> days
+            </div>
+
+            <!-- Targets Cards Grid -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div class="glowing-target-card" id="card-target-subs" style="text-align: center;">
+                    <div class="card-title">Subscribers Needed / Day</div>
+                    <div class="card-value" id="target-subs-rate" style="font-size: 2.2rem; margin: 0.5rem 0; font-weight: 800;">0</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.6;">
+                        Current: <strong id="target-subs-curr" style="color: #fff;">0</strong> | Remaining: <strong id="target-subs-rem" style="color: #fff;">0</strong>
+                    </div>
+                </div>
+                <div class="glowing-target-card" id="card-target-views" style="text-align: center;">
+                    <div class="card-title">Shorts Views Needed / Day</div>
+                    <div class="card-value" id="target-views-rate" style="font-size: 2.2rem; margin: 0.5rem 0; font-weight: 800;">0</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.6;">
+                        Current: <strong id="target-views-curr" style="color: #fff;">0</strong> | Remaining: <strong id="target-views-rem" style="color: #fff;">0</strong>
+                    </div>
+                </div>
+                <div class="glowing-target-card" id="card-target-hours" style="text-align: center;">
+                    <div class="card-title">Watch Hours Needed / Day</div>
+                    <div class="card-value" id="target-hours-rate" style="font-size: 2.2rem; margin: 0.5rem 0; font-weight: 800;">0</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.6;">
+                        Current: <strong id="target-hours-curr" style="color: #fff;">0</strong> | Remaining: <strong id="target-hours-rem" style="color: #fff;">0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Status & AI Insight -->
+            <div style="display: grid; grid-template-columns: 1.8fr 1fr; gap: 1.5rem;">
+                <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--card-border); padding: 1.2rem; border-radius: 12px;">
+                    <div class="card-title" style="margin-bottom: 0.8rem; font-size: 0.85rem; font-weight: 600; color: #fff;">📈 Live Target Status & Comparisons</div>
+                    <div class="table-container">
+                        <table style="font-size: 0.82rem; width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Gained Today</th>
+                                    <th>Required Daily</th>
+                                    <th>Live Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Subscribers</strong></td>
+                                    <td id="target-subs-today" style="font-weight: 600; color: #fff;">0</td>
+                                    <td id="target-subs-req" style="font-weight: 600;">0</td>
+                                    <td><span class="badge" id="target-subs-status-badge" style="font-size: 0.7rem;">Checking...</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Shorts Views</strong></td>
+                                    <td id="target-views-today" style="font-weight: 600; color: #fff;">0</td>
+                                    <td id="target-views-req" style="font-weight: 600;">0</td>
+                                    <td><span class="badge" id="target-views-status-badge" style="font-size: 0.7rem;">Checking...</span></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Watch Hours</strong></td>
+                                    <td id="target-hours-today" style="font-weight: 600; color: #fff;">0</td>
+                                    <td id="target-hours-req" style="font-weight: 600;">0</td>
+                                    <td><span class="badge" id="target-hours-status-badge" style="font-size: 0.7rem;">Checking...</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card coach-card" style="margin: 0; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;">
+                    <div>
+                        <div class="coach-header" style="font-size: 1rem; color: var(--accent);">🎯 Target AI Insight</div>
+                        <p id="target-ai-insight-text" style="font-size: 0.82rem; line-height: 1.5; color: #e0e0ff; margin-top: 0.6rem;">
+                            Analyzing today's performance statistics vs monetization timeline required velocity...
+                        </p>
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; margin-top: 0.8rem; text-align: right;">
+                        Powered by Llama 3.3 Target Analyst
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- TAB 3: AI Self-Learning & Scheduling -->
     <div class="tab-content" id="tab-insights">
         <div class="insights-layout">
@@ -669,6 +1258,8 @@
         let myPieChart = null;
         let allVideos = [];
         let selectedVideoId = null;
+        let activeTargetMilestone = null;
+        let rawMonetizationData = null;
 
         // Switch active tab view
         function switchTab(tabId) {
@@ -1111,11 +1702,316 @@
                 }
                 
                 document.getElementById('next-post-slot').innerText = nextPostDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + (isTomorrow ? ' (Tomorrow)' : ' (Today)');
+                
+                // Update Monetization Tracker data
+                if (data.monetization) {
+                    const mon = data.monetization;
+                    
+                    // Status Badges & Progress percentages
+                    const fanBadge = document.getElementById('mon-fan-badge');
+                    fanBadge.innerText = mon.fan_funding.status_text;
+                    fanBadge.className = 'status-badge ' + (mon.fan_funding.eligible ? 'green' : 'yellow');
+                    document.getElementById('mon-fan-progress-val').innerText = mon.fan_funding.progress_pct + '%';
+                    document.getElementById('mon-fan-rem-subs').innerText = mon.fan_funding.subscribers_remaining.toLocaleString();
+                    document.getElementById('mon-fan-rem-views').innerText = mon.fan_funding.views_remaining.toLocaleString();
+                    document.getElementById('mon-fan-est-date').innerText = mon.forecasts.subs_500.date;
+
+                    const fullBadge = document.getElementById('mon-full-badge');
+                    fullBadge.innerText = mon.full_monetization.status_text;
+                    fullBadge.className = 'status-badge ' + (mon.full_monetization.eligible ? 'green' : (mon.full_monetization.status_text === 'In Progress' ? 'yellow' : 'red'));
+                    document.getElementById('mon-full-progress-val').innerText = mon.full_monetization.progress_pct + '%';
+                    document.getElementById('mon-full-rem-subs').innerText = mon.full_monetization.subscribers_remaining.toLocaleString();
+                    document.getElementById('mon-full-rem-views').innerText = mon.full_monetization.views_remaining.toLocaleString();
+                    document.getElementById('mon-full-est-date').innerText = mon.forecasts.subs_1000.date;
+
+                    // Progress Bars
+                    document.getElementById('progress-fan-subs-text').innerText = mon.fan_funding.subscribers.toLocaleString() + ' / ' + mon.fan_funding.subscribers_target.toLocaleString();
+                    document.getElementById('progress-fan-subs-bar').style.width = ((mon.fan_funding.subscribers / mon.fan_funding.subscribers_target) * 100) + '%';
+                    document.getElementById('progress-fan-subs-rem').innerText = mon.fan_funding.subscribers_remaining.toLocaleString();
+
+                    document.getElementById('progress-fan-uploads-text').innerText = mon.fan_funding.uploads_90.toLocaleString() + ' / ' + mon.fan_funding.uploads_target.toLocaleString();
+                    document.getElementById('progress-fan-uploads-bar').style.width = ((mon.fan_funding.uploads_90 / mon.fan_funding.uploads_target) * 100) + '%';
+                    document.getElementById('progress-fan-uploads-status').innerText = mon.fan_funding.uploads_eligible ? 'Completed' : 'Incomplete';
+                    document.getElementById('progress-fan-uploads-status').style.color = mon.fan_funding.uploads_eligible ? '#00ff64' : '#ff4b4b';
+
+                    document.getElementById('progress-fan-views-label').innerText = mon.fan_funding.views_label + ' (Fan Funding)';
+                    document.getElementById('progress-fan-views-text').innerText = mon.fan_funding.views_current.toLocaleString() + ' / ' + mon.fan_funding.views_target.toLocaleString();
+                    document.getElementById('progress-fan-views-bar').style.width = mon.fan_funding.views_pct + '%';
+                    document.getElementById('progress-fan-views-rem').innerText = mon.fan_funding.views_remaining.toLocaleString();
+
+                    // Circle gauge text and stroke offset
+                    document.getElementById('readiness-pct-val').innerText = mon.readiness_score + '%';
+                    const readinessCircle = document.getElementById('readiness-circle');
+                    const circumference = 440; // 2 * pi * 70 approx 440
+                    const strokeOffset = circumference - (mon.readiness_score / 100) * circumference;
+                    readinessCircle.style.strokeDashoffset = strokeOffset;
+                    
+                    // Colors of circle gauge based on readiness
+                    if (mon.readiness_score >= 80) {
+                        readinessCircle.style.stroke = '#00ff64';
+                    } else if (mon.readiness_score >= 40) {
+                        readinessCircle.style.stroke = '#ffd700';
+                    } else {
+                        readinessCircle.style.stroke = '#ff3366';
+                    }
+
+                    // Forecasting
+                    document.getElementById('fore-500-date').innerText = mon.forecasts.subs_500.date;
+                    document.getElementById('fore-500-conf-bar').style.width = mon.forecasts.subs_500.confidence + '%';
+                    document.getElementById('fore-500-conf-val').innerText = mon.forecasts.subs_500.confidence + '%';
+
+                    document.getElementById('fore-1000-date').innerText = mon.forecasts.subs_1000.date;
+                    document.getElementById('fore-1000-conf-bar').style.width = mon.forecasts.subs_1000.confidence + '%';
+                    document.getElementById('fore-1000-conf-val').innerText = mon.forecasts.subs_1000.confidence + '%';
+
+                    document.getElementById('fore-3m-date').innerText = mon.forecasts.views_3m.date;
+                    document.getElementById('fore-3m-conf-bar').style.width = mon.forecasts.views_3m.confidence + '%';
+                    document.getElementById('fore-3m-conf-val').innerText = mon.forecasts.views_3m.confidence + '%';
+
+                    document.getElementById('fore-10m-date').innerText = mon.forecasts.views_10m.date;
+                    document.getElementById('fore-10m-conf-bar').style.width = mon.forecasts.views_10m.confidence + '%';
+                    document.getElementById('fore-10m-conf-val').innerText = mon.forecasts.views_10m.confidence + '%';
+
+                    // Daily targets
+                    const dailySubsRate = mon.forecasts.subs_1000.rate;
+                    const dailyViewsRate = mon.forecasts.views_10m.rate;
+                    document.getElementById('target-daily-subs').innerText = dailySubsRate > 0 ? Math.ceil(dailySubsRate) : '0';
+                    document.getElementById('target-daily-views').innerText = dailyViewsRate > 0 ? Math.ceil(dailyViewsRate).toLocaleString() : '0';
+
+                    // AI coach
+                    document.getElementById('coach-best-niche').innerText = mon.coach.best_niche || 'AI & Tech';
+                    document.getElementById('coach-worst-niche').innerText = mon.coach.worst_niche || 'Wildlife';
+                    document.getElementById('coach-best-time').innerText = mon.coach.best_upload_time || '08:30 PM IST';
+                    
+                    const coachList = document.getElementById('coach-advice-list');
+                    coachList.innerHTML = '';
+                    if (mon.coach.advice) {
+                        mon.coach.advice.forEach(adv => {
+                            coachList.innerHTML += `<li>${adv}</li>`;
+                        });
+                    }
+
+                    // Live checker
+                    const checkBadge = document.getElementById('checker-status-badge');
+                    checkBadge.innerText = mon.live_eligibility.status_text;
+                    checkBadge.className = 'status-badge ' + (mon.live_eligibility.eligible ? 'green' : 'red');
+                    
+                    const reasonList = document.getElementById('checker-reasons-list');
+                    reasonList.innerHTML = '';
+                    if (mon.live_eligibility.reasons.length === 0) {
+                        reasonList.innerHTML = '<li style="color: #00ff64;">✦ No missing requirements! Ready for monetization.</li>';
+                    } else {
+                        mon.live_eligibility.reasons.forEach(r => {
+                            reasonList.innerHTML += `<li>✦ ${r}</li>`;
+                        });
+                    }
+                    document.getElementById('checker-next-milestone').innerText = mon.live_eligibility.next_milestone;
+
+                    // Timeline Step classes
+                    const currentSubs = mon.fan_funding.subscribers;
+                    const currentViews = mon.fan_funding.views_current;
+                    const uploadsCount = mon.fan_funding.uploads_90;
+
+                    // 500 Subs
+                    const step500 = document.getElementById('step-500');
+                    const dot500 = document.getElementById('timeline-dot-500');
+                    if (currentSubs >= 500) {
+                        step500.className = 'timeline-step active-step';
+                        dot500.className = 'timeline-dot completed';
+                        dot500.innerText = '✓';
+                    } else {
+                        step500.className = 'timeline-step';
+                        dot500.className = 'timeline-dot';
+                        dot500.innerText = '1';
+                    }
+
+                    // 3M views
+                    const step3m = document.getElementById('step-3m');
+                    const dot3m = document.getElementById('timeline-dot-3m');
+                    if (currentViews >= 3000000) {
+                        step3m.className = 'timeline-step active-step';
+                        dot3m.className = 'timeline-dot completed';
+                        dot3m.innerText = '✓';
+                    } else {
+                        step3m.className = 'timeline-step';
+                        dot3m.className = 'timeline-dot';
+                        dot3m.innerText = '2';
+                    }
+
+                    // Fan Funding
+                    const stepFan = document.getElementById('step-fan');
+                    const dotFan = document.getElementById('timeline-dot-fan');
+                    if (currentSubs >= 500 && uploadsCount >= 3 && (currentViews >= 3000000 || mon.fan_funding.views_current >= 3000)) {
+                        stepFan.className = 'timeline-step active-step';
+                        dotFan.className = 'timeline-dot completed';
+                        dotFan.innerText = '✓';
+                    } else {
+                        stepFan.className = 'timeline-step';
+                        dotFan.className = 'timeline-dot pending';
+                        dotFan.innerText = '3';
+                    }
+
+                    // 1000 Subs
+                    const step1000 = document.getElementById('step-1000');
+                    const dot1000 = document.getElementById('timeline-dot-1000');
+                    if (currentSubs >= 1000) {
+                        step1000.className = 'timeline-step active-step';
+                        dot1000.className = 'timeline-dot completed';
+                        dot1000.innerText = '✓';
+                    } else {
+                        step1000.className = 'timeline-step';
+                        dot1000.className = 'timeline-dot';
+                        dot1000.innerText = '4';
+                    }
+
+                    // 10M Views
+                    const step10m = document.getElementById('step-10m');
+                    const dot10m = document.getElementById('timeline-dot-10m');
+                    if (currentViews >= 10000000) {
+                        step10m.className = 'timeline-step active-step';
+                        dot10m.className = 'timeline-dot completed';
+                        dot10m.innerText = '✓';
+                    } else {
+                        step10m.className = 'timeline-step';
+                        dot10m.className = 'timeline-dot';
+                        dot10m.innerText = '5';
+                    }
+
+                    // Ads Enabled
+                    const stepAds = document.getElementById('step-ads');
+                    const dotAds = document.getElementById('timeline-dot-ads');
+                    if (currentSubs >= 1000 && (currentViews >= 10000000 || mon.full_monetization.views_current >= 4000)) {
+                        stepAds.className = 'timeline-step active-step';
+                        dotAds.className = 'timeline-dot completed';
+                        dotAds.innerText = '✓';
+                    } else {
+                        stepAds.className = 'timeline-step';
+                        dotAds.className = 'timeline-dot pending';
+                        dotAds.innerText = '6';
+                    }
+
+                    // Bind data and execute target render
+                    rawMonetizationData = data;
+                    if (activeTargetMilestone === null) {
+                        activeTargetMilestone = currentSubs >= 500 ? 'full_monetization' : 'fan_funding';
+                        if (activeTargetMilestone === 'fan_funding') {
+                            document.getElementById('btn-target-fan').classList.add('active');
+                            document.getElementById('btn-target-full').classList.remove('active');
+                        } else {
+                            document.getElementById('btn-target-fan').classList.remove('active');
+                            document.getElementById('btn-target-full').classList.add('active');
+                        }
+                    }
+                    renderDailyTargets();
+                }
 
                 document.getElementById('timestamp').innerText = 'Last updated: ' + new Date().toLocaleString();
             } catch (err) {
                 console.error("Failed to load dashboard data: ", err);
             }
+        }
+
+        function switchTargetMilestone(milestone) {
+            activeTargetMilestone = milestone;
+            if (milestone === 'fan_funding') {
+                document.getElementById('btn-target-fan').classList.add('active');
+                document.getElementById('btn-target-full').classList.remove('active');
+            } else {
+                document.getElementById('btn-target-fan').classList.remove('active');
+                document.getElementById('btn-target-full').classList.add('active');
+            }
+            renderDailyTargets();
+        }
+
+        function renderDailyTargets() {
+            if (!rawMonetizationData || !rawMonetizationData.monetization) return;
+            
+            const mon = rawMonetizationData.monetization;
+            const dt = mon.daily_targets;
+            if (!dt) return;
+            
+            const remainingDays = dt.remaining_days;
+            const daysVal = document.getElementById('target-remaining-days-val');
+            const daysBanner = document.getElementById('target-days-banner');
+            
+            if (remainingDays <= 0) {
+                if (daysVal) daysVal.innerText = "0";
+                if (daysBanner) {
+                    daysBanner.innerText = "⚠️ Rolling window reset required (Elapsed days exceed 90 days)";
+                    daysBanner.style.background = "rgba(255, 75, 75, 0.1)";
+                    daysBanner.style.borderColor = "rgba(255, 75, 75, 0.3)";
+                    daysBanner.style.color = "#ff4b4b";
+                }
+            } else {
+                if (daysVal) daysVal.innerText = remainingDays;
+                if (daysBanner) {
+                    daysBanner.innerHTML = `Remaining days in rolling 90-day window: <span id="target-remaining-days-val" style="color: var(--accent); font-size: 1rem;">${remainingDays}</span> days`;
+                    daysBanner.style.background = "rgba(138, 43, 226, 0.05)";
+                    daysBanner.style.borderColor = "rgba(138, 43, 226, 0.2)";
+                    daysBanner.style.color = "";
+                }
+            }
+            
+            const milestoneData = activeTargetMilestone === 'fan_funding' ? dt.fan_funding : dt.full_monetization;
+            
+            // Update rates and details
+            document.getElementById('target-subs-rate').innerText = milestoneData.subs_needed > 0 ? milestoneData.subs_needed : '0';
+            document.getElementById('target-subs-curr').innerText = mon.fan_funding.subscribers.toLocaleString();
+            document.getElementById('target-subs-rem').innerText = milestoneData.subs_remaining.toLocaleString();
+            
+            document.getElementById('target-views-rate').innerText = milestoneData.views_needed > 0 ? milestoneData.views_needed.toLocaleString() : '0';
+            document.getElementById('target-views-curr').innerText = rawMonetizationData.total_views.toLocaleString();
+            document.getElementById('target-views-rem').innerText = milestoneData.views_remaining.toLocaleString();
+            
+            document.getElementById('target-hours-rate').innerText = milestoneData.hours_needed > 0 ? milestoneData.hours_needed.toLocaleString() : '0';
+            document.getElementById('target-hours-curr').innerText = (dt.current_watch_hours ?? 0).toLocaleString();
+            document.getElementById('target-hours-rem').innerText = milestoneData.hours_remaining.toLocaleString();
+            
+            // Colors for target rate cards based on status
+            const getStatusColor = (status) => {
+                if (status === 'Ahead') return 'rgba(0, 255, 100, 0.04)';
+                if (status === 'Close') return 'rgba(255, 215, 0, 0.04)';
+                return 'rgba(255, 75, 75, 0.04)';
+            };
+            const getStatusBorderColor = (status) => {
+                if (status === 'Ahead') return 'rgba(0, 255, 100, 0.2)';
+                if (status === 'Close') return 'rgba(255, 215, 0, 0.2)';
+                return 'rgba(255, 75, 75, 0.2)';
+            };
+            
+            const cardSubs = document.getElementById('card-target-subs');
+            cardSubs.style.background = getStatusColor(milestoneData.subs_status);
+            cardSubs.style.borderColor = getStatusBorderColor(milestoneData.subs_status);
+            
+            const cardViews = document.getElementById('card-target-views');
+            cardViews.style.background = getStatusColor(milestoneData.views_status);
+            cardViews.style.borderColor = getStatusBorderColor(milestoneData.views_status);
+            
+            const cardHours = document.getElementById('card-target-hours');
+            cardHours.style.background = getStatusColor(milestoneData.hours_status);
+            cardHours.style.borderColor = getStatusBorderColor(milestoneData.hours_status);
+            
+            // Comparisons table
+            document.getElementById('target-subs-today').innerText = '+' + dt.subs_today.toLocaleString();
+            document.getElementById('target-subs-req').innerText = milestoneData.subs_needed.toLocaleString();
+            const badgeSubs = document.getElementById('target-subs-status-badge');
+            badgeSubs.innerText = milestoneData.subs_status === 'Ahead' ? milestoneData.subs_status_text : (milestoneData.subs_status === 'Close' ? milestoneData.subs_status_text : milestoneData.subs_status_text);
+            badgeSubs.className = 'badge ' + (milestoneData.subs_status === 'Ahead' ? 'badge-success' : (milestoneData.subs_status === 'Close' ? 'badge-warning' : 'badge-danger'));
+            
+            document.getElementById('target-views-today').innerText = dt.views_today.toLocaleString();
+            document.getElementById('target-views-req').innerText = milestoneData.views_needed.toLocaleString();
+            const badgeViews = document.getElementById('target-views-status-badge');
+            badgeViews.innerText = milestoneData.views_status === 'Ahead' ? '🟢 Ahead' : (milestoneData.views_status === 'Close' ? '🟡 Close' : '🔴 Behind Target');
+            badgeViews.className = 'badge ' + (milestoneData.views_status === 'Ahead' ? 'badge-success' : (milestoneData.views_status === 'Close' ? 'badge-warning' : 'badge-danger'));
+            
+            document.getElementById('target-hours-today').innerText = dt.hours_today.toLocaleString();
+            document.getElementById('target-hours-req').innerText = milestoneData.hours_needed.toLocaleString();
+            const badgeHours = document.getElementById('target-hours-status-badge');
+            badgeHours.innerText = milestoneData.hours_status === 'Ahead' ? '🟢 Ahead' : (milestoneData.hours_status === 'Close' ? '🟡 Close' : '🔴 Behind Target');
+            badgeHours.className = 'badge ' + (milestoneData.hours_status === 'Ahead' ? 'badge-success' : (milestoneData.hours_status === 'Close' ? 'badge-warning' : 'badge-danger'));
+            
+            // AI target recommendations
+            document.getElementById('target-ai-insight-text').innerText = dt.ai_recommendation || "Maintain current publishing velocity to maximize monetization checklist readiness.";
         }
 
         // Fetch once immediately, then poll every 8 seconds

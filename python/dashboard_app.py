@@ -1,3 +1,5 @@
+#! python3.12
+
 import json
 import sqlite3
 import sys
@@ -102,6 +104,59 @@ def calculate_growth_forecasts(conn, current_subs, current_views, current_watch_
         "views_3m": {"date": date_3m, "confidence": conf_3m, "days": int(days_to_3m), "rate": round(daily_views_rate, 0)},
         "views_10m": {"date": date_10m, "confidence": conf_10m, "days": int(days_to_10m), "rate": round(daily_views_rate, 0)}
     }
+
+import math
+
+def get_cached_target_advice(remaining_days, subs_needed, views_needed, current_subs, current_views):
+    cache_path = PROJECT_ROOT / "data" / "target_coach.json"
+    
+    if cache_path.exists():
+        try:
+            mtime = cache_path.stat().st_mtime
+            if time.time() - mtime < 120:  # 2 minutes cache
+                with open(cache_path, "r") as f:
+                    return json.load(f)["recommendation"]
+        except Exception:
+            pass
+            
+    fallback = f"You are currently averaging {round(current_subs/max(1, 90 - remaining_days), 1)} subscribers/day. Increase posting frequency or improve hooks to reach the required {subs_needed} subscribers/day."
+    
+    try:
+        from utils.config import get_groq_key, get_setting
+        api_key = get_groq_key()
+        if not api_key:
+            return fallback
+            
+        from groq import Groq
+        client = Groq(api_key=api_key, timeout=10.0)
+        model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
+        
+        prompt = (
+            "You are the 'Shorts Orbit AI Target Analyst'. Compare today's progress against required monetization rates:\n"
+            f"- Remaining Days: {remaining_days}\n"
+            f"- Current Subscribers: {current_subs}\n"
+            f"- Required Daily Subscribers: {subs_needed}\n"
+            f"- Required Daily Shorts Views: {views_needed}\n\n"
+            "Write exactly ONE concise, premium, highly actionable sentence (under 30 words) summarizing whether the channel is on track, and what one key action to take."
+        )
+        
+        completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": "Generate target recommendation."}
+            ],
+            model=model,
+            temperature=0.7
+        )
+        advice = completion.choices[0].message.content.strip()
+        if advice.startswith('"') and advice.endswith('"'):
+            advice = advice[1:-1]
+            
+        with open(cache_path, "w") as f:
+            json.dump({"recommendation": advice}, f)
+        return advice
+    except Exception:
+        return fallback
 
 def get_cached_coach_advice(current_subs, current_views, niche_data, speech_rate):
     cache_path = PROJECT_ROOT / "data" / "monetization_coach.json"
@@ -253,9 +308,9 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 )
             """)
             agg_row = cursor.fetchone()
-            db_views = agg_row["total_views"] or 0
-            meta_views = total_views_from_meta if total_views_from_meta is not None else 0
-            total_views = max(db_views, meta_views)
+            tracked_video_views = agg_row["total_views"] or 0
+            channel_total_views = total_views_from_meta if total_views_from_meta is not None else tracked_video_views
+            total_views = channel_total_views
             total_likes = agg_row["total_likes"] or 0
             total_comments = agg_row["total_comments"] or 0
             
@@ -535,6 +590,191 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 next_milestone = "All Milestones Achieved!"
                 reasons = []
                 
+            # Calculate remaining days in rolling 90-day window
+            cursor.execute("SELECT MIN(created_at) FROM videos WHERE status = 'uploaded'")
+            min_row = cursor.fetchone()
+            first_upload_date = None
+            if min_row and min_row[0]:
+                try:
+                    date_part = min_row[0].split('.')[0]
+                    first_upload_date = datetime.strptime(date_part, "%Y-%m-%d %H:%M:%S")
+                except Exception:
+                    pass
+            
+            if first_upload_date is None:
+                first_upload_date = datetime.now()
+                
+            days_elapsed = (datetime.now() - first_upload_date).days
+            remaining_days = max(0, 90 - days_elapsed)
+            
+            # Today's performance actual gains (from latest snapshots)
+            cursor.execute("SELECT date, subscribers, shorts_views, watch_hours FROM monetization_snapshots ORDER BY date DESC LIMIT 2")
+            snapshot_rows = cursor.fetchall()
+            subs_today = 0
+            views_today = 0
+            hours_today = 0.0
+            
+            if len(snapshot_rows) >= 2:
+                subs_today = max(0, (snapshot_rows[0]["subscribers"] or 0) - (snapshot_rows[1]["subscribers"] or 0))
+                views_today = max(0, (snapshot_rows[0]["shorts_views"] or 0) - (snapshot_rows[1]["shorts_views"] or 0))
+                hours_today = max(0.0, (snapshot_rows[0]["watch_hours"] or 0.0) - (snapshot_rows[1]["watch_hours"] or 0.0))
+            elif len(snapshot_rows) == 1:
+                if daily_gains:
+                    views_today = daily_gains[-1]["views"] or 0
+                    hours_today = round(views_today * 0.0044, 1)
+
+            # Fan Funding Targets
+            ff_subs_rem = max(0, 500 - subscribers)
+            ff_views_rem = max(0, 3000000 - total_views)
+            ff_hours_rem = max(0.0, 3000.0 - estimated_watch_hours)
+            
+            if remaining_days > 0:
+                ff_subs_needed = math.ceil(ff_subs_rem / remaining_days)
+                ff_views_needed = math.ceil(ff_views_rem / remaining_days)
+                ff_hours_needed = round(ff_hours_rem / remaining_days, 1)
+            else:
+                ff_subs_needed = 0
+                ff_views_needed = 0
+                ff_hours_needed = 0.0
+                
+            # Status calculations for Fan Funding
+            # Subscribers
+            if subs_today >= ff_subs_needed or ff_subs_needed == 0:
+                ff_subs_status = "Ahead"
+                ff_subs_status_text = f"Ahead by {subs_today - ff_subs_needed}" if subs_today > ff_subs_needed else "On Target"
+            elif subs_today >= 0.9 * ff_subs_needed:
+                ff_subs_status = "Close"
+                ff_subs_status_text = "Close to Target"
+            else:
+                ff_subs_status = "Behind"
+                ff_subs_status_text = f"Behind Target by {ff_subs_needed - subs_today}"
+                
+            # Views
+            if views_today >= ff_views_needed or ff_views_needed == 0:
+                ff_views_status = "Ahead"
+                ff_views_status_text = "Ahead"
+            elif views_today >= 0.9 * ff_views_needed:
+                ff_views_status = "Close"
+                ff_views_status_text = "Close to Target"
+            else:
+                ff_views_status = "Behind"
+                ff_views_status_text = "Behind Target"
+                
+            # Watch Hours
+            if hours_today >= ff_hours_needed or ff_hours_needed == 0.0:
+                ff_hours_status = "Ahead"
+                ff_hours_status_text = "Ahead"
+            elif hours_today >= 0.9 * ff_hours_needed:
+                ff_hours_status = "Close"
+                ff_hours_status_text = "Close to Target"
+            else:
+                ff_hours_status = "Behind"
+                ff_hours_status_text = "Behind Target"
+
+            # Full Monetization Targets
+            full_subs_rem = max(0, 1000 - subscribers)
+            full_views_rem = max(0, 10000000 - total_views)
+            full_hours_rem = max(0.0, 4000.0 - estimated_watch_hours)
+            
+            if remaining_days > 0:
+                full_subs_needed = math.ceil(full_subs_rem / remaining_days)
+                full_views_needed = math.ceil(full_views_rem / remaining_days)
+                full_hours_needed = round(full_hours_rem / remaining_days, 1)
+            else:
+                full_subs_needed = 0
+                full_views_needed = 0
+                full_hours_needed = 0.0
+                
+            # Status calculations for Full Monetization
+            # Subscribers
+            if subs_today >= full_subs_needed or full_subs_needed == 0:
+                full_subs_status = "Ahead"
+                full_subs_status_text = f"Ahead by {subs_today - full_subs_needed}" if subs_today > full_subs_needed else "On Target"
+            elif subs_today >= 0.9 * full_subs_needed:
+                full_subs_status = "Close"
+                full_subs_status_text = "Close to Target"
+            else:
+                full_subs_status = "Behind"
+                full_subs_status_text = f"Behind Target by {full_subs_needed - subs_today}"
+                
+            # Views
+            if views_today >= full_views_needed or full_views_needed == 0:
+                full_views_status = "Ahead"
+                full_views_status_text = "Ahead"
+            elif views_today >= 0.9 * full_views_needed:
+                full_views_status = "Close"
+                full_views_status_text = "Close to Target"
+            else:
+                full_views_status = "Behind"
+                full_views_status_text = "Behind Target"
+                
+            # Watch Hours
+            if hours_today >= full_hours_needed or full_hours_needed == 0.0:
+                full_hours_status = "Ahead"
+                full_hours_status_text = "Ahead"
+            elif hours_today >= 0.9 * full_hours_needed:
+                full_hours_status = "Close"
+                full_hours_status_text = "Close to Target"
+            else:
+                full_hours_status = "Behind"
+                full_hours_status_text = "Behind Target"
+
+            # Get AI advice comparison based on the active next milestone
+            active_subs_needed = ff_subs_needed if subscribers < 500 else full_subs_needed
+            active_views_needed = ff_views_needed if subscribers < 500 else full_views_needed
+            target_advice = get_cached_target_advice(remaining_days, active_subs_needed, active_views_needed, subscribers, total_views)
+            target_advice_full = get_cached_target_advice(remaining_days, full_subs_needed, full_views_needed, subscribers, total_views)
+
+            # Store daily target history to SQLite (upsert for the current date)
+            try:
+                today_str = datetime.now().strftime("%Y-%m-%d")
+                cursor.execute("SELECT id FROM daily_monetization_targets WHERE date = ?", (today_str,))
+                existing_target_row = cursor.fetchone()
+                if existing_target_row:
+                    cursor.execute("""
+                        UPDATE daily_monetization_targets
+                        SET remaining_days = ?, subs_needed_per_day = ?, views_needed_per_day = ?, hours_needed_per_day = ?,
+                            subs_today = ?, views_today = ?, hours_today = ?, subs_status = ?, views_status = ?, hours_status = ?,
+                            ai_recommendation = ?
+                        WHERE id = ?
+                    """, (
+                        remaining_days,
+                        full_subs_needed,
+                        full_views_needed,
+                        full_hours_needed,
+                        subs_today,
+                        views_today,
+                        hours_today,
+                        full_subs_status_text,
+                        full_views_status_text,
+                        full_hours_status_text,
+                        target_advice_full,
+                        existing_target_row[0]
+                    ))
+                else:
+                    cursor.execute("""
+                        INSERT INTO daily_monetization_targets (
+                            date, remaining_days, subs_needed_per_day, views_needed_per_day, hours_needed_per_day,
+                            subs_today, views_today, hours_today, subs_status, views_status, hours_status, ai_recommendation
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        today_str,
+                        remaining_days,
+                        full_subs_needed,
+                        full_views_needed,
+                        full_hours_needed,
+                        subs_today,
+                        views_today,
+                        hours_today,
+                        full_subs_status_text,
+                        full_views_status_text,
+                        full_hours_status_text,
+                        target_advice_full
+                    ))
+                conn.commit()
+            except Exception as dbe:
+                logger.warning(f"Failed to log daily monetization targets: {dbe}")
+
             # Assemble monetization dictionary
             monetization = {
                 "fan_funding": {
@@ -574,12 +814,50 @@ class DashboardHandler(BaseHTTPRequestHandler):
                     "reasons": reasons,
                     "next_milestone": next_milestone,
                     "status_text": "Eligible" if full_eligible else "Not Eligible"
+                },
+                "daily_targets": {
+                    "remaining_days": remaining_days,
+                    "subs_today": subs_today,
+                    "views_today": views_today,
+                    "hours_today": hours_today,
+                    "current_watch_hours": estimated_watch_hours,
+                    "ai_recommendation": target_advice,
+                    "fan_funding": {
+                        "subs_remaining": ff_subs_rem,
+                        "views_remaining": ff_views_rem,
+                        "hours_remaining": ff_hours_rem,
+                        "subs_needed": ff_subs_needed,
+                        "views_needed": ff_views_needed,
+                        "hours_needed": ff_hours_needed,
+                        "subs_status": ff_subs_status,
+                        "subs_status_text": ff_subs_status_text,
+                        "views_status": ff_views_status,
+                        "views_status_text": ff_views_status_text,
+                        "hours_status": ff_hours_status,
+                        "hours_status_text": ff_hours_status_text
+                    },
+                    "full_monetization": {
+                        "subs_remaining": full_subs_rem,
+                        "views_remaining": full_views_rem,
+                        "hours_remaining": full_hours_rem,
+                        "subs_needed": full_subs_needed,
+                        "views_needed": full_views_needed,
+                        "hours_needed": full_hours_needed,
+                        "subs_status": full_subs_status,
+                        "subs_status_text": full_subs_status_text,
+                        "views_status": full_views_status,
+                        "views_status_text": full_views_status_text,
+                        "hours_status": full_hours_status,
+                        "hours_status_text": full_hours_status_text
+                    }
                 }
             }
 
             return {
                 "total_uploads": total_uploads,
                 "total_views": total_views,
+                "channel_total_views": channel_total_views,
+                "tracked_video_views": tracked_video_views,
                 "total_likes": total_likes,
                 "total_comments": total_comments,
                 "videos": videos,
@@ -638,6 +916,15 @@ def start_background_harvester():
                 from python.harvest_analytics import harvest_channel_stats
                 success = harvest_channel_stats()
                 logger.info(f"Background stats harvest completed successfully: {success}")
+            except ModuleNotFoundError as e:
+                logger.error(
+                    "Disabling background stats harvester because interpreter %s is missing module '%s'. "
+                    "Install project requirements in that interpreter or relaunch this dashboard with Python 3.12.",
+                    sys.executable,
+                    e.name or "unknown",
+                    exc_info=True,
+                )
+                break
             except Exception as e:
                 logger.error(f"Error in background stats harvester: {e}", exc_info=True)
             # Sleep for 2 minutes before the next update

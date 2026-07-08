@@ -186,7 +186,23 @@ def harvest_channel_stats():
             readiness_score = int(round((fan_funding_progress + full_progress) / 2.0))
 
             cursor.execute("SELECT id FROM monetization_snapshots WHERE date = ?", (today_date,))
-            if not cursor.fetchone():
+            existing_snapshot = cursor.fetchone()
+            if existing_snapshot:
+                cursor.execute("""
+                    UPDATE monetization_snapshots
+                    SET subscribers = ?, shorts_views = ?, watch_hours = ?, uploads_90_days = ?, progress_percentage = ?, readiness_score = ?
+                    WHERE id = ?
+                """, (
+                    subscribers,
+                    total_channel_views,
+                    estimated_watch_hours,
+                    uploads_90,
+                    fan_funding_progress,
+                    readiness_score,
+                    existing_snapshot[0]
+                ))
+                logger.info(f"Updated daily monetization snapshot for {today_date} (Readiness: {readiness_score}%)")
+            else:
                 cursor.execute("""
                     INSERT INTO monetization_snapshots (date, subscribers, shorts_views, watch_hours, uploads_90_days, progress_percentage, readiness_score)
                     VALUES (?, ?, ?, ?, ?, ?, ?)

@@ -12,6 +12,17 @@ logger = get_logger(__name__)
 
 DB_PATH = DATA_DIR / "shortest_orbit_v3.db"
 
+
+def ensure_column(cursor, table_name: str, column_name: str, definition: str):
+    """Add a missing column to an existing table without breaking old databases."""
+    columns = {
+        row["name"]
+        for row in cursor.execute(f"PRAGMA table_info({table_name})").fetchall()
+    }
+    if column_name not in columns:
+        cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {definition}")
+        logger.info(f"Added missing column '{column_name}' to table '{table_name}'.")
+
 def get_connection():
     """Get SQLite database connection."""
     conn = sqlite3.connect(DB_PATH, timeout=30.0)
@@ -56,6 +67,7 @@ def init_db():
             FOREIGN KEY(topic_id) REFERENCES topics(id)
         )
     """)
+    ensure_column(cursor, "videos", "uploaded_at", "TIMESTAMP")
     
     # Table: hooks
     cursor.execute("""
@@ -97,6 +109,26 @@ def init_db():
             uploads_90_days INTEGER,
             progress_percentage REAL,
             readiness_score REAL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+
+    # Table: daily_monetization_targets
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS daily_monetization_targets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT UNIQUE,
+            remaining_days INTEGER,
+            subs_needed_per_day INTEGER,
+            views_needed_per_day INTEGER,
+            hours_needed_per_day REAL,
+            subs_today INTEGER,
+            views_today INTEGER,
+            hours_today REAL,
+            subs_status TEXT,
+            views_status TEXT,
+            hours_status TEXT,
+            ai_recommendation TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """)
