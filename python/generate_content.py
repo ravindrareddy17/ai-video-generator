@@ -24,7 +24,7 @@ from utils.paths import VIRAL_TOPICS_FILE, CONTENT_FILE, METADATA_FILE
 from utils.config import get_groq_key, get_setting
 from utils.logger import get_logger
 from utils.helpers import save_json, load_json
-from utils.database import get_connection
+from automation.database.connection import get_youtube_conn, get_instagram_conn, get_facebook_conn, get_automation_conn
 
 logger = get_logger(__name__)
 
@@ -304,43 +304,118 @@ def run(topic_data: dict = None) -> tuple[dict, dict]:
     save_json(metadata, METADATA_FILE)
     logger.info(f"YouTube metadata saved to {METADATA_FILE}")
     
-    # Step 2c: Log to SQLite database
+    # Step 2c: Log to centralized database (shortest_orbit_v3.db) and separate platform databases
+    youtube_video_id = 1
+    topic_id = None
+    
+    # 1. Get topic_id from automation.db
+    auto_conn = None
     try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        
-        # Insert video entry
-        cursor.execute("""
-            INSERT INTO videos (title, topic_id, script, status, visual_queries)
-            VALUES (?, (SELECT id FROM topics WHERE title = ?), ?, ?, ?)
-        """, (
-            content["title"],
-            topic_str,
-            content["narration"],
-            "generating",
-            json.dumps([]) # will be filled later in Step 5
-        ))
-        video_id = cursor.lastrowid
-        
-        # Insert hooks variations
+        auto_conn = get_automation_conn()
+        auto_cursor = auto_conn.cursor()
+        row = auto_cursor.execute("SELECT id FROM topics WHERE title = ?", (topic_str,)).fetchone()
+        if row:
+            topic_id = row["id"]
+    except Exception as e:
+        logger.warning(f"Could not find topic_id from automation.db: {e}")
+    finally:
+        if auto_conn:
+            auto_conn.close()
+
+    # 2. Write to central shortest_orbit_v3.db
+    central_conn = None
+    try:
+        central_conn = get_connection()
+        central_cursor = central_conn.cursor()
+        central_cursor.execute("""
+            INSERT INTO videos (title, topic_id, script, status)
+            VALUES (?, ?, ?, ?)
+        """, (content["title"], topic_id, content["narration"], "generating"))
+        central_video_id = central_cursor.lastrowid
+        central_conn.commit()
+        logger.info(f"Video logged to central shortest_orbit_v3.db as ID: {central_video_id}")
+    except Exception as e:
+        logger.warning(f"Failed to log video to central shortest_orbit_v3.db: {e}")
+    finally:
+        if central_conn:
+            central_conn.close()
+
+    # 3. Write to youtube.db
+    yt_conn = None
+    try:
+        yt_conn = get_youtube_conn()
+        yt_cursor = yt_conn.cursor()
+        yt_cursor.execute("""
+            INSERT INTO videos (title, topic_id, script, status)
+            VALUES (?, ?, ?, ?)
+        """, (content["title"], topic_id, content["narration"], "generating"))
+        youtube_video_id = yt_cursor.lastrowid
+        yt_conn.commit()
+        logger.info(f"Video logged to youtube.db as ID: {youtube_video_id}")
+    except Exception as e:
+        logger.warning(f"Failed to log video to youtube.db: {e}")
+    finally:
+        if yt_conn:
+            yt_conn.close()
+
+    # 4. Write to instagram.db
+    ig_conn = None
+    try:
+        ig_conn = get_instagram_conn()
+        ig_cursor = ig_conn.cursor()
+        ig_cursor.execute("""
+            INSERT INTO videos (title, topic_id, script, status)
+            VALUES (?, ?, ?, ?)
+        """, (content["title"], topic_id, content["narration"], "generating"))
+        ig_conn.commit()
+        logger.info("Video logged to instagram.db")
+    except Exception as e:
+        logger.warning(f"Failed to log video to instagram.db: {e}")
+    finally:
+        if ig_conn:
+            ig_conn.close()
+
+    # 5. Write to facebook.db
+    fb_conn = None
+    try:
+        fb_conn = get_facebook_conn()
+        fb_cursor = fb_conn.cursor()
+        fb_cursor.execute("""
+            INSERT INTO videos (title, topic_id, script, status)
+            VALUES (?, ?, ?, ?)
+        """, (content["title"], topic_id, content["narration"], "generating"))
+        fb_conn.commit()
+        logger.info("Video logged to facebook.db")
+    except Exception as e:
+        logger.warning(f"Failed to log video to facebook.db: {e}")
+    finally:
+        if fb_conn:
+            fb_conn.close()
+
+    # 6. Log hooks variations to automation.db
+    auto_conn = None
+    try:
+        auto_conn = get_automation_conn()
+        auto_cursor = auto_conn.cursor()
         hooks_list = content.get("hooks_data", [])
         for h in hooks_list:
             is_selected = 1 if h.get("text") == content.get("hook") else 0
-            cursor.execute("""
+            auto_cursor.execute("""
                 INSERT INTO hooks (video_id, text, score, selected)
                 VALUES (?, ?, ?, ?)
             """, (
-                video_id,
+                youtube_video_id, # linked to YouTube video index as standard
                 h.get("text"),
                 float(h.get("score", 50.0)),
                 is_selected
             ))
-            
-        conn.commit()
-        conn.close()
-        logger.info(f"Video #{video_id} and hooks logged to SQLite database.")
+        auto_conn.commit()
+        logger.info("Video hooks logged to automation.db")
     except Exception as e:
-        logger.warning(f"Failed to log video or hooks to database: {e}")
+        logger.warning(f"Failed to log hooks to automation.db: {e}")
+    finally:
+        if auto_conn:
+            auto_conn.close()
         
     return content, metadata
 

@@ -53,20 +53,22 @@ def get_recent_used_visual_ids() -> set[str]:
     used_ids = set()
     try:
         conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT visual_queries FROM videos ORDER BY id DESC LIMIT 15")
-        rows = cursor.fetchall()
-        for row in rows:
-            val = row[0]
-            if val:
-                try:
-                    data = json.loads(val)
-                    ids = data.get("used_visual_ids", [])
-                    for vid in ids:
-                        used_ids.add(str(vid))
-                except Exception:
-                    pass
-        conn.close()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT visual_queries FROM videos ORDER BY id DESC LIMIT 15")
+            rows = cursor.fetchall()
+            for row in rows:
+                val = row[0]
+                if val:
+                    try:
+                        data = json.loads(val)
+                        ids = data.get("used_visual_ids", [])
+                        for vid in ids:
+                            used_ids.add(str(vid))
+                    except Exception:
+                        pass
+        finally:
+            conn.close()
     except Exception as e:
         logger.warning(f"Failed to query used visual IDs: {e}")
     return used_ids
@@ -290,25 +292,27 @@ def run() -> list[Path]:
     # Update SQLite database video row with list of downloaded visual IDs
     try:
         conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("SELECT id FROM videos WHERE status = 'generating' ORDER BY id DESC LIMIT 1")
-        row = cursor.fetchone()
-        if row:
-            vid_id = row[0]
-            cursor.execute("""
-                UPDATE videos 
-                SET visual_queries = ? 
-                WHERE id = ?
-            """, (
-                json.dumps({
-                    "queries": [item.get("query") for item in queries_data],
-                    "used_visual_ids": list(downloaded_visual_ids)
-                }),
-                vid_id
-            ))
-            conn.commit()
-            logger.info(f"Updated video #{vid_id} in database with downloaded asset IDs: {list(downloaded_visual_ids)}")
-        conn.close()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM videos WHERE status = 'generating' ORDER BY id DESC LIMIT 1")
+            row = cursor.fetchone()
+            if row:
+                vid_id = row[0]
+                cursor.execute("""
+                    UPDATE videos 
+                    SET visual_queries = ? 
+                    WHERE id = ?
+                """, (
+                    json.dumps({
+                        "queries": [item.get("query") for item in queries_data],
+                        "used_visual_ids": list(downloaded_visual_ids)
+                    }),
+                    vid_id
+                ))
+                conn.commit()
+                logger.info(f"Updated video #{vid_id} in database with downloaded asset IDs: {list(downloaded_visual_ids)}")
+        finally:
+            conn.close()
     except Exception as e:
         logger.warning(f"Failed to record visual ID metadata in database: {e}")
         

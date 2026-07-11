@@ -160,6 +160,35 @@ def get_gemini_key() -> str:
 
 
 # ---------------------------------------------------------------------------
+# Meta / Facebook / Instagram accessors
+# ---------------------------------------------------------------------------
+
+def get_meta_app_id() -> str:
+    """Return the ``META_APP_ID`` from the environment."""
+    return _require_env("META_APP_ID")
+
+
+def get_meta_app_secret() -> str:
+    """Return the ``META_APP_SECRET`` from the environment."""
+    return _require_env("META_APP_SECRET")
+
+
+def get_meta_access_token() -> str:
+    """Return the ``META_ACCESS_TOKEN`` from the environment."""
+    return _require_env("META_ACCESS_TOKEN")
+
+
+def get_facebook_page_id() -> str:
+    """Return the ``FACEBOOK_PAGE_ID`` from the environment."""
+    return _require_env("FACEBOOK_PAGE_ID")
+
+
+def get_instagram_account_id() -> str:
+    """Return the ``INSTAGRAM_BUSINESS_ACCOUNT_ID`` from the environment."""
+    return _require_env("INSTAGRAM_BUSINESS_ACCOUNT_ID")
+
+
+# ---------------------------------------------------------------------------
 # Self-test
 # ---------------------------------------------------------------------------
 

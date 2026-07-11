@@ -26,7 +26,7 @@ from utils.config import load_settings, get_setting, get_groq_key
 from utils.logger import get_logger
 from utils.helpers import save_json
 from utils.retry import retry
-from utils.database import get_connection
+from automation.database.connection import get_automation_conn
 
 logger = get_logger(__name__)
 
@@ -119,31 +119,140 @@ def fetch_google_news() -> list[dict]:
     return topics
 
 
+@retry(max_attempts=3, delay=2.0, backoff=2.0)
+def fetch_rss_feed(url: str, source_name: str, base_score: int = 40) -> list[dict]:
+    """Helper to parse a standard RSS feed and return list of topics."""
+    logger.info(f"Fetching RSS feed from {source_name}...")
+    topics = []
+    try:
+        feed = feedparser.parse(url)
+        if hasattr(feed, 'entries') and feed.entries:
+            for entry in feed.entries:
+                title = entry.title
+                if " - " in title:
+                    title = title.rsplit(" - ", 1)[0]
+                topics.append({
+                    "title": title.strip(),
+                    "source": source_name,
+                    "score_signal": base_score
+                })
+        logger.info(f"Fetched {len(topics)} topics from {source_name}.")
+    except Exception as e:
+        logger.warning(f"Error fetching RSS from {source_name}: {e}")
+    return topics
+
+
+@retry(max_attempts=3, delay=2.0, backoff=2.0)
+def fetch_wikipedia_trending() -> list[dict]:
+    """Fetch top english wikipedia pageviews for yesterday."""
+    logger.info("Fetching Wikipedia Trending pages...")
+    topics = []
+    headers = {
+        "User-Agent": "TheShortestOrbitV3/1.0 (contact@theshortestorbit.com)"
+    }
+    from datetime import datetime, timedelta
+    yesterday = (datetime.now() - timedelta(days=1))
+    year = yesterday.strftime("%Y")
+    month = yesterday.strftime("%m")
+    day = yesterday.strftime("%d")
+    
+    url = f"https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/{year}/{month}/{day}"
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            articles = data.get("items", [{}])[0].get("articles", [])
+            skipped_keywords = ["main_page", "special:", "search", "wikipedia:", "portal:", "file:", "help:", "talk:"]
+            for art in articles[:100]:
+                title = art.get("article", "").replace("_", " ")
+                if any(kw in title.lower() for kw in skipped_keywords):
+                    continue
+                science_keywords = ["space", "universe", "planet", "galaxy", "nasa", "spacex", "telescope", "physics", 
+                                    "quantum", "ai", "robot", "intelligence", "biology", "dna", "chemistry", "star", 
+                                    "fusion", "nature", "evolution", "molecule", "earth", "moon", "mars"]
+                if any(kw in title.lower() for kw in science_keywords):
+                    topics.append({
+                        "title": f"Wikipedia Trend: {title}",
+                        "source": "Wikipedia Trending",
+                        "score_signal": min(art.get("views", 0) // 1000, 100)
+                    })
+    except Exception as e:
+        logger.error(f"Error fetching Wikipedia Trending: {e}")
+    logger.info(f"Fetched {len(topics)} topics from Wikipedia.")
+    return topics
+
+
 def collect_all_topics() -> list[dict]:
-    """Gather topics from all sources and deduplicate them."""
+    """Gather topics from all 15 sources and deduplicate them."""
     settings = load_settings()
-    subreddits = ['space', 'science', 'Futurology', 'artificial', 'nature', 'biology']
+    subreddits = get_setting('trending', 'subreddits', ['space', 'science', 'Futurology', 'artificial', 'nature', 'biology'])
     geo = get_setting('trending', 'google_trends_geo', 'US')
     
     all_topics = []
     
-    # Try Trends
+    # 1. Google Trends
     try:
         all_topics.extend(fetch_google_trends(geo))
     except Exception as e:
         logger.error(f"Failed to fetch Google Trends: {e}")
         
-    # Try Reddit
+    # 2. Reddit subreddits
     try:
         all_topics.extend(fetch_reddit_topics(subreddits))
     except Exception as e:
         logger.error(f"Failed to fetch Reddit topics: {e}")
         
-    # Try Google News
+    # 3. Google News
     try:
         all_topics.extend(fetch_google_news())
     except Exception as e:
         logger.error(f"Failed to fetch Google News: {e}")
+
+    # Helper function to safely extend RSS feeds
+    def safe_fetch_rss(url: str, source_name: str, score: float):
+        try:
+            feeds = fetch_rss_feed(url, source_name, score)
+            all_topics.extend(feeds)
+        except Exception as err:
+            logger.error(f"Failed to fetch RSS feed for {source_name} ({url}): {err}")
+
+    # 4. NASA RSS feed
+    safe_fetch_rss("https://www.nasa.gov/feed/", "NASA News", 55)
+    
+    # 5. ESA Space Science
+    safe_fetch_rss("https://www.esa.int/rssfeed/Our_Activities/Space_Science", "ESA Space Science", 50)
+    
+    # 6. SpaceX (via Google News RSS search)
+    safe_fetch_rss("https://news.google.com/rss/search?q=SpaceX&hl=en-US&gl=US&ceid=US:en", "SpaceX", 60)
+    
+    # 7. MIT News
+    safe_fetch_rss("https://news.mit.edu/rss/feed", "MIT News", 50)
+    
+    # 8. Nature journal
+    safe_fetch_rss("https://www.nature.com/nature.rss", "Nature Journal", 55)
+    
+    # 9 & 10. Science Daily (Space & AI)
+    safe_fetch_rss("https://www.sciencedaily.com/rss/space_time/astronomy.xml", "ScienceDaily Space", 45)
+    safe_fetch_rss("https://www.sciencedaily.com/rss/computers_math/artificial_intelligence.xml", "ScienceDaily AI", 50)
+    
+    # 11 & 12. arXiv (AI & Astro)
+    safe_fetch_rss("https://export.arxiv.org/rss/cs.AI", "arXiv AI", 45)
+    safe_fetch_rss("https://export.arxiv.org/rss/astro-ph", "arXiv Astro", 45)
+    
+    # 13. OpenAI Blog (via Google News keyword)
+    safe_fetch_rss("https://news.google.com/rss/search?q=OpenAI&hl=en-US&gl=US&ceid=US:en", "OpenAI", 60)
+    
+    # 14. Anthropic Blog (via Google News keyword)
+    safe_fetch_rss("https://news.google.com/rss/search?q=Anthropic&hl=en-US&gl=US&ceid=US:en", "Anthropic", 55)
+    
+    # 15. DeepMind, Microsoft AI, and Wikipedia Trending
+    safe_fetch_rss("https://news.google.com/rss/search?q=%22Google+DeepMind%22&hl=en-US&gl=US&ceid=US:en", "DeepMind", 60)
+    safe_fetch_rss("https://news.google.com/rss/search?q=%22Microsoft+AI%22&hl=en-US&gl=US&ceid=US:en", "Microsoft AI", 55)
+    try:
+        all_topics.extend(fetch_wikipedia_trending())
+    except Exception as e:
+        logger.error(f"Failed to fetch Wikipedia Trending: {e}")
+        logger.error(f"Failed to fetch Wikipedia Trending: {e}")
         
     # Deduplicate based on title similarity/exact match
     seen_titles = set()
@@ -155,7 +264,7 @@ def collect_all_topics() -> list[dict]:
             seen_titles.add(norm_title)
             unique_topics.append(t)
             
-    logger.info(f"Total unique topics collected: {len(unique_topics)}")
+    logger.info(f"Total unique topics collected across 15 sources: {len(unique_topics)}")
     return unique_topics
 
 
@@ -203,24 +312,30 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             "hook_line": "Scientists just found something hiding in our solar system.",
             "source": "Fallback",
             "trend_score": 50.0,
-            "engagement_potential": 50.0,
-            "retention_potential": 50.0
+            "competition_score": 50.0,
+            "audience_interest": 50.0,
+            "evergreen_score": 50.0,
+            "virality_score": 50.0,
+            "education_score": 50.0,
+            "ctr_prediction": 50.0,
+            "retention_prediction": 50.0,
+            "overall_growth_score": 50.0
         }
         
     api_key = get_groq_key()
     model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     client = Groq(api_key=api_key)
     
-    # Take top 30 candidates to limit token usage
+    # Take top 40 candidates to limit token usage
     topics_sorted = sorted(topics, key=lambda x: x["score_signal"], reverse=True)
-    top_candidates = topics_sorted[:30]
+    top_candidates = topics_sorted[:40]
     
     candidate_list_str = "\n".join([f"- {t['title']} (Source: {t['source']})" for t in top_candidates])
     
     system_prompt = (
         "SYSTEM PROMPT — The Shortest Orbit: Viral Topic Selector v3.0\n\n"
         "You take raw current news items about space, science, or AI and convert "
-        "each into a viral-ready Shorts concept. Your job is to extract and score the single "
+        "each into a viral-ready Shorts concept. Your job is to extract the single "
         "most shocking, curiosity-driving angle inside it that a general audience would stop scrolling for.\n\n"
         "Input: a list of recent news headlines/summaries.\n"
         "Output: valid JSON object with a single 'topics' key containing an array of objects:\n\n"
@@ -231,25 +346,24 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "      \"viral_angle\": \"the ONE most surprising fact hiding in this story — stated in plain language a 12-year-old would understand\",\n"
         "      \"hook_line\": \"first 2 seconds — must sound almost unbelievable, framed as a question or shocking statement. MUST be a scientifically true statement, NEVER fabricate statistics, numbers, or percentages.\",\n"
         "      \"why_it_could_go_viral\": \"1 sentence: what makes people want to comment, share, or argue about this\",\n"
-        "      \"trend_score\": 75.5, // Float between 0.0 and 100.0, scoring current public interest and growth velocity\n"
-        "      \"engagement_potential\": 80.0, // Float between 0.0 and 100.0, scoring potential to trigger comments/debates\n"
-        "      \"retention_potential\": 85.0, // Float between 0.0 and 100.0, scoring predictability, visual appeal, and simplicity\n"
+        "      \"trend_score\": 75.5, // Float between 0.0 and 100.0, scoring current public interest\n"
+        "      \"competition_score\": 45.0, // Float between 0.0 and 100.0, scoring how many channels are posting about this\n"
+        "      \"audience_interest\": 85.0, // Float between 0.0 and 100.0, scoring interest level of general public\n"
+        "      \"evergreen_score\": 60.0, // Float between 0.0 and 100.0, scoring how long this topic stays relevant\n"
+        "      \"virality_score\": 80.0, // Float between 0.0 and 100.0, scoring shareability\n"
+        "      \"education_score\": 70.0, // Float between 0.0 and 100.0, scoring educational value\n"
+        "      \"ctr_prediction\": 78.0, // Float between 0.0 and 100.0, predicting click-through rate\n"
+        "      \"retention_prediction\": 75.0, // Float between 0.0 and 100.0, predicting audience retention\n"
         "      \"risk_flag\": \"note if this topic is too technical, too uncertain/early-stage research, or too niche to simplify honestly — flag rather than force it\"\n"
         "    }\n"
         "  ]\n"
         "}\n\n"
         "RULES:\n"
         "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify.\n"
-        "2. Prioritize stories with a 'wait, that's real?' reaction over purely incremental research news. Shift focus towards 'bizarre science facts,' 'cosmic scale comparisons,' and 'sci-fi real-life tech'.\n"
-        "3. Never sensationalize to the point of inaccuracy — surprising != false.\n"
-        "4. The hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking' to capture immediate viewer attention.\n"
-        "5. CRITICAL: The chosen topic MUST belong to one of these three solid science pillars, with a strong bias toward the top two:\n"
-        "   - Advanced AI, Robotics & Technology (Highest Priority: e.g., AI decoding ancient texts, protein mapping, LLMs, neural networks, robotics advances).\n"
-        "   - Wildlife, Animal Behavior & Biology (Highest Priority: e.g., bizarre animal behaviors, evolutionary traits, genetic discoveries, biology mysteries).\n"
-        "   - Space, Astronomy & Hard Physics (Secondary Priority: e.g., exoplanet discoveries, JWST, black holes, fusion energy, quantum physics. Keep a healthy supply of these topics as they have great international appeal for auto-dubbing).\n"
-        "6. STRICT BAN: Do NOT select political news, geopolitical wars, financial stocks, lifestyle/beauty hacks (like hair loss or habits), or speculative pop-psychology. The topic must be verifiable and backed by hard scientific facts so that it passes fact-checking.\n"
-        "7. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers (e.g., do NOT say '90% of documents' or '1 in 5 people' unless that is a direct, verified fact from the news story).\n"
-        "8. NICHE BIAS RULE: Favor topics from Advanced AI & Tech and Wildlife & Biology. If a topic falls into one of these two pillars, it should receive a high score to prioritize it for content generation. However, ensure we still generate Space & Astronomy topics regularly."
+        "2. Hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking'.\n"
+        "3. CRITICAL: The chosen topic MUST belong to one of these three solid science pillars: Advanced AI/Robotics, Wildlife/Biology, or Space/Hard Physics.\n"
+        "4. STRICT BAN: Do NOT select political news, geopolitical wars, financial stocks, lifestyle/beauty hacks, or speculative pop-psychology.\n"
+        "5. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers."
     )
     
     user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}"
@@ -278,13 +392,10 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             clean_text = clean_text[3:-3]
             
         result_dict = json.loads(clean_text)
-        # Handle cases where output might be nested under "topics" or is just a list
         concepts = result_dict if isinstance(result_dict, list) else result_dict.get("topics", result_dict.get("concepts", []))
         if not concepts and isinstance(result_dict, dict):
-            # If the LLM returned a single JSON object instead of an array of objects
             concepts = [result_dict]
             
-        # Filter out concepts with a risk flag
         safe_concepts = []
         for c in concepts:
             risk = c.get("risk_flag", "")
@@ -298,11 +409,16 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         db_candidates = []
         for c in safe_concepts:
             ts = float(c.get("trend_score", 50.0))
-            ep = float(c.get("engagement_potential", 50.0))
-            rp = float(c.get("retention_potential", 50.0))
+            comp = float(c.get("competition_score", 50.0))
+            ai = float(c.get("audience_interest", 50.0))
+            eg = float(c.get("evergreen_score", 50.0))
+            vs = float(c.get("virality_score", 50.0))
+            eds = float(c.get("education_score", 50.0))
+            ctr = float(c.get("ctr_prediction", 50.0))
+            ret = float(c.get("retention_prediction", 50.0))
             
-            # Base final score calculation
-            final_score = (ts * 0.4) + (ep * 0.3) + (rp * 0.3)
+            # Overall growth score calculation using strict weights
+            overall_growth_score = (ts * 0.2) + (ai * 0.2) + (vs * 0.2) + (eds * 0.1) + (ctr * 0.15) + (ret * 0.15)
             
             # Apply priority boost for AI and Biology niches
             text_to_check = (c.get("viral_angle", "") + " " + c.get("hook_line", "")).lower()
@@ -311,63 +427,83 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
                 "biology", "animal", "creature", "evolution", "genetics", "wildlife", "biotech", "dna", "species"
             ])
             if is_priority:
-                final_score += 15.0  # +15 point boost
+                overall_growth_score = min(overall_growth_score + 15.0, 100.0)
                 
-            c["final_score"] = final_score
+            c["trend_score"] = ts
+            c["competition_score"] = comp
+            c["audience_interest"] = ai
+            c["evergreen_score"] = eg
+            c["virality_score"] = vs
+            c["education_score"] = eds
+            c["ctr_prediction"] = ctr
+            c["retention_prediction"] = ret
+            c["overall_growth_score"] = overall_growth_score
             c["selected_topic"] = f"{c.get('hook_line')} {c.get('viral_angle')}"
+            c["source_headline"] = c.get("source_headline", best_fallback["title"] if 'best_fallback' in locals() else "Unknown Source")
+            c["source"] = c["source_headline"]
             
             db_candidates.append(c)
             
-        # Sort by final score
-        db_candidates.sort(key=lambda x: x.get("final_score", 0.0), reverse=True)
+        # Sort by overall growth score
+        db_candidates.sort(key=lambda x: x.get("overall_growth_score", 0.0), reverse=True)
         best_concept = db_candidates[0]
         
         # Save all evaluated candidates into the database
-        conn = get_connection()
-        cursor = conn.cursor()
-        for cand in db_candidates:
-            try:
-                cursor.execute("""
-                    INSERT OR IGNORE INTO topics (title, source, trend_score, engagement_potential, retention_potential, status)
-                    VALUES (?, ?, ?, ?, ?, 'pending')
-                """, (
-                    cand.get("selected_topic"),
-                    cand.get("source_headline"),
-                    float(cand.get("trend_score", 50.0)),
-                    float(cand.get("engagement_potential", 50.0)),
-                    float(cand.get("retention_potential", 50.0))
-                ))
-            except Exception as e:
-                logger.warning(f"Database topic insertion error: {e}")
-                
-        # Set the chosen one to 'used'
-        cursor.execute("UPDATE topics SET status = 'used' WHERE title = ?", (best_concept.get("selected_topic"),))
-        conn.commit()
-        conn.close()
+        conn = get_automation_conn()
+        try:
+            cursor = conn.cursor()
+            for cand in db_candidates:
+                try:
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO topics (
+                            title, source, trend_score, engagement_potential, retention_potential,
+                            competition_score, audience_interest, evergreen_score, virality_score,
+                            education_score, ctr_prediction, retention_prediction, overall_growth_score, status
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+                    """, (
+                        cand.get("selected_topic"),
+                        cand.get("source_headline"),
+                        float(cand.get("trend_score", 50.0)),
+                        float(cand.get("audience_interest", 50.0)),
+                        float(cand.get("retention_prediction", 50.0)),
+                        float(cand.get("competition_score", 50.0)),
+                        float(cand.get("audience_interest", 50.0)),
+                        float(cand.get("evergreen_score", 50.0)),
+                        float(cand.get("virality_score", 50.0)),
+                        float(cand.get("education_score", 50.0)),
+                        float(cand.get("ctr_prediction", 50.0)),
+                        float(cand.get("retention_prediction", 50.0)),
+                        float(cand.get("overall_growth_score", 50.0))
+                    ))
+                except Exception as e:
+                    logger.warning(f"Database topic insertion error: {e}")
+            cursor.execute("UPDATE topics SET status = 'used' WHERE title = ?", (best_concept.get("selected_topic"),))
+            conn.commit()
+        finally:
+            conn.close()
+            
+        logger.info(f"Groq selected and scored topic. Growth Score: {best_concept.get('overall_growth_score'):.2f} | Hook: '{best_concept.get('hook_line')}'")
         
-        logger.info(f"Groq selected and scored topic. Final Score: {best_concept.get('final_score'):.2f} | Hook: '{best_concept.get('hook_line')}'")
-        
-        return {
-            "selected_topic": best_concept.get("selected_topic"),
-            "viral_angle": best_concept.get("viral_angle"),
-            "hook_line": best_concept.get("hook_line"),
-            "source": best_concept.get("source_headline"),
-            "trend_score": float(best_concept.get("trend_score", 50.0)),
-            "engagement_potential": float(best_concept.get("engagement_potential", 50.0)),
-            "retention_potential": float(best_concept.get("retention_potential", 50.0))
-        }
+        return best_concept
         
     except Exception as e:
         logger.error(f"Error calling Groq for topic selection: {e}")
-        best_fallback = top_candidates[0]
+        best_fallback = top_candidates[0] if top_candidates else {"title": "Default space mystery"}
         return {
-            "selected_topic": best_fallback["title"],
-            "viral_angle": best_fallback["title"],
+            "selected_topic": best_fallback.get("title", "Default space mystery"),
+            "viral_angle": best_fallback.get("title", "Default space mystery"),
             "hook_line": "Did you know about this?",
-            "source": best_fallback["source"],
+            "source": best_fallback.get("source", "Fallback"),
             "trend_score": 50.0,
-            "engagement_potential": 50.0,
-            "retention_potential": 50.0
+            "competition_score": 50.0,
+            "audience_interest": 50.0,
+            "evergreen_score": 50.0,
+            "virality_score": 50.0,
+            "education_score": 50.0,
+            "ctr_prediction": 50.0,
+            "retention_prediction": 50.0,
+            "overall_growth_score": 50.0
         }
 
 

@@ -36,21 +36,28 @@ import download_music
 import add_audio
 import burn_subtitles
 import generate_thumbnail
-import upload_youtube
-import harvest_analytics
-import self_learning
+import publish_service
+import automation.youtube.analytics as yt_analytics
+import automation.instagram.analytics as ig_analytics
+import automation.facebook.analytics as fb_analytics
+import automation.ai.learning as ai_learning
+import automation.ai.prediction as ai_prediction
 
 logger = get_logger("orchestrator")
 
 
 def mark_pending_videos_failed():
     try:
-        from utils.database import get_connection
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute("UPDATE videos SET status = 'failed' WHERE status = 'generating'")
-        conn.commit()
-        conn.close()
+        from automation.database.connection import get_youtube_conn, get_instagram_conn, get_facebook_conn
+        for conn_getter in [get_youtube_conn, get_instagram_conn, get_facebook_conn]:
+            try:
+                conn = conn_getter()
+                cursor = conn.cursor()
+                cursor.execute("UPDATE videos SET status = 'failed' WHERE status = 'generating'")
+                conn.commit()
+                conn.close()
+            except Exception as e:
+                logger.warning(f"Could not update status to failed in DB: {e}")
     except Exception as e:
         logger.warning(f"Could not update database status to failed: {e}")
 
@@ -157,24 +164,38 @@ def run_pipeline() -> bool:
         thumbnail = generate_thumbnail.run()
         logger.info(f"Step 10 Complete. Thumbnail saved at: {thumbnail.name} ({time.time() - step_start:.2f}s)")
         
-        # ── Step 11: Upload to YouTube ──────────────────────────────
+        # ── Step 11: Multi-Platform Publishing (YouTube + Meta) ──────
         step_start = time.time()
-        logger.info(">>> Step 11: Uploading video to YouTube...")
-        youtube_url = upload_youtube.run()
-        upload_succeeded = bool(youtube_url)
-        logger.info(f"Step 11 Complete. YouTube URL: {youtube_url} ({time.time() - step_start:.2f}s)")
+        logger.info(">>> Step 11: Publishing to configured platforms...")
+        publish_res = publish_service.run()
+        youtube_url = publish_res.youtube_url
+        facebook_url = publish_res.facebook_url
+        instagram_url = publish_res.instagram_url
+        upload_succeeded = publish_res.status in ("success", "partial")
+        logger.info(f"Step 11 Complete. Status: {publish_res.status} ({time.time() - step_start:.2f}s)")
         
-        # ── Step 11.5: Harvest YouTube Analytics ────────────────────
+        # ── Step 11.5: Harvest Platform-Specific Analytics ───────────
         step_start = time.time()
-        logger.info(">>> Step 11.5: Harvesting YouTube channel analytics...")
-        harvest_analytics.run()
-        logger.info(f"Step 11.5 Complete. Stats synced to database. ({time.time() - step_start:.2f}s)")
+        logger.info(">>> Step 11.5: Harvesting channel analytics for all configured platforms...")
+        try:
+            yt_analytics.run()
+            ig_analytics.run()
+            fb_analytics.run()
+            logger.info("Independent platform analytics harvested successfully.")
+        except Exception as ae:
+            logger.warning(f"Analytics harvesting failed: {ae}")
+        logger.info(f"Step 11.5 Complete. ({time.time() - step_start:.2f}s)")
         
-        # ── Step 12: Run Self-Learning Engine ───────────────────────
+        # ── Step 12: Run Decoupled AI Self-Learning Engine ───────────
         step_start = time.time()
         logger.info(">>> Step 12: Running self-learning feedback optimization loop...")
-        self_learning.run()
-        logger.info(f"Step 12 Complete. Prompt optimization weights updated. ({time.time() - step_start:.2f}s)")
+        try:
+            ai_learning.run()
+            ai_prediction.run_predictions()
+            logger.info("Decoupled self-learning insights compiled successfully.")
+        except Exception as le:
+            logger.warning(f"Decoupled self-learning cycle failed: {le}")
+        logger.info(f"Step 12 Complete. ({time.time() - step_start:.2f}s)")
         
         # ── Pipeline Success Summary ────────────────────────────────
         total_time = time.time() - start_time
@@ -191,6 +212,10 @@ def run_pipeline() -> bool:
             logger.info(f"Watch live on YouTube: {youtube_url}")
         else:
             logger.error("YouTube upload failed or was skipped. Local assets were generated, but automation did not finish end-to-end.")
+        if facebook_url:
+            logger.info(f"Facebook Reel: {facebook_url}")
+        if instagram_url:
+            logger.info(f"Instagram Reel: {instagram_url}")
             
         # Clean up temporary processing directories/files
         try:

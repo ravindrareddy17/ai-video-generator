@@ -1,0 +1,200 @@
+import sys
+import json
+from pathlib import Path
+from datetime import datetime
+
+# Bootstrap project imports
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+
+from automation.youtube.upload import get_authenticated_service
+from automation.database.connection import get_youtube_conn
+from utils.logger import get_logger
+
+logger = get_logger("youtube.analytics")
+
+def harvest_channel_stats() -> bool:
+    """Harvest real-time stats (views, likes, comments) for all uploaded YouTube videos."""
+    logger.info("Starting YouTube analytics harvesting...")
+    
+    youtube = get_authenticated_service()
+    if not youtube:
+        logger.error("YouTube service is not authenticated. Skipping stats harvest.")
+        return False
+        
+    try:
+        # 1. Fetch channel's uploads playlist ID and subscriber count statistics
+        channels_response = youtube.channels().list(mine=True, part="contentDetails,statistics").execute()
+        if not channels_response.get("items"):
+            logger.error("No channel found for current credentials.")
+            return False
+            
+        uploads_playlist_id = channels_response["items"][0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        
+        # Extract subscriber count and total channel views
+        stats = channels_response["items"][0].get("statistics", {})
+        subscribers = int(stats.get("subscriberCount", 0))
+        total_channel_views = int(stats.get("viewCount", 0))
+        
+        # Save channel metadata
+        metadata_file = Path(__file__).resolve().parent.parent.parent / "data" / "channel_metadata.json"
+        try:
+            metadata = {}
+            if metadata_file.exists():
+                try:
+                    with open(metadata_file, "r") as f:
+                        metadata = json.load(f)
+                except Exception:
+                    pass
+            metadata["subscribers"] = subscribers
+            metadata["total_channel_views"] = total_channel_views
+            with open(metadata_file, "w") as f:
+                json.dump(metadata, f, indent=2)
+            logger.info(f"Saved channel subscribers: {subscribers}, views: {total_channel_views}")
+        except Exception as me:
+            logger.warning(f"Could not save channel metadata: {me}")
+        
+        # 2. Retrieve last 50 video IDs from uploads playlist
+        playlist_response = youtube.playlistItems().list(
+            playlistId=uploads_playlist_id,
+            part="snippet",
+            maxResults=50
+        ).execute()
+        
+        items = playlist_response.get("items", [])
+        if not items:
+            logger.info("No YouTube videos found on the channel.")
+            return True
+            
+        video_map = {}
+        for item in items:
+            title = item["snippet"]["title"]
+            video_id = item["snippet"]["resourceId"]["videoId"]
+            published_at_raw = item["snippet"].get("publishedAt", "")
+            published_at = published_at_raw.replace("T", " ").replace("Z", "")[:19]
+            video_map[video_id] = {
+                "title": title,
+                "published_at": published_at
+            }
+            
+        video_ids = list(video_map.keys())
+        
+        # 3. Query video statistics in batches of 50
+        stats_response = youtube.videos().list(
+            id=",".join(video_ids),
+            part="statistics"
+        ).execute()
+        
+        # Pre-cache comments from YouTube
+        video_comments = {}
+        for video_stat in stats_response.get("items", []):
+            video_id = video_stat["id"]
+            stats = video_stat.get("statistics", {})
+            comments = int(stats.get("commentCount", 0))
+            comment_texts = []
+            if comments > 0:
+                try:
+                    comments_response = youtube.commentThreads().list(
+                        videoId=video_id,
+                        part="snippet",
+                        maxResults=5,
+                        textFormat="plainText"
+                    ).execute()
+                    for c_item in comments_response.get("items", []):
+                        top_comment = c_item["snippet"]["topLevelComment"]["snippet"]
+                        comment_texts.append(top_comment["textDisplay"])
+                except Exception as ce:
+                    logger.warning(f"Could not fetch comments for video {video_id}: {ce}")
+            video_comments[video_id] = comment_texts
+
+        conn = get_youtube_conn()
+        try:
+            cursor = conn.cursor()
+        
+            today_date = datetime.now().strftime("%Y-%m-%d")
+        
+            for video_stat in stats_response.get("items", []):
+                video_id = video_stat["id"]
+                stats = video_stat.get("statistics", {})
+            
+                views = int(stats.get("viewCount", 0))
+                likes = int(stats.get("likeCount", 0))
+                comments = int(stats.get("commentCount", 0))
+            
+                # Map this video ID back to SQLite tables
+                cursor.execute("SELECT id FROM videos WHERE youtube_id = ?", (video_id,))
+                row = cursor.fetchone()
+                if row:
+                    sqlite_video_id = row[0]
+                else:
+                    video_info = video_map.get(video_id, {})
+                    title = video_info.get("title", "Unknown Title")
+                    published_at = video_info.get("published_at", today_date + " 00:00:00")
+                    cursor.execute("""
+                        INSERT INTO videos (title, youtube_id, status, created_at)
+                        VALUES (?, ?, ?, ?)
+                    """, (title, video_id, "uploaded", published_at))
+                    sqlite_video_id = cursor.lastrowid
+                
+                comment_texts = video_comments.get(video_id, [])
+                retention_json = json.dumps(comment_texts)
+
+                # Log video analytics snapshot for today
+                cursor.execute("""
+                    SELECT id FROM analytics 
+                    WHERE video_id = ? AND date = ?
+                """, (sqlite_video_id, today_date))
+                existing_row = cursor.fetchone()
+            
+                if existing_row:
+                    cursor.execute("""
+                        UPDATE analytics 
+                        SET views = ?, likes = ?, comments = ?, retention_data = ?
+                        WHERE id = ?
+                    """, (views, likes, comments, retention_json, existing_row[0]))
+                else:
+                    cursor.execute("""
+                        INSERT INTO analytics (video_id, date, views, likes, comments, retention_data)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (sqlite_video_id, today_date, views, likes, comments, retention_json))
+                
+                logger.info(f"Synced stats for video '{video_map.get(video_id, {}).get('title', '')[:40]}...': Views: {views} | Likes: {likes}")
+            
+            # Log a daily snapshot of monetization progress
+            try:
+                # Query rolling 90-day uploads
+                cursor.execute("SELECT COUNT(*) FROM videos WHERE status = 'uploaded' AND datetime(created_at) >= datetime('now', '-90 days')")
+                uploads_90 = cursor.fetchone()[0]
+            
+                # Estimate watch hours (1 min average views duration for YouTube Shorts)
+                watch_hours = (total_channel_views * 45) / 3600.0  # ~45s avg watch duration
+            
+                # Progress tracking (Milestone base: 1000 subscribers, 4000 watch hours, or 10M shorts views)
+                shorts_views = total_channel_views
+                progress_subs = (subscribers / 1000.0) * 100
+                progress_views = (shorts_views / 10000000.0) * 100
+                progress_pct = min(100.0, max(progress_subs, progress_views))
+            
+                readiness_score = 0.4 * progress_subs + 0.4 * progress_views + 0.2 * (min(uploads_90, 3) / 3.0 * 100)
+            
+                cursor.execute("""
+                    INSERT OR REPLACE INTO monetization_snapshots (date, subscribers, shorts_views, watch_hours, uploads_90_days, progress_percentage, readiness_score)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, (today_date, subscribers, shorts_views, watch_hours, uploads_90, progress_pct, readiness_score))
+                logger.info(f"Updated YouTube daily monetization snapshot (Readiness: {readiness_score:.1f}%)")
+            except Exception as me:
+                logger.warning(f"Failed to calculate monetization snapshots: {me}")
+
+            conn.commit()
+        finally:
+            conn.close()
+        logger.info("Successfully harvested and saved YouTube channel stats.")
+        return True
+    except Exception as e:
+        logger.error(f"YouTube harvest analytics error: {e}", exc_info=True)
+        return False
+
+def run() -> bool:
+    return harvest_channel_stats()
+
+if __name__ == "__main__":
+    run()

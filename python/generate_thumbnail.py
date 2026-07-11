@@ -297,6 +297,41 @@ def run() -> Path:
             from google.genai import types
             
             client = genai.Client(api_key=gemini_key)
+            
+            # Auto-detect available Imagen models
+            model_to_use = None
+            try:
+                available_models = [m.name for m in client.models.list()]
+                logger.info(f"Available API models: {len(available_models)}")
+                
+                # Check for preferred image models in order of preference
+                preferred_patterns = [
+                    "imagen-4.0-generate",
+                    "imagen-4.0",
+                    "imagen-3.0-generate",
+                    "imagen-3.0",
+                    "imagen"
+                ]
+                for pattern in preferred_patterns:
+                    for m_name in available_models:
+                        if pattern in m_name:
+                            model_to_use = m_name.replace("models/", "")
+                            break
+                    if model_to_use:
+                        break
+            except Exception as le:
+                logger.warning(f"Could not list available models via API: {le}. Will use default fallback list.")
+            
+            # List of models to try in sequence
+            models_to_try = []
+            if model_to_use:
+                models_to_try.append(model_to_use)
+            
+            # Add general fallbacks
+            for fallback in ["imagen-4.0-generate-001", "imagen-3.0-generate-002"]:
+                if fallback not in models_to_try:
+                    models_to_try.append(fallback)
+                    
             prompt = (
                 f"A cinematic, high-retention YouTube video thumbnail about: '{title}'. "
                 "Vibrant cinematic lighting, dark background, highly contrasted, "
@@ -304,31 +339,40 @@ def run() -> Path:
                 "Include large clean bold typographic text of the title."
             )
             
-            # Generate the image
-            response = client.models.generate_images(
-                model='imagen-3.0-generate-002',
-                prompt=prompt,
-                config=types.GenerateImagesConfig(
-                    number_of_images=1,
-                    aspect_ratio="16:9"
-                )
-            )
+            generated_image_bytes = None
+            used_model = None
             
-            # Process and save the image using PIL
-            if response.generated_images:
-                generated_image = response.generated_images[0]
-                image_bytes = generated_image.image.image_bytes
-                
-                image = Image.open(io.BytesIO(image_bytes))
+            for m_name in models_to_try:
+                try:
+                    logger.info(f"Attempting image generation with model '{m_name}'...")
+                    response = client.models.generate_images(
+                        model=m_name,
+                        prompt=prompt,
+                        config=types.GenerateImagesConfig(
+                            number_of_images=1,
+                            aspect_ratio="16:9"
+                        )
+                    )
+                    if response and response.generated_images:
+                        generated_image_bytes = response.generated_images[0].image.image_bytes
+                        used_model = m_name
+                        logger.info(f"Successfully generated image using model '{m_name}'")
+                        break
+                except Exception as ex:
+                    logger.warning(f"Model '{m_name}' failed to generate image: {ex}")
+            
+            # Process and save the image if succeeded
+            if generated_image_bytes:
+                image = Image.open(io.BytesIO(generated_image_bytes))
                 # Ensure correct resolution
                 image = image.resize((1280, 720), Image.Resampling.LANCZOS)
                 
                 THUMBNAIL_FILE.parent.mkdir(parents=True, exist_ok=True)
                 image.save(THUMBNAIL_FILE, "PNG")
-                logger.info(f"Gemini-generated thumbnail saved successfully at: {THUMBNAIL_FILE}")
+                logger.info(f"Gemini-generated thumbnail saved successfully using {used_model} at: {THUMBNAIL_FILE}")
                 return THUMBNAIL_FILE
             else:
-                logger.warning("Gemini API did not return any images. Falling back to local design.")
+                logger.warning("All attempted Gemini Imagen models failed. Falling back to local design.")
                 
         except Exception as e:
             logger.error(f"Failed to generate thumbnail via Gemini API: {e}")

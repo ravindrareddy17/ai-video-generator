@@ -47,6 +47,10 @@ def harvest_channel_stats():
                     pass
             metadata["subscribers"] = subscribers
             metadata["total_channel_views"] = total_channel_views
+            # Note: watch_hours is NOT available via YouTube Data API v3
+            # It requires YouTube Analytics API. Don't store a fake estimate.
+            if "watch_hours" in metadata:
+                del metadata["watch_hours"]
             with open(metadata_file, "w") as f:
                 json.dump(metadata, f, indent=2)
             logger.info(f"Saved channel subscribers: {subscribers}, views: {total_channel_views}")
@@ -219,7 +223,113 @@ def harvest_channel_stats():
         except Exception as se:
             logger.warning(f"Failed to log monetization snapshot: {se}", exc_info=True)
             
-        # Update the overall channel metrics (views, subscribers) in settings if needed, or simply log them
+        # --- Harvest Meta Stats (Facebook & Instagram) -------------------
+        try:
+            from python import meta_auth
+            from utils.config import get_facebook_page_id, get_instagram_account_id
+            import requests
+
+            token = meta_auth.get_valid_token()
+            if token:
+                # Facebook
+                fb_page_id = get_facebook_page_id()
+                if fb_page_id:
+                    logger.info("Harvesting Facebook Reels analytics...")
+                    cursor.execute("SELECT id, facebook_id FROM videos WHERE facebook_id IS NOT NULL")
+                    fb_videos = cursor.fetchall()
+                    for row in fb_videos:
+                        video_id, fb_id = row[0], row[1]
+                        try:
+                            resp = requests.get(
+                                f"https://graph.facebook.com/v25.0/{fb_id}",
+                                params={
+                                    "fields": "views,likes.summary(true).limit(0),comments.summary(true).limit(0)",
+                                    "access_token": token
+                                },
+                                timeout=15
+                            )
+                            if resp.status_code == 200:
+                                data = resp.json()
+                                fb_views = data.get("views", 0)
+                                fb_likes = data.get("likes", {}).get("summary", {}).get("total_count", 0)
+                                fb_comments = data.get("comments", {}).get("summary", {}).get("total_count", 0)
+                                
+                                cursor.execute("SELECT id FROM analytics WHERE video_id = ? AND date = ?", (video_id, today_date))
+                                existing = cursor.fetchone()
+                                if existing:
+                                    cursor.execute("""
+                                        UPDATE analytics SET fb_views = ?, fb_likes = ?, fb_comments = ?
+                                        WHERE id = ?
+                                    """, (fb_views, fb_likes, fb_comments, existing[0]))
+                                else:
+                                    cursor.execute("""
+                                        INSERT INTO analytics (video_id, date, fb_views, fb_likes, fb_comments)
+                                        VALUES (?, ?, ?, ?, ?)
+                                    """, (video_id, today_date, fb_views, fb_likes, fb_comments))
+                                logger.info(f"Facebook Reels stats synced for video ID {video_id}: Views: {fb_views} | Likes: {fb_likes} | Comments: {fb_comments}")
+                        except Exception as fe:
+                            logger.warning(f"Failed to sync Facebook stats for video ID {video_id}: {fe}")
+                
+                # Instagram
+                ig_acc_id = get_instagram_account_id()
+                if ig_acc_id:
+                    logger.info("Harvesting Instagram Reels analytics...")
+                    cursor.execute("SELECT id, instagram_id FROM videos WHERE instagram_id IS NOT NULL")
+                    ig_videos = cursor.fetchall()
+                    for row in ig_videos:
+                        video_id, ig_id = row[0], row[1]
+                        try:
+                            # Base stats (likes, comments)
+                            resp = requests.get(
+                                f"https://graph.facebook.com/v25.0/{ig_id}",
+                                params={
+                                    "fields": "like_count,comments_count",
+                                    "access_token": token
+                                },
+                                timeout=15
+                            )
+                            # Insights stats (views/plays)
+                            ig_views = 0
+                            try:
+                                insights_resp = requests.get(
+                                    f"https://graph.facebook.com/v25.0/{ig_id}/insights",
+                                    params={
+                                        "metric": "plays",
+                                        "access_token": token
+                                    },
+                                    timeout=15
+                                )
+                                if insights_resp.status_code == 200:
+                                    insights_data = insights_resp.json()
+                                    for item in insights_data.get("data", []):
+                                        if item.get("name") == "plays":
+                                            ig_views = item.get("values", [{}])[0].get("value", 0)
+                            except Exception:
+                                pass
+
+                            if resp.status_code == 200:
+                                data = resp.json()
+                                ig_likes = data.get("like_count", 0)
+                                ig_comments = data.get("comments_count", 0)
+                                
+                                cursor.execute("SELECT id FROM analytics WHERE video_id = ? AND date = ?", (video_id, today_date))
+                                existing = cursor.fetchone()
+                                if existing:
+                                    cursor.execute("""
+                                        UPDATE analytics SET ig_views = ?, ig_likes = ?, ig_comments = ?
+                                        WHERE id = ?
+                                    """, (ig_views, ig_likes, ig_comments, existing[0]))
+                                else:
+                                    cursor.execute("""
+                                        INSERT INTO analytics (video_id, date, ig_views, ig_likes, ig_comments)
+                                        VALUES (?, ?, ?, ?, ?)
+                                    """, (video_id, today_date, ig_views, ig_likes, ig_comments))
+                                logger.info(f"Instagram Reels stats synced for video ID {video_id}: Views: {ig_views} | Likes: {ig_likes} | Comments: {ig_comments}")
+                        except Exception as ie:
+                            logger.warning(f"Failed to sync Instagram stats for video ID {video_id}: {ie}")
+        except Exception as me:
+            logger.warning(f"Could not complete Meta stats harvest: {me}")
+            
         conn.commit()
         conn.close()
         logger.info("Successfully harvested and saved channel stats.")

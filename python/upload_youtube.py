@@ -455,18 +455,40 @@ def run() -> str | None:
             video_url = f"https://youtube.com/shorts/{video_id}"
             logger.info(f"Upload complete! Watch your video here: {video_url}")
             
-            # Update SQLite DB
             try:
-                conn = get_connection()
-                cursor = conn.cursor()
-                cursor.execute("""
-                    UPDATE videos 
-                    SET youtube_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
-                    WHERE id = (SELECT MAX(id) FROM videos WHERE status = 'generating')
-                """, (video_id,))
-                conn.commit()
-                conn.close()
-                logger.info(f"Database video status updated to 'uploaded' for YouTube ID: {video_id}")
+                # 1. Update central shortest_orbit_v3.db
+                conn = None
+                try:
+                    conn = get_connection()
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        UPDATE videos 
+                        SET youtube_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
+                        WHERE id = (SELECT MAX(id) FROM videos WHERE status = 'generating')
+                    """, (video_id,))
+                    conn.commit()
+                finally:
+                    if conn:
+                        conn.close()
+                logger.info(f"Central database video status updated to 'uploaded' for YouTube ID: {video_id}")
+                
+                # 2. Update platform-specific youtube.db
+                from automation.database.connection import get_youtube_conn
+                yt_conn = None
+                try:
+                    yt_conn = get_youtube_conn()
+                    yt_cursor = yt_conn.cursor()
+                    yt_cursor.execute("""
+                        UPDATE videos
+                        SET youtube_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
+                        WHERE id = (SELECT MAX(id) FROM videos WHERE status = 'generating')
+                    """, (video_id,))
+                    yt_conn.commit()
+                finally:
+                    if yt_conn:
+                        yt_conn.close()
+                logger.info(f"Platform youtube.db video status updated to 'uploaded' for YouTube ID: {video_id}")
+
             except Exception as e:
                 logger.warning(f"Database video upload update error: {e}")
                 

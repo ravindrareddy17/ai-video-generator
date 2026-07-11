@@ -68,6 +68,11 @@ def init_db():
         )
     """)
     ensure_column(cursor, "videos", "uploaded_at", "TIMESTAMP")
+    ensure_column(cursor, "videos", "facebook_id", "TEXT")
+    ensure_column(cursor, "videos", "facebook_url", "TEXT")
+    ensure_column(cursor, "videos", "instagram_id", "TEXT")
+    ensure_column(cursor, "videos", "instagram_url", "TEXT")
+    ensure_column(cursor, "videos", "platforms_published", "TEXT")  # JSON list: ["youtube", "facebook", "instagram"]
     
     # Table: hooks
     cursor.execute("""
@@ -97,6 +102,12 @@ def init_db():
             FOREIGN KEY(video_id) REFERENCES videos(id)
         )
     """)
+    ensure_column(cursor, "analytics", "fb_views", "INTEGER DEFAULT 0")
+    ensure_column(cursor, "analytics", "fb_likes", "INTEGER DEFAULT 0")
+    ensure_column(cursor, "analytics", "fb_comments", "INTEGER DEFAULT 0")
+    ensure_column(cursor, "analytics", "ig_views", "INTEGER DEFAULT 0")
+    ensure_column(cursor, "analytics", "ig_likes", "INTEGER DEFAULT 0")
+    ensure_column(cursor, "analytics", "ig_comments", "INTEGER DEFAULT 0")
     
     # Table: monetization_snapshots
     cursor.execute("""
