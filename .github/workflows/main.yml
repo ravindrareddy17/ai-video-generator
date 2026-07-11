@@ -70,6 +70,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           # Only add database and logs if they exist and changed
-          git add data/shortest_orbit_v3.db logs/pipeline.log || true
+          git add data/shortest_orbit_v3.db || true
+          git add -f logs/pipeline.log || true
           git commit -m "Automated: Sync SQLite database and logs from cloud execution [skip ci]" || echo "No updates to commit"
           git push origin HEAD:main || echo "Failed to push updates"
