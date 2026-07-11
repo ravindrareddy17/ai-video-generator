@@ -129,9 +129,9 @@ def generate_narration(topic_data: dict) -> dict:
         "- 12-20s: Deliver the reveal, payoff, or surprising fact, ending with a memorable line.\n\n"
         "Respond in valid JSON format only:\n"
         "{\n"
-        '  "title": "Curiosity-driven English title, under 60 characters",\n'
-        '  "hook": "The exact hook line provided in the prompt",\n'
-        '  "narration": "A 20-second script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced."\n'
+        "  \"title\": \"Curiosity-driven, stop-scrolling English title (e.g. 'What's behind Elon Musk's trillion-dollar bet on AI?' or 'Did AI just rewrite language?'), under 50 characters\",\n"
+        "  \"hook\": \"The exact hook line provided in the prompt\",\n"
+        "  \"narration\": \"A 20-second script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced.\"\n"
         "}\n\n"
         "NON-NEGOTIABLE RULES:\n"
         "1. Start the narration exactly with the provided hook line.\n"
@@ -241,14 +241,17 @@ def generate_metadata(topic: str, title: str) -> dict:
     client = Groq(api_key=api_key)
     
     system_prompt = (
-        "You are an elite YouTube SEO manager.\n"
+        "You are an elite YouTube SEO manager and copywriter.\n"
         "Your task is to generate metadata for a YouTube Short video, including translations for international auto-dubbing.\n"
+        "Title Design: The title MUST be a highly curiosity-driven, clickbait-style question or a mind-bending hook that makes viewers stop scrolling. "
+        "Do NOT write dry scientific labels (e.g., do NOT write 'Quantum AI Cancer Breakthrough'). Instead, frame it as an intriguing question or statement "
+        "(e.g., 'What's behind Elon Musk's trillion-dollar bet on AI?' or 'Did scientists just crack the code to curing cancer?').\n"
         "Keep the title engaging and relevant, and ensure it contains the hashtag #Shorts.\n"
         "Create a description that invites clicks explaining the video clearly without hashtags.\n"
         "Translate the final English title and description into Spanish (es), Hindi (hi), French (fr), Portuguese (pt), and Telugu (te).\n"
         "CRITICAL: You MUST write both the titles and descriptions in their native scripts (e.g. use Hindi script for Hindi, Telugu script for Telugu, etc.). Do not write localized titles in English script unless the target language naturally uses it.\n\n"
         "Respond in JSON format with the following keys:\n"
-        "- title: catchy YouTube video title in English (must end with #Shorts or contain #Shorts)\n"
+        "- title: catchy YouTube video title in English (must be a curiosity-inducing question or statement, and must end with #Shorts or contain #Shorts)\n"
         "- description: a 2-3 sentence description explaining the video in English, without adding hashtags\n"
         "- hashtags: an array of exactly 5-6 highly relevant, viral hashtags starting with # (e.g. ['#Shorts', '#Science', '#Space', '#AI', '#Physics', '#Technology'])\n"
         "- keywords: an array of 6-10 search keywords for tagging\n"
