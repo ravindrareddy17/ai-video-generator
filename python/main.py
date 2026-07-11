@@ -75,6 +75,14 @@ def run_pipeline() -> bool:
         logger.critical("FFmpeg or FFprobe is missing or not working correctly. Please install them and try again.")
         return False
         
+    # ── Initialize Platform Databases ────────────────────────────────
+    try:
+        from automation.database.connection import init_db as init_platform_dbs
+        init_platform_dbs()
+        logger.info("Platform isolated databases initialized successfully.")
+    except Exception as e:
+        logger.warning(f"Could not initialize platform databases: {e}")
+        
     try:
         # ── Step 1: Find Viral Topics ───────────────
         step_start = time.time()
