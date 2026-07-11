@@ -24,6 +24,7 @@ from utils.paths import VIRAL_TOPICS_FILE, CONTENT_FILE, METADATA_FILE
 from utils.config import get_groq_key, get_setting
 from utils.logger import get_logger
 from utils.helpers import save_json, load_json
+from utils.database import get_connection
 from automation.database.connection import get_youtube_conn, get_instagram_conn, get_facebook_conn, get_automation_conn
 
 logger = get_logger(__name__)
