@@ -181,6 +181,15 @@ def generate_narration(topic_data: dict) -> dict:
             content = json.loads(response_text)
             content["hooks_data"] = hooks_data
             
+            # Clean title if it contains only hashtags or is empty
+            title_val = content.get("title", "").strip()
+            if not title_val or (title_val.startswith("#") and len(title_val.split()) > 0):
+                cleaned_title = topic_data.get("selected_topic", "Space/Science Discovery")
+                if len(cleaned_title) > 50:
+                    cleaned_title = cleaned_title[:47] + "..."
+                content["title"] = cleaned_title
+                logger.warning(f"Sanitized title from raw hashtags to: '{content['title']}'")
+
             word_count = len(content["narration"].split())
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
             
@@ -205,6 +214,15 @@ def generate_narration(topic_data: dict) -> dict:
                 
     logger.warning(f"Failed to generate a script with at least 40 words after {max_attempts} attempts. Proceeding to avoid crashing.")
     
+    # Clean title fallback
+    title_val = content.get("title", "").strip()
+    if not title_val or (title_val.startswith("#") and len(title_val.split()) > 0):
+        cleaned_title = topic_data.get("selected_topic", "Space/Science Discovery")
+        if len(cleaned_title) > 50:
+            cleaned_title = cleaned_title[:47] + "..."
+        content["title"] = cleaned_title
+        logger.warning(f"Sanitized fallback title to: '{content['title']}'")
+
     import re
     sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content.get("narration", "")) if s.strip()]
     if not sentences:
