@@ -363,7 +363,8 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "2. Hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking'.\n"
         "3. CRITICAL: The chosen topic MUST belong to one of these three solid science pillars: Advanced AI/Robotics, Wildlife/Biology, or Space/Hard Physics.\n"
         "4. STRICT BAN: Do NOT select political news, geopolitical wars, financial stocks, lifestyle/beauty hacks, or speculative pop-psychology.\n"
-        "5. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers."
+        "5. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers.\n"
+        "6. FACTUAL TRUTH GATING: Do NOT select speculative rumors, clickbait conspiracy theories, or fake-sounding news (e.g. rumors about AI committing crimes, unverified claims about famous personalities/companies). Only select topics backed by solid scientific reports, official announcements, or reputable journal publications. Reject sensationalized headlines that claim a company's product did something illegal or highly unlikely."
     )
     
     user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}"
