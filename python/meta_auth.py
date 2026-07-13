@@ -294,11 +294,8 @@ def get_valid_token(creds: dict[str, str | None] | None = None) -> str:
     try:
         validation = validate_access_token(token)
     except Exception as exc:
-        logger.error("Could not validate token: %s", exc)
-        raise ValueError(
-            "Failed to validate the Meta access token. Check your credentials "
-            "and network connectivity."
-        ) from exc
+        logger.warning("Could not validate token via debug_token endpoint: %s. Falling back to using token directly as-is.", exc)
+        return token
 
     token_data: dict = validation.get("data", {})
     is_valid: bool = token_data.get("is_valid", False)

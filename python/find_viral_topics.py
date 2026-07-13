@@ -442,11 +442,11 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             # Overall growth score calculation using strict weights
             overall_growth_score = (ts * 0.2) + (ai * 0.2) + (vs * 0.2) + (eds * 0.1) + (ctr * 0.15) + (ret * 0.15)
             
-            # Apply priority boost for AI and Biology niches
+            # Apply priority boost for AI/Future Tech and Space/Astronomy niches
             text_to_check = (c.get("viral_angle", "") + " " + c.get("hook_line", "")).lower()
             is_priority = any(keyword in text_to_check for keyword in [
-                "ai", "robot", "machine learning", "neural network", "algorithm",
-                "biology", "animal", "creature", "evolution", "genetics", "wildlife", "biotech", "dna", "species"
+                "ai", "robot", "machine learning", "neural network", "algorithm", "supercomputer", "automation", "tech",
+                "space", "universe", "planet", "galaxy", "nasa", "spacex", "telescope", "quantum", "star", "fusion", "mars"
             ])
             if is_priority:
                 overall_growth_score = min(overall_growth_score + 15.0, 100.0)

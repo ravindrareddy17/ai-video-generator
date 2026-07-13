@@ -464,7 +464,7 @@ def run() -> str | None:
                     cursor.execute("""
                         UPDATE videos 
                         SET youtube_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
-                        WHERE id = (SELECT MAX(id) FROM videos WHERE status = 'generating')
+                        WHERE id = (SELECT id FROM videos ORDER BY id DESC LIMIT 1)
                     """, (video_id,))
                     conn.commit()
                 finally:
@@ -481,7 +481,7 @@ def run() -> str | None:
                     yt_cursor.execute("""
                         UPDATE videos
                         SET youtube_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
-                        WHERE id = (SELECT MAX(id) FROM videos WHERE status = 'generating')
+                        WHERE id = (SELECT id FROM videos ORDER BY id DESC LIMIT 1)
                     """, (video_id,))
                     yt_conn.commit()
                 finally:
