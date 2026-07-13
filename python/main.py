@@ -233,7 +233,7 @@ def run_pipeline() -> bool:
         except Exception as e:
             logger.warning(f"Could not clean temporary directory: {e}")
             
-        return True
+        return upload_succeeded
         
     except Exception as e:
         logger.critical(f"Pipeline crashed during execution! Error: {e}", exc_info=True)
@@ -242,9 +242,21 @@ def run_pipeline() -> bool:
 
 
 if __name__ == "__main__":
-    success = run_pipeline()
+    max_attempts = 3
+    success = False
+    for attempt in range(1, max_attempts + 1):
+        print(f"\n--- PIPELINE ATTEMPT {attempt}/{max_attempts} ---")
+        success = run_pipeline()
+        if success:
+            print("Pipeline executed and uploaded successfully!")
+            break
+        
+        if attempt < max_attempts:
+            print(f"Attempt {attempt} failed to upload. Waiting 30 seconds before retrying with a new topic...")
+            time.sleep(30)
+            
     if success:
         sys.exit(0)
     else:
-        print("Pipeline execution failed. See logs/pipeline.log for details.")
+        print("Pipeline execution failed after all attempts. See logs/pipeline.log for details.")
         sys.exit(1)
