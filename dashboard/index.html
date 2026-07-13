@@ -10,14 +10,23 @@
     <script src="/dashboard/chart.js"></script>
     <style>
         :root {
-            --bg-color: #0b071e;
-            --card-bg: rgba(255, 255, 255, 0.04);
+            --bg-color: #050212;
+            --card-bg: rgba(15, 12, 38, 0.7);
             --card-border: rgba(255, 255, 255, 0.08);
-            --primary: #8a2be2;
+            --primary: #7c22e4;
             --accent: #ffd700;
-            --text: #ffffff;
-            --text-muted: #a0a0c0;
+            --text: #f5f5f7;
+            --text-muted: #8e8eaf;
             --terminal-green: #00ff64;
+            
+            /* Platform Colors */
+            --youtube-red: #ff3b30;
+            --facebook-blue: #0084ff;
+            --instagram-pink: #d62976;
+            
+            /* Theme Gradients */
+            --primary-gradient: linear-gradient(135deg, #7c22e4 0%, #00f0ff 100%);
+            --glow-shadow: 0 8px 32px 0 rgba(124, 34, 228, 0.15);
         }
 
         * {
@@ -28,10 +37,10 @@
 
         body {
             font-family: 'Outfit', sans-serif;
-            background: linear-gradient(135deg, #050212 0%, #0d0a2d 50%, #15093b 100%);
+            background: radial-gradient(circle at 10% 20%, rgba(13, 10, 45, 1) 0%, rgba(5, 2, 18, 1) 90%);
             color: var(--text);
             min-height: 100vh;
-            padding: 2rem;
+            padding: 2.5rem;
             overflow-x: hidden;
         }
 
@@ -39,61 +48,64 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--card-border);
-            padding-bottom: 1rem;
-        }
-
-        .logo {
-            font-family: 'Cinzel', serif;
-            font-size: 2.2rem;
-            font-weight: 800;
-            background: linear-gradient(45deg, #ffffff 30%, var(--accent) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
-        }
-
-        .sub-logo {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        /* Top Menu Bar Styles */
-        .menu-bar {
-            display: flex;
-            gap: 1rem;
             margin-bottom: 2rem;
             border-bottom: 1px solid var(--card-border);
             padding-bottom: 1.2rem;
         }
 
+        .logo {
+            font-family: 'Cinzel', serif;
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #ffffff 40%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 40px rgba(255, 215, 0, 0.25);
+        }
+
+        .sub-logo {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* Top Menu Bar Styles */
+        .menu-bar {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1.2rem;
+            flex-wrap: wrap;
+        }
+
         .menu-tab {
-            background: rgba(255, 255, 255, 0.02);
+            background: rgba(255, 255, 255, 0.01);
             border: 1px solid var(--card-border);
             color: var(--text-muted);
-            padding: 0.6rem 1.4rem;
+            padding: 0.7rem 1.6rem;
             border-radius: 30px;
             font-family: 'Outfit', sans-serif;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .menu-tab:hover {
             color: #ffffff;
-            background: rgba(255, 255, 255, 0.05);
-            border-color: rgba(255, 215, 0, 0.2);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 215, 0, 0.25);
+            transform: translateY(-1px);
         }
 
         .menu-tab.active {
             color: #ffffff;
-            background: linear-gradient(135deg, var(--primary) 0%, rgba(138, 43, 226, 0.4) 100%);
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+            background: var(--primary-gradient);
+            border-color: #00f0ff;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
         }
 
         .tab-content {
@@ -102,59 +114,68 @@
 
         .tab-content.active-content {
             display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
         }
 
         .card {
             background: var(--card-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid var(--card-border);
-            border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease, border-color 0.3s ease;
+            border-radius: 18px;
+            padding: 1.6rem;
+            box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.45);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(255, 215, 0, 0.2);
+            transform: translateY(-3px);
+            border-color: rgba(0, 240, 255, 0.25);
+            box-shadow: 0 15px 45px 0 rgba(0, 0, 0, 0.55), var(--glow-shadow);
         }
 
         .glowing-target-card {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.015);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid var(--card-border);
-            border-radius: 12px;
-            padding: 1.2rem;
-            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.2);
+            border-radius: 14px;
+            padding: 1.4rem;
+            box-shadow: 0 6px 25px 0 rgba(0, 0, 0, 0.25);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .glowing-target-card:hover {
             transform: scale(1.02);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            border-color: rgba(255, 215, 0, 0.2);
+            box-shadow: 0 10px 35px rgba(0,0,0,0.5);
         }
 
         .card-title {
             font-size: 0.85rem;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
+            letter-spacing: 1.5px;
+            margin-bottom: 0.6rem;
+            font-weight: 600;
         }
 
         .card-value {
-            font-size: 2.4rem;
+            font-size: 2.6rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #ffffff 0%, #a0a0ff 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #b8b8ff 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -195,6 +216,25 @@
             overflow-x: auto;
             max-height: 380px;
             overflow-y: auto;
+        }
+
+        /* Premium Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.01);
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(124, 34, 228, 0.45);
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f0ff;
+            box-shadow: 0 0 10px #00f0ff;
         }
 
         table {
@@ -435,20 +475,22 @@
 
         .progress-bar-container {
             width: 100%;
-            height: 10px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 5px;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.015);
+            border-radius: 6px;
             margin-top: 0.5rem;
             overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            position: relative;
         }
 
         .progress-bar-fill {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, var(--primary) 0%, #00ff64 100%);
-            border-radius: 5px;
-            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            background: linear-gradient(90deg, var(--primary) 0%, #00f0ff 50%, #00ff64 100%);
+            border-radius: 6px;
+            box-shadow: 0 0 8px rgba(0, 240, 255, 0.4);
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .progress-meta {
@@ -516,12 +558,13 @@
 
         .circle-fill {
             fill: none;
-            stroke: var(--primary);
+            stroke: url(#circleGrad);
             stroke-width: 12px;
             stroke-linecap: round;
             stroke-dasharray: 440;
             stroke-dashoffset: 440;
-            transition: stroke-dashoffset 1s ease-in-out, stroke 1s;
+            transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.4));
         }
 
         .circle-text {
@@ -891,6 +934,13 @@
                 <div class="circle-gauge-box">
                     <div class="circle-gauge">
                         <svg>
+                            <defs>
+                                <linearGradient id="circleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#7c22e4" />
+                                    <stop offset="50%" stop-color="#00f0ff" />
+                                    <stop offset="100%" stop-color="#00ff64" />
+                                </linearGradient>
+                            </defs>
                             <circle class="circle-bg" cx="75" cy="75" r="70"></circle>
                             <circle class="circle-fill" id="readiness-circle" cx="75" cy="75" r="70"></circle>
                         </svg>
@@ -1346,8 +1396,20 @@
                 
                 <div class="card" style="flex-grow: 1; display: flex; flex-direction: column;">
                     <div class="section-title" style="color: #00ff64;">💻 Live Engine Console Output</div>
-                    <div class="terminal-logs" id="logs-box" style="height: 300px; flex-grow: 1;">
-                        <div class="log-line">Connecting to agent logs stream...</div>
+                    <div style="background: #020108; border-radius: 12px; border: 1px solid rgba(0, 255, 100, 0.15); display: flex; flex-direction: column; overflow: hidden; flex-grow: 1; box-shadow: 0 4px 20px rgba(0,255,100,0.05);">
+                        <!-- Terminal Header Dots -->
+                        <div style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05); padding: 0.5rem 0.8rem; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; gap: 6px;">
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: #ff5f56; display: inline-block;"></span>
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: #ffbd2e; display: inline-block;"></span>
+                                <span style="width: 10px; height: 10px; border-radius: 50%; background: #27c93f; display: inline-block;"></span>
+                            </div>
+                            <span style="font-family: 'Consolas', monospace; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">shortest_orbit_pipeline.log</span>
+                            <div style="width: 30px;"></div>
+                        </div>
+                        <div class="terminal-logs" id="logs-box" style="height: 300px; flex-grow: 1; border: none; border-radius: 0; background: transparent; padding-top: 0.5rem;">
+                            <div class="log-line">Connecting to agent logs stream...</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1437,9 +1499,16 @@
             const labels = trendData.map(d => d.date);
             const data = trendData.map(d => d.views);
 
+            // Create beautiful gradient fill
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(0, 240, 255, 0.25)');
+            gradient.addColorStop(0.5, 'rgba(124, 34, 228, 0.08)');
+            gradient.addColorStop(1, 'rgba(124, 34, 228, 0)');
+
             if (myChart) {
                 myChart.data.labels = labels;
                 myChart.data.datasets[0].data = data;
+                myChart.data.datasets[0].backgroundColor = gradient;
                 myChart.update();
             } else {
                 myChart = new Chart(ctx, {
@@ -1449,8 +1518,14 @@
                         datasets: [{
                             label: 'Daily Cumulative Views',
                             data: data,
-                            borderColor: '#8a2be2',
-                            backgroundColor: 'rgba(138, 43, 226, 0.1)',
+                            borderColor: '#00f0ff',
+                            pointBackgroundColor: '#7c22e4',
+                            pointBorderColor: '#00f0ff',
+                            pointHoverBackgroundColor: '#00f0ff',
+                            pointHoverBorderColor: '#ffffff',
+                            pointRadius: 4,
+                            pointHoverRadius: 6,
+                            backgroundColor: gradient,
                             borderWidth: 3,
                             fill: true,
                             tension: 0.4
@@ -1499,7 +1574,6 @@
             const selectedRow = document.getElementById(`row-${id}`);
             if (selectedRow) selectedRow.classList.add('active-row');
 
-            // Render details
             const inspectorBox = document.getElementById('inspector-content');
             const engagement = v.views > 0 ? ((v.likes + v.comments) / v.views * 100).toFixed(2) : 0;
             const youtubeLinkHtml = v.youtube_id 
@@ -1524,11 +1598,35 @@
                 hooksHtml = '<p style="color: var(--text-muted)">No hooks data stored in registry for this video.</p>';
             }
 
+            const isLatestVideo = (allVideos.length > 0 && v.id === allVideos[0].id);
+            let previewHtml = '';
+            if (isLatestVideo) {
+                previewHtml = `
+                    <div style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.15); border-radius: 12px; border: 1px solid var(--card-border); padding: 1.2rem; display: flex; gap: 2rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 160px; display: flex; flex-direction: column; align-items: center;">
+                            <span class="card-title" style="align-self: flex-start; margin-bottom: 0.5rem; color: var(--accent);">🎬 Live Video Player</span>
+                            <video src="/output/short.mp4" controls style="width: 100%; max-width: 140px; height: auto; border-radius: 12px; border: 2px solid var(--primary); box-shadow: 0 0 20px rgba(124, 34, 228, 0.3);"></video>
+                        </div>
+                        <div style="flex: 1.5; min-width: 220px; display: flex; flex-direction: column; align-items: center; width: 100%;">
+                            <span class="card-title" style="align-self: flex-start; margin-bottom: 0.5rem; color: var(--accent);">🖼️ High-Res Thumbnail Preview</span>
+                            <img src="/output/thumbnail.png" alt="Thumbnail Preview" style="width: 100%; max-height: 150px; object-fit: cover; border-radius: 10px; border: 1px solid var(--card-border); box-shadow: 0 4px 15px rgba(0,0,0,0.4);" />
+                        </div>
+                    </div>
+                `;
+            } else {
+                previewHtml = `
+                    <div style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.015); border-radius: 12px; border: 1px solid var(--card-border); padding: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                        ℹ️ Local video playback and thumbnail preview are only available for the latest generated video.
+                    </div>
+                `;
+            }
+
             inspectorBox.innerHTML = `
                 <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 0.8rem;">
                     <h3 style="font-family: 'Cinzel', serif; font-size: 1.1rem; color: #ffffff;">${v.title}</h3>
                     <div>${youtubeLinkHtml}</div>
                 </div>
+                
                 <div class="grid" style="margin-bottom: 1.5rem; grid-template-columns: repeat(4, 1fr);">
                     <div style="background: rgba(255,255,255,0.02); padding: 0.5rem; border-radius: 8px; text-align: center;">
                         <div style="font-size: 0.75rem; color: var(--text-muted)">VIEWS</div>
@@ -1547,6 +1645,9 @@
                         <strong style="color: var(--accent); font-size: 1.2rem;">${engagement}%</strong>
                     </div>
                 </div>
+
+                ${previewHtml}
+
                 <div class="inspector-grid">
                     <div>
                         <div class="card-title">📜 Narration Script</div>

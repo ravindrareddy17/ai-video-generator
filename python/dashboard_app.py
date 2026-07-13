@@ -472,6 +472,25 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 self.wfile.write(chart_file.read_bytes())
             else:
                 self.wfile.write(b"")
+        elif path == "/output/short.mp4":
+            self.send_response(200)
+            self.send_header("Content-Type", "video/mp4")
+            self.send_header("Accept-Ranges", "bytes")
+            self.end_headers()
+            video_file = PROJECT_ROOT / "output" / "short.mp4"
+            if video_file.exists():
+                self.wfile.write(video_file.read_bytes())
+            else:
+                self.wfile.write(b"")
+        elif path == "/output/thumbnail.png":
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.end_headers()
+            thumb_file = PROJECT_ROOT / "output" / "thumbnail.png"
+            if thumb_file.exists():
+                self.wfile.write(thumb_file.read_bytes())
+            else:
+                self.wfile.write(b"")
         else:
             self.send_response(404)
             self.end_headers()
