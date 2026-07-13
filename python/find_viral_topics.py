@@ -376,8 +376,8 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "RULES:\n"
         "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify.\n"
         "2. Hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking'.\n"
-        "3. CRITICAL: The chosen topic MUST belong to one of these three solid science pillars: Advanced AI/Robotics, Wildlife/Biology, or Space/Hard Physics.\n"
-        "4. STRICT BAN: Do NOT select political news, geopolitical wars, financial stocks, lifestyle/beauty hacks, or speculative pop-psychology.\n"
+        "3. CRITICAL CHANNEL NICHE BALANCE: The chosen topic MUST belong to either 'Artificial Intelligence & Future Technology' (60% weight) or 'Space & Astronomy' (40% weight). You must balance these two categories. Crossover topics (e.g. AI assisting space exploration, robotics on Mars) are highly encouraged as they appeal to both niches.\n"
+        "4. STRICT BAN: Do NOT select biology, wildlife, political news, geopolitical wars, financial stocks, lifestyle/beauty hacks, or speculative pop-psychology.\n"
         "5. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers.\n"
         "6. FACTUAL TRUTH GATING: Do NOT select speculative rumors, clickbait conspiracy theories, or fake-sounding news (e.g. rumors about AI committing crimes, unverified claims about famous personalities/companies). Only select topics backed by solid scientific reports, official announcements, or reputable journal publications. Reject sensationalized headlines that claim a company's product did something illegal or highly unlikely."
     )
@@ -386,7 +386,13 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
     
     if recent_titles:
         recent_titles_str = "\n".join([f"- {t}" for t in recent_titles])
-        user_prompt += f"\n\nCRITICAL: DO NOT select any topic that overlaps or is similar to these recently uploaded videos on the channel:\n{recent_titles_str}"
+        user_prompt += (
+            f"\n\nHere are the recently uploaded videos on the channel:\n{recent_titles_str}\n\n"
+            "CRITICAL: Do NOT select any topic that overlaps or is similar to the above list. "
+            "Analyze the above list, classify each title into 'AI & Tech' or 'Space & Astronomy', "
+            "and select the next topic category to move the channel closer to a strict "
+            "60% AI & Tech / 40% Space & Astronomy global publishing ratio."
+        )
     
     logger.info("Calling Groq LLM to scan and score viral topics...")
     try:
