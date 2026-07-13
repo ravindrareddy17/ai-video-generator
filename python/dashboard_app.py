@@ -503,21 +503,37 @@ class DashboardHandler(BaseHTTPRequestHandler):
             cursor.execute("SELECT COUNT(*) FROM videos WHERE status = 'uploaded'")
             total_uploads = cursor.fetchone()[0]
             
-            # Aggregate views, likes, comments
+            # Aggregate views, likes, comments across YouTube, Facebook, and Instagram
             cursor.execute("""
-                SELECT SUM(max_views) as total_views, SUM(max_likes) as total_likes, SUM(max_comments) as total_comments
+                SELECT 
+                    SUM(max_views) as yt_views, SUM(max_likes) as yt_likes, SUM(max_comments) as yt_comments,
+                    SUM(max_fb_views) as fb_views, SUM(max_fb_likes) as fb_likes, SUM(max_fb_comments) as fb_comments,
+                    SUM(max_ig_views) as ig_views, SUM(max_ig_likes) as ig_likes, SUM(max_ig_comments) as ig_comments
                 FROM (
-                    SELECT video_id, MAX(views) as max_views, MAX(likes) as max_likes, MAX(comments) as max_comments
+                    SELECT video_id, 
+                           MAX(views) as max_views, MAX(likes) as max_likes, MAX(comments) as max_comments,
+                           MAX(fb_views) as max_fb_views, MAX(fb_likes) as max_fb_likes, MAX(fb_comments) as max_fb_comments,
+                           MAX(ig_views) as max_ig_views, MAX(ig_likes) as max_ig_likes, MAX(ig_comments) as max_ig_comments
                     FROM analytics
                     GROUP BY video_id
                 )
             """)
             agg_row = cursor.fetchone()
-            tracked_video_views = agg_row["total_views"] or 0
+            yt_views = agg_row["yt_views"] or 0
+            yt_likes = agg_row["yt_likes"] or 0
+            yt_comments = agg_row["yt_comments"] or 0
+            fb_views = agg_row["fb_views"] or 0
+            fb_likes = agg_row["fb_likes"] or 0
+            fb_comments = agg_row["fb_comments"] or 0
+            ig_views = agg_row["ig_views"] or 0
+            ig_likes = agg_row["ig_likes"] or 0
+            ig_comments = agg_row["ig_comments"] or 0
+            
+            tracked_video_views = yt_views + fb_views + ig_views
             channel_total_views = total_views_from_meta if total_views_from_meta is not None else tracked_video_views
             total_views = channel_total_views
-            total_likes = agg_row["total_likes"] or 0
-            total_comments = agg_row["total_comments"] or 0
+            total_likes = yt_likes + fb_likes + ig_likes
+            total_comments = yt_comments + fb_comments + ig_comments
             
             # Daily views/likes trend
             cursor.execute("""
@@ -1159,7 +1175,13 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 "subscribers": subscribers,
                 "engine_status": engine_status,
                 "monetization": monetization,
-                "meta_platforms": meta_platforms
+                "meta_platforms": meta_platforms,
+                "yt_views": yt_views,
+                "fb_views": fb_views,
+                "ig_views": ig_views,
+                "yt_likes": yt_likes,
+                "fb_likes": fb_likes,
+                "ig_likes": ig_likes
             }
         except Exception as e:
             logger.error(f"Error querying database stats: {e}")

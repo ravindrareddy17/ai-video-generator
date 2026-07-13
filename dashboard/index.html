@@ -582,25 +582,46 @@
 
     <!-- Core Metrics Grid -->
     <div class="grid">
-        <div class="card">
+        <div class="card uploads-card" style="border-left: 4px solid var(--primary);">
             <div class="card-title">Total Uploads</div>
             <div class="card-value" id="uploads-val">0</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; justify-content: space-between;">
+                <span>🎥 YT: <span id="uploads-yt">0</span></span>
+                <span>👥 FB: <span id="uploads-fb">0</span></span>
+                <span>📸 IG: <span id="uploads-ig">0</span></span>
+            </div>
         </div>
-        <div class="card">
+        <div class="card views-card" style="border-left: 4px solid #00f0ff;">
             <div class="card-title">Total Views</div>
             <div class="card-value" id="views-val">0</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.2rem;">
+                <span style="display: flex; justify-content: space-between;"><span>🟥 YouTube:</span><strong id="views-yt" style="color: #ff3b30;">0</strong></span>
+                <span style="display: flex; justify-content: space-between;"><span>🟦 Facebook:</span><strong id="views-fb" style="color: #0084ff;">0</strong></span>
+                <span style="display: flex; justify-content: space-between;"><span>🟪 Instagram:</span><strong id="views-ig" style="color: #d62976;">0</strong></span>
+            </div>
         </div>
-        <div class="card">
+        <div class="card subs-card" style="border-left: 4px solid var(--accent);">
             <div class="card-title" style="color: #ffd700;">Subscribers</div>
             <div class="card-value" id="subs-val" style="color: #ffd700;">0</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.4;">
+                <span id="subs-subtext">Partner Target: 500 / 1,000</span>
+            </div>
         </div>
-        <div class="card">
+        <div class="card likes-card" style="border-left: 4px solid #ff3b30;">
             <div class="card-title">Total Likes</div>
             <div class="card-value" id="likes-val">0</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.2rem;">
+                <span style="display: flex; justify-content: space-between;"><span>🟥 YouTube:</span><strong id="likes-yt" style="color: #ff3b30;">0</strong></span>
+                <span style="display: flex; justify-content: space-between;"><span>🟦 Facebook:</span><strong id="likes-fb" style="color: #0084ff;">0</strong></span>
+                <span style="display: flex; justify-content: space-between;"><span>🟪 Instagram:</span><strong id="likes-ig" style="color: #d62976;">0</strong></span>
+            </div>
         </div>
-        <div class="card">
+        <div class="card engagement-card" style="border-left: 4px solid var(--terminal-green);">
             <div class="card-title">Engagement Rate</div>
             <div class="card-value" id="engagement-val">0%</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; line-height: 1.4;">
+                <span>Total Comments: <span id="comments-val" style="color: #ffffff;">0</span></span>
+            </div>
         </div>
     </div>
 
@@ -1382,11 +1403,11 @@
                         datasets: [{
                             data: data,
                             backgroundColor: [
-                                '#8a2be2',
-                                '#ffd700',
-                                '#00ff64',
-                                '#ff3366',
-                                '#00ffff'
+                                '#00f0ff', // AI & Future Technology (Cyan)
+                                '#8a2be2', // Space & Astronomy (Indigo)
+                                '#ff3b30', // YouTube Red
+                                '#0084ff', // Facebook Blue
+                                '#d62976'  // Instagram Pink
                             ],
                             borderWidth: 0
                         }]
@@ -1556,6 +1577,26 @@
 
                 const rate = data.total_views > 0 ? ((data.total_likes + data.total_comments) / data.total_views * 100).toFixed(2) : 0;
                 document.getElementById('engagement-val').innerText = rate + '%';
+
+                // Set platform views
+                document.getElementById('views-yt').innerText = (data.yt_views || 0).toLocaleString();
+                document.getElementById('views-fb').innerText = (data.fb_views || 0).toLocaleString();
+                document.getElementById('views-ig').innerText = (data.ig_views || 0).toLocaleString();
+                
+                // Set platform likes
+                document.getElementById('likes-yt').innerText = (data.yt_likes || 0).toLocaleString();
+                document.getElementById('likes-fb').innerText = (data.fb_likes || 0).toLocaleString();
+                document.getElementById('likes-ig').innerText = (data.ig_likes || 0).toLocaleString();
+                
+                // Set comment counts
+                document.getElementById('comments-val').innerText = (data.total_comments || 0).toLocaleString();
+                
+                // Set platform upload counts
+                if (data.meta_platforms) {
+                    document.getElementById('uploads-yt').innerText = data.total_uploads;
+                    document.getElementById('uploads-fb').innerText = data.meta_platforms.facebook ? data.meta_platforms.facebook.published_count : 0;
+                    document.getElementById('uploads-ig').innerText = data.meta_platforms.instagram ? data.meta_platforms.instagram.published_count : 0;
+                }
 
                 // Set video list
                 const tableBody = document.getElementById('video-table-body');
