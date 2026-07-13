@@ -27,60 +27,55 @@ from utils.helpers import load_json
 
 logger = get_logger(__name__)
 
-# Reliable royalty-free MP3 URLs for different moods
-# Reliable royalty-free MP3 URLs for different moods
+# Reliable viral and trending music profiles with direct MP3 streams
 MUSIC_URLS: dict[str, list[str]] = {
-    "upbeat": [
+    "viral-phonk-ai": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Neon%20Laser%20Horizon.mp3",
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Voxel%20Revolution.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Newer%20Wave.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Winner%20Winner.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Blippy%20Trance.mp3",
     ],
-    "chill": [
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Double%20Drift.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dreamer.mp3",
-    ],
-    "cinematic": [
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Industrial%20Cinematic.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Ice%20Giants.mp3",
+    "viral-space-epic": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Canon%20In%20D%20Interstellar%20Mix.mp3",
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sovereign.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Ice%20Giants.mp3",
     ],
-    "inspiring": [
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Impact%20Lento.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heartwarming.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Finding%20the%20Balance.mp3",
+    "viral-mythology-epic": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Temple%20of%20the%20Manes.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sati.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Descent.mp3",
     ],
-    "ambient": [
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Echoes%20of%20Time.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Quiet%20Panic.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mystic%20Force.mp3",
-    ],
-    "lo-fi": [
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Deliberate%20Thought.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Late%20Night%20Radio.mp3",
-    ],
-    "acoustic": [
+    "viral-wildlife-adventure": [
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3",
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Cattails.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heartwarming.mp3",
     ],
-    "beats": [
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Canon%20In%20D%20Interstellar%20Mix.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Ethernight%20Club.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Neon%20Laser%20Horizon.mp3",
-        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Blippy%20Trance.mp3",
+    "viral-mystery-dark": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Mystic%20Force.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Echoes%20of%20Time.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Quiet%20Panic.mp3",
+    ],
+    "viral-history-epic": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sovereign.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Ice%20Giants.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Industrial%20Cinematic.mp3",
+    ],
+    "viral-science-tech": [
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Newer%20Wave.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Winner%20Winner.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Double%20Drift.mp3",
     ],
 }
 
 VALID_MOODS = list(MUSIC_URLS.keys())
-DEFAULT_MOOD = "ambient"
+DEFAULT_MOOD = "viral-space-epic"
 
 DOWNLOAD_TIMEOUT_SECONDS = 60
 
 
 def analyze_mood(topic: str) -> str:
-    """Use Groq LLM to pick the best mood keyword for *topic*.
+    """Use Groq LLM to pick the best viral music profile for *topic*.
 
-    Returns one of the valid mood keywords, falling back to DEFAULT_MOOD
-    if the model returns something unexpected.
+    Returns one of the valid viral keys, falling back to DEFAULT_MOOD.
     """
     api_key = get_groq_key()
     model = get_setting("llm", "model", "llama-3.3-70b-versatile")
@@ -88,19 +83,21 @@ def analyze_mood(topic: str) -> str:
 
     mood_list = ", ".join(VALID_MOODS)
     system_prompt = (
-        "You are a music supervisor for short-form video content.\n"
-        "Given a video topic, pick the single best background music mood.\n\n"
-        f"Choose EXACTLY ONE mood from this list: {mood_list}\n\n"
+        "You are an expert AI Audio Supervisor & Short-Form Content Strategist.\n"
+        "Your sole objective is to select the perfect viral audio profile for a short video to maximize audience retention, replays, and engagement.\n\n"
+        "Analyze the provided video topic across these dimensions:\n"
+        "1. Niche & Topic (AI/Tech, Space/Physics, Biology/Wildlife, Indian Mythology, Mystery/Dark, History, Science)\n"
+        "2. Storytelling & Emotion (Futuristic, Cosmic/Inspiring, Epic/Devotional, Adventurous, Suspenseful/Dark, Dramatic)\n"
+        "3. Energy & Editing Pace (High Energy, Slow Suspense, Epic Build-up, Upbeat/Energetic)\n\n"
+        "Choose EXACTLY ONE profile key from this list:\n"
+        f"{mood_list}\n\n"
         "Rules:\n"
-        "1. Reply with ONLY the mood keyword — nothing else.\n"
-        "2. No punctuation, no explanation, no extra words.\n\n"
-        "Guidelines to ensure variety based on content type:\n"
-        "- If the topic involves AI, robotics, coding, or technology, choose: beats, lo-fi, or upbeat.\n"
-        "- If the topic involves space, astronomy, exoplanets, or the universe, choose: cinematic, inspiring, or ambient.\n"
-        "- If the topic involves quantum physics, ancient history, biology, or mysteries, choose: chill, acoustic, or ambient.\n"
+        "1. Reply with ONLY the profile key string (e.g. 'viral-phonk-ai') — nothing else.\n"
+        "2. No punctuation, no explanation, no markdown backticks, no extra words.\n"
+        "3. Match mythology/devotional topics to 'viral-mythology-epic'; match exoplanets/astrophysics to 'viral-space-epic'; match AI/code/robots to 'viral-phonk-ai'; match animals/nature to 'viral-wildlife-adventure'; match physics/science to 'viral-science-tech'; match history/historical events to 'viral-history-epic'; match suspense/crime/horror/mysteries to 'viral-mystery-dark'."
     )
 
-    logger.info(f"Asking Groq to determine mood for topic: '{topic}'")
+    logger.info(f"Asking Groq to determine viral audio profile for topic: '{topic}'")
 
     response = client.chat.completions.create(
         model=model,
@@ -113,20 +110,20 @@ def analyze_mood(topic: str) -> str:
     )
 
     raw_mood = response.choices[0].message.content.strip().lower()
-    logger.info(f"Groq returned mood: '{raw_mood}'")
+    logger.info(f"Groq returned profile: '{raw_mood}'")
 
-    # Validate against the allowed moods
+    # Validate against the allowed profiles
     if raw_mood in VALID_MOODS:
         return raw_mood
 
-    # Try a fuzzy match (e.g. model returned "lo fi" instead of "lo-fi")
+    # Try a fuzzy match
     normalised = raw_mood.replace(" ", "-")
     if normalised in VALID_MOODS:
-        logger.info(f"Normalised mood '{raw_mood}' → '{normalised}'")
+        logger.info(f"Normalised profile '{raw_mood}' → '{normalised}'")
         return normalised
 
     logger.warning(
-        f"Groq returned unrecognised mood '{raw_mood}'. "
+        f"Groq returned unrecognised profile '{raw_mood}'. "
         f"Falling back to '{DEFAULT_MOOD}'."
     )
     return DEFAULT_MOOD
