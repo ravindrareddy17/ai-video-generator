@@ -437,7 +437,7 @@ def run() -> str | None:
                        facebook_url = ?,
                        status = 'uploaded',
                        uploaded_at = CURRENT_TIMESTAMP
-                 WHERE id = (SELECT id FROM videos WHERE status = 'generating' ORDER BY id DESC LIMIT 1)
+                 WHERE id = (SELECT id FROM videos ORDER BY id DESC LIMIT 1)
                 """,
                 (facebook_id, facebook_url),
             )
@@ -464,7 +464,7 @@ def run() -> str | None:
                        facebook_url = ?,
                        status = 'uploaded',
                        uploaded_at = CURRENT_TIMESTAMP
-                 WHERE id = (SELECT id FROM videos WHERE status = 'generating' ORDER BY id DESC LIMIT 1)
+                 WHERE id = (SELECT id FROM videos ORDER BY id DESC LIMIT 1)
                 """,
                 (facebook_id, facebook_url),
             )
