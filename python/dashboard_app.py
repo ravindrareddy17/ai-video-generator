@@ -1305,12 +1305,12 @@ def start_background_harvester():
                 break
             except Exception as e:
                 logger.error(f"Error in background stats harvester: {e}", exc_info=True)
-            # Sleep for 2 minutes before the next update
-            time.sleep(120)
+            # Sleep for 4 hours before the next update
+            time.sleep(14400)
 
     t = threading.Thread(target=run_harvest_loop, daemon=True)
     t.start()
-    logger.info("Background YouTube stats harvester thread initialized successfully (Interval: 2m).")
+    logger.info("Background YouTube stats harvester thread initialized successfully (Interval: 4h).")
 
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     """Handle requests in separate threads so one slow API call doesn't block others."""

@@ -348,10 +348,28 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
     candidate_list_str = "\n".join([f"- {t['title']} (Source: {t['source']})" for t in top_candidates])
     
     system_prompt = (
-        "SYSTEM PROMPT — The Shortest Orbit: Viral Topic Selector v3.0\n\n"
+        "SYSTEM PROMPT — The Shortest Orbit: Viral Topic Selector v3.1 (Global Space Race Edition)\n\n"
         "You take raw current news items about space, science, or AI and convert "
         "each into a viral-ready Shorts concept. Your job is to extract the single "
         "most shocking, curiosity-driving angle inside it that a general audience would stop scrolling for.\n\n"
+        "PRIORITY HIERARCHY:\n"
+        "1. Breaking space news (highest priority)\n"
+        "2. Major mission announcements\n"
+        "3. Rocket launches and landings\n"
+        "4. New scientific discoveries\n"
+        "5. Global space competition / Space race\n"
+        "6. Space technology breakthroughs\n"
+        "7. AI-powered space exploration\n"
+        "8. Future mission predictions\n"
+        "9. Space mysteries backed by credible research\n"
+        "10. Evergreen educational content\n\n"
+        "HIGH-VIRAL TOPIC THEMES TO MONITOR & GENERATE:\n"
+        "- Global Space Race: USA vs China space developments, India's latest ISRO missions (Chandrayaan, Gaganyaan), Artemis Program, International Lunar Research Station (ILRS), Moon/Mars race, Deep-space exploration, National space budgets, Partnerships/collaborations.\n"
+        "- Rocket & Mission Updates: SpaceX launches, Starship test flights, Falcon 9, Blue Origin (New Glenn), Rocket Lab, ISRO launches, CNSA launches, ESA, JAXA, human spaceflight, space station missions, satellite deployments.\n"
+        "- Scientific Discoveries: Exoplanets, black holes, dark matter, dark energy, Fast Radio Bursts (FRBs), supernovae, galaxy discoveries, telescope images (JWST), solar/planetary/asteroid discoveries, habitable worlds.\n"
+        "- Future Technologies: AI in space exploration, space robots, Moon bases, Mars colonies, space habitats, nuclear propulsion, space manufacturing, asteroid mining, space solar power, autonomous spacecraft.\n\n"
+        "TREND DETECTION:\n"
+        "Detect and prioritize breaking launches, mission delays, successes, failures, spacecraft anomalies, major funding announcements, international agreements, astronaut missions, space policy changes, historic milestones, and record-breaking achievements.\n\n"
         "Input: a list of recent news headlines/summaries.\n"
         "Output: valid JSON object with a single 'topics' key containing an array of objects:\n\n"
         "{\n"
@@ -442,11 +460,13 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             # Overall growth score calculation using strict weights
             overall_growth_score = (ts * 0.2) + (ai * 0.2) + (vs * 0.2) + (eds * 0.1) + (ctr * 0.15) + (ret * 0.15)
             
-            # Apply priority boost for AI/Future Tech and Space/Astronomy niches
+            # Apply priority boost for AI/Future Tech and Space/Astronomy/Space Race niches
             text_to_check = (c.get("viral_angle", "") + " " + c.get("hook_line", "")).lower()
             is_priority = any(keyword in text_to_check for keyword in [
                 "ai", "robot", "machine learning", "neural network", "algorithm", "supercomputer", "automation", "tech",
-                "space", "universe", "planet", "galaxy", "nasa", "spacex", "telescope", "quantum", "star", "fusion", "mars"
+                "space", "universe", "planet", "galaxy", "nasa", "spacex", "telescope", "quantum", "star", "fusion", "mars",
+                "space race", "moon race", "mars race", "artemis", "isro", "starship", "black hole", "exoplanet", "propulsion",
+                "asteroid mining", "cnsa", "blue origin", "rocket lab", "launches", "landing", "dark matter"
             ])
             if is_priority:
                 overall_growth_score = min(overall_growth_score + 15.0, 100.0)

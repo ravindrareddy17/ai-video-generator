@@ -24,6 +24,11 @@ def check_script_quality(content: dict) -> bool:
         logger.error(f"Quality Check Failed: Word count ({word_count}) is outside the acceptable range (35-70 words) for a 20-second Short.")
         return False
         
+    # 1.5. Programmatic comment-bait question check
+    if not narration.strip().endswith("?"):
+        logger.error("Quality Check Failed: Narration script must end with a question mark (?) to promote viewer discussion.")
+        return False
+        
     # 2. Programmatic repetitive wording checks
     words = [w.strip().lower().strip(".,!?") for w in narration.split()]
     unique_words = set(words)

@@ -117,16 +117,25 @@ def generate_narration(topic_data: dict) -> dict:
     chosen_hook, hooks_data = optimize_hook(topic_data, client, model)
     
     system_prompt = (
-        "SYSTEM PROMPT - THE SHORTEST ORBIT MASTER AI VIDEO PRODUCTION PROMPT (v3.0)\n\n"
+        "SYSTEM PROMPT - THE SHORTEST ORBIT MASTER AI VIDEO PRODUCTION PROMPT (v3.2 - Space Content Engine Edition)\n\n"
         "You are an elite AI filmmaker, documentary editor, and storytelling expert.\n"
         "Your objective is to create a premium YouTube Shorts script (20 seconds max) that maximizes retention, "
         "watch time, and replay value while maintaining a luxury cinematic documentary aesthetic.\n\n"
-        "CHANNEL IDENTITY: Science, Space, AI, Astronomy, Physics, Biology, Technology, Universe.\n"
+        "CHANNEL IDENTITY: Science, Space, AI, Astronomy, Physics, Universe.\n"
         "Brand Style: Dark, cinematic, futuristic, luxurious, premium, intelligent.\n\n"
-        "STORY STRUCTURE:\n"
-        "- 0-3s: Irresistible hook.\n"
-        "- 3-12s: Explain topic using progressively stronger visuals.\n"
-        "- 12-20s: Deliver the reveal, payoff, or surprising fact, ending with a memorable line.\n\n"
+        "VIRAL VIDEO STRUCTURE (7-STEP STORYFLOW):\n"
+        "1. Strong 3-second hook (Sentence 1).\n"
+        "2. Explain what happened.\n"
+        "3. Explain why it matters.\n"
+        "4. Address global impact (geopolitical competition, partnerships, etc.).\n"
+        "5. Outline different viewpoints / healthy controversy (e.g. NASA vs CNSA, public vs private, Moon vs Mars, humans vs robots, AI in space).\n"
+        "6. Mention future implications.\n"
+        "7. End with a discussion/comment generator question (Sentence 3).\n\n"
+        "HEALTHY CONTROVERSY & BALANCE RULES:\n"
+        "- When discussing debates (NASA vs CNSA, government vs private, AI preparedness), always present multiple balanced perspectives.\n"
+        "- Never exaggerate conflicts or invent rivalries.\n"
+        "- Never portray speculation or rumors as confirmed fact.\n"
+        "- The hook must represent a 100% true, verifiable fact (strictly follow the HOOK HONESTY RULE; do NOT invent statistics/numbers).\n\n"
         "Respond in valid JSON format only:\n"
         "{\n"
         "  \"title\": \"Curiosity-driven, stop-scrolling English title (e.g. 'What's behind Elon Musk's trillion-dollar bet on AI?' or 'Did AI just rewrite language?'), under 50 characters\",\n"
@@ -139,9 +148,15 @@ def generate_narration(topic_data: dict) -> dict:
         "3. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
-        "6. REWATCH LOOP & COMMENT BAITING: The script's final sentence MUST be a mind-bending question designed to bait user comments. Do NOT append or repeat the hook sentence at the end of the narration. The script must end with the question itself. The loop effect is created by the phrasing of the question leading grammatically into the hook, NOT by repeating the hook.\n"
-        "7. EXOPLANET ACCURACY: Exoplanets are planets outside our solar system that orbit other stars, NOT our Sun. They are light-years away, NOT in our solar system or 'cosmic backyard'. Never state that an exoplanet orbits our Sun or is in our solar system. Always describe them as orbiting distant stars in other star systems.\n"
-        "8. AUTO-DUBBING & TRANSLATION FRIENDLINESS: The script must be optimized for YouTube's international auto-dubbing. Avoid complex local idioms, localized slang, culturally specific wordplay, or confusing metaphors that cannot be directly translated. Use clean, globally standard grammar and vocabulary so that automatic translation into Spanish, Hindi, French, Portuguese, etc., is completely seamless and natural."
+        "6. REWATCH LOOP & COMMENT BAITING: The script's final sentence MUST be a natural, discussion-promoting question to bait comments. Do NOT repeat or append the hook sentence at the end of the narration. The script must end with the question itself. Choose from or base it on these high-engagement questions:\n"
+        "   - 'Which country do you think will lead the next decade of space exploration?'\n"
+        "   - 'Should countries cooperate more in space?'\n"
+        "   - 'Would you support building a permanent Moon base?'\n"
+        "   - 'Is Mars the right destination, or should humanity focus elsewhere?'\n"
+        "   - 'Which mission are you most excited to see?'\n"
+        "   - 'What do you think happens next?'\n"
+        "7. EXOPLANET ACCURACY: Exoplanets orbit other stars, NOT our Sun. Always describe them as orbiting distant stars in other star systems.\n"
+        "8. AUTO-DUBBING & TRANSLATION FRIENDLINESS: Avoid complex local idioms, localized slang, or metaphors. Use clean, globally standard grammar for seamless translation."
     )
     
     viral_angle = topic_data.get("viral_angle", "")
@@ -153,8 +168,8 @@ def generate_narration(topic_data: dict) -> dict:
         f"CRITICAL STRUCTURE REQUIREMENTS TO HIT THE 45-55 WORD RANGE:\n"
         f"Your script must contain exactly 3 concise, high-impact sentences:\n"
         f"Sentence 1 (Hook): Start exactly with the hook line (approx 8-12 words).\n"
-        f"Sentence 2 (Explanation): Write a single detailed sentence explaining the technical or scientific mechanism behind: '{viral_angle}' (approx 15-20 words).\n"
-        f"Sentence 3 (Loop Climax & Comment Bait): Write a final mind-bending question (approx 15-20 words) that baits viewers to leave comments. Do NOT repeat or append the hook line here. The narration must end with this question. The loop is created by the phrasing of the question leading grammatically into the hook when the video loops back to the start.\n\n"
+        f"Sentence 2 (Explanation & Context): Write a single detailed sentence explaining what happened, why it matters, global impact, and controversy/different viewpoints of '{viral_angle}' (approx 18-24 words).\n"
+        f"Sentence 3 (Loop Climax & Comment Bait): Write a final discussion-promoting question (approx 15-20 words) that baits viewers to leave comments. Do NOT repeat or append the hook line here. The narration must end with this question. The loop is created by the phrasing of the question leading grammatically into the hook when the video loops back to the start.\n\n"
         f"Count your words carefully. Ensure the script contains between 40 and 60 words total!"
     )
     
@@ -193,7 +208,7 @@ def generate_narration(topic_data: dict) -> dict:
             word_count = len(content["narration"].split())
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
             
-            if 40 <= word_count <= 60:
+            if 40 <= word_count <= 60 and content.get("narration", "").strip().endswith("?"):
                 import re
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
                 if not sentences:
@@ -205,7 +220,7 @@ def generate_narration(topic_data: dict) -> dict:
                 logger.info(f"Successfully generated script with adequate length: {content['title']}")
                 return content
             else:
-                logger.warning(f"Script word count ({word_count}) was outside [40, 60] words. Retrying...")
+                logger.warning(f"Script verification failed (word count: {word_count}, ends with '?': {content.get('narration', '').strip().endswith('?')}). Retrying...")
                 
         except Exception as e:
             logger.error(f"Error on attempt {attempt+1}: {e}")
