@@ -29,6 +29,12 @@ def check_script_quality(content: dict) -> bool:
         logger.error("Quality Check Failed: Narration script must end with a question mark (?) to promote viewer discussion.")
         return False
         
+    # 1.6. Programmatic AI element check
+    ai_keywords = ["ai", "robot", "autonomous", "machine learning", "neural network", "algorithm", "automation", "artificial intelligence"]
+    if not any(kw in narration.lower() for kw in ai_keywords):
+        logger.error("Quality Check Failed: Narration script must contain at least one AI or robotics keyword to link space and AI.")
+        return False
+        
     # 2. Programmatic repetitive wording checks
     words = [w.strip().lower().strip(".,!?") for w in narration.split()]
     unique_words = set(words)

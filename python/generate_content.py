@@ -117,28 +117,33 @@ def generate_narration(topic_data: dict) -> dict:
     chosen_hook, hooks_data = optimize_hook(topic_data, client, model)
     
     system_prompt = (
-        "SYSTEM PROMPT - THE SHORTEST ORBIT MASTER AI VIDEO PRODUCTION PROMPT (v3.2 - Space Content Engine Edition)\n\n"
+        "SYSTEM PROMPT - SPACE FRONTIER ENGINE MASTER PROMPT (v4.0 - Countries + AI + Space)\n\n"
         "You are an elite AI filmmaker, documentary editor, and storytelling expert.\n"
         "Your objective is to create a premium YouTube Shorts script (20 seconds max) that maximizes retention, "
         "watch time, and replay value while maintaining a luxury cinematic documentary aesthetic.\n\n"
-        "CHANNEL IDENTITY: Science, Space, AI, Astronomy, Physics, Universe.\n"
-        "Brand Style: Dark, cinematic, futuristic, luxurious, premium, intelligent.\n\n"
-        "VIRAL VIDEO STRUCTURE (7-STEP STORYFLOW):\n"
-        "1. Strong 3-second hook (Sentence 1).\n"
-        "2. Explain what happened.\n"
-        "3. Explain why it matters.\n"
-        "4. Address global impact (geopolitical competition, partnerships, etc.).\n"
-        "5. Outline different viewpoints / healthy controversy (e.g. NASA vs CNSA, public vs private, Moon vs Mars, humans vs robots, AI in space).\n"
-        "6. Mention future implications.\n"
-        "7. End with a discussion/comment generator question (Sentence 3).\n\n"
-        "HEALTHY CONTROVERSY & BALANCE RULES:\n"
-        "- When discussing debates (NASA vs CNSA, government vs private, AI preparedness), always present multiple balanced perspectives.\n"
-        "- Never exaggerate conflicts or invent rivalries.\n"
-        "- Never portray speculation or rumors as confirmed fact.\n"
-        "- The hook must represent a 100% true, verifiable fact (strictly follow the HOOK HONESTY RULE; do NOT invent statistics/numbers).\n\n"
+        "CORE STRICT NICHE: You must ONLY generate content where the central theme is: Countries + Space Exploration + AI + Global Competition. "
+        "Every video must naturally connect these four elements. Never generate AI-only, space-only, country-politics-only, or military-only news.\n"
+        "Every script must answer: 'How is a country using space and AI to shape the future of humanity?'\n\n"
+        "STORY STRUCTURE (6-STEP STORYFLOW):\n"
+        "1. Strong 3-second hook (Sentence 1): E.g. 'The next world superpower may not be decided on Earth...', 'One country just made a move that could change space forever...'\n"
+        "2. The Event: Explain country, what happened, mission name, AI technology involved, goal, timeline, importance.\n"
+        "3. Why This Matters: Scientific, economic, strategic, or technological importance, and global impact.\n"
+        "4. Healthy Debate: Balanced discussion of credible viewpoints (e.g. NASA vs CNSA, government vs private, Moon vs Mars, AI autonomy vs human control).\n"
+        "5. Future Outlook: What happens next, challenges, responses.\n"
+        "6. Community Question (Sentence 3): End with ONE engaging question (e.g. 'Which country do you think will lead the next space era?', 'Would you trust AI to control a Mars mission?').\n\n"
+        "RETENTION RULES:\n"
+        "- Strong qualitative hook (no fabricated statistics or numbers)\n"
+        "- A surprising fact\n"
+        "- A comparison between countries or missions\n"
+        "- AI's role in the story\n"
+        "- Why viewers should care\n"
+        "- A future prediction (possibility, not fact)\n"
+        "- A discussion question at the end\n\n"
+        "CONTENT TONE:\n"
+        "Documentary-style storytelling, cinematic narration, easy to understand, fast-paced, curiosity-driven, balanced, factual, inspirational, global perspective.\n\n"
         "Respond in valid JSON format only:\n"
         "{\n"
-        "  \"title\": \"Curiosity-driven, stop-scrolling English title (e.g. 'What's behind Elon Musk's trillion-dollar bet on AI?' or 'Did AI just rewrite language?'), under 50 characters\",\n"
+        "  \"title\": \"Curiosity-driven, stop-scrolling English title (e.g. 'Why is China investing billions in lunar AI?'), under 50 characters\",\n"
         "  \"hook\": \"The exact hook line provided in the prompt\",\n"
         "  \"narration\": \"A 20-second script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced.\"\n"
         "}\n\n"
@@ -149,12 +154,13 @@ def generate_narration(topic_data: dict) -> dict:
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
         "6. REWATCH LOOP & COMMENT BAITING: The script's final sentence MUST be a natural, discussion-promoting question to bait comments. Do NOT repeat or append the hook sentence at the end of the narration. The script must end with the question itself. Choose from or base it on these high-engagement questions:\n"
-        "   - 'Which country do you think will lead the next decade of space exploration?'\n"
-        "   - 'Should countries cooperate more in space?'\n"
+        "   - 'Which country do you think will lead the next space era?'\n"
+        "   - 'Should countries compete or collaborate in space?'\n"
+        "   - 'Would you trust AI to control a Mars mission?'\n"
         "   - 'Would you support building a permanent Moon base?'\n"
         "   - 'Is Mars the right destination, or should humanity focus elsewhere?'\n"
-        "   - 'Which mission are you most excited to see?'\n"
-        "   - 'What do you think happens next?'\n"
+        "   - 'Which mission excites you the most?'\n"
+        "   - 'Could AI discover alien life before humans?'\n"
         "7. EXOPLANET ACCURACY: Exoplanets orbit other stars, NOT our Sun. Always describe them as orbiting distant stars in other star systems.\n"
         "8. AUTO-DUBBING & TRANSLATION FRIENDLINESS: Avoid complex local idioms, localized slang, or metaphors. Use clean, globally standard grammar for seamless translation."
     )
@@ -208,7 +214,10 @@ def generate_narration(topic_data: dict) -> dict:
             word_count = len(content["narration"].split())
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
             
-            if 40 <= word_count <= 60 and content.get("narration", "").strip().endswith("?"):
+            narration_text = content.get("narration", "").strip()
+            ai_keywords = ["ai", "robot", "autonomous", "machine learning", "neural network", "algorithm", "automation", "artificial intelligence"]
+            has_ai_element = any(kw in narration_text.lower() for kw in ai_keywords)
+            if 40 <= word_count <= 60 and narration_text.endswith("?") and has_ai_element:
                 import re
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
                 if not sentences:
@@ -220,7 +229,7 @@ def generate_narration(topic_data: dict) -> dict:
                 logger.info(f"Successfully generated script with adequate length: {content['title']}")
                 return content
             else:
-                logger.warning(f"Script verification failed (word count: {word_count}, ends with '?': {content.get('narration', '').strip().endswith('?')}). Retrying...")
+                logger.warning(f"Script verification failed (word count: {word_count}, ends with '?': {narration_text.endswith('?')}, has AI: {has_ai_element}). Retrying...")
                 
         except Exception as e:
             logger.error(f"Error on attempt {attempt+1}: {e}")

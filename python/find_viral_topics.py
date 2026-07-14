@@ -394,10 +394,10 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "RULES:\n"
         "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify.\n"
         "2. Hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking'.\n"
-        "3. CRITICAL CHANNEL NICHE BALANCE: The chosen topic MUST belong to either 'Artificial Intelligence & Future Technology' (60% weight) or 'Space & Astronomy' (40% weight). You must balance these two categories. Crossover topics (e.g. AI assisting space exploration, robotics on Mars) are highly encouraged as they appeal to both niches.\n"
-        "4. STRICT BAN: Do NOT select biology, wildlife, political news, geopolitical wars, financial stocks, lifestyle/beauty hacks, or speculative pop-psychology.\n"
+        "3. STRICT SPACE FRONTIER NICHE INTERSECTION: The chosen topic MUST strictly combine Countries/Agencies + Space Exploration + AI + Global Competition. Every video must connect these elements naturally. Reject purely AI-only, space-only, country-politics-only, or military-only news. Target a weight distribution of 70% Space-primary (space exploration assisted by AI) and 30% AI-primary (AI breakthroughs supporting space programs) across your selections.\n"
+        "4. STRICT BAN: Do NOT select biology, wildlife, general political news, geopolitical wars, financial stocks, lifestyle/beauty hacks, or speculative pop-psychology.\n"
         "5. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers.\n"
-        "6. FACTUAL TRUTH GATING: Do NOT select speculative rumors, clickbait conspiracy theories, or fake-sounding news (e.g. rumors about AI committing crimes, unverified claims about famous personalities/companies). Only select topics backed by solid scientific reports, official announcements, or reputable journal publications. Reject sensationalized headlines that claim a company's product did something illegal or highly unlikely."
+        "6. FACTUAL TRUTH GATING: Do NOT select speculative rumors, clickbait conspiracy theories, or fake-sounding news. Only select topics backed by solid scientific reports, official announcements, or reputable journal publications. Reject sensationalized headlines that claim a company's product did something illegal or highly unlikely."
     )
     
     user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}"
@@ -407,9 +407,8 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         user_prompt += (
             f"\n\nHere are the recently uploaded videos on the channel:\n{recent_titles_str}\n\n"
             "CRITICAL: Do NOT select any topic that overlaps or is similar to the above list. "
-            "Analyze the above list, classify each title into 'AI & Tech' or 'Space & Astronomy', "
-            "and select the next topic category to move the channel closer to a strict "
-            "60% AI & Tech / 40% Space & Astronomy global publishing ratio."
+            "Analyze the above list and select the next topic category to move the channel closer to a strict "
+            "70% Space-primary / 30% AI-primary global publishing ratio within the Space Frontier intersection."
         )
     
     logger.info("Calling Groq LLM to scan and score viral topics...")
@@ -460,16 +459,18 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             # Overall growth score calculation using strict weights
             overall_growth_score = (ts * 0.2) + (ai * 0.2) + (vs * 0.2) + (eds * 0.1) + (ctr * 0.15) + (ret * 0.15)
             
-            # Apply priority boost for AI/Future Tech and Space/Astronomy/Space Race niches
+            # Apply priority boost for strict Space Frontier niche (Country + Space + AI)
             text_to_check = (c.get("viral_angle", "") + " " + c.get("hook_line", "")).lower()
-            is_priority = any(keyword in text_to_check for keyword in [
-                "ai", "robot", "machine learning", "neural network", "algorithm", "supercomputer", "automation", "tech",
-                "space", "universe", "planet", "galaxy", "nasa", "spacex", "telescope", "quantum", "star", "fusion", "mars",
-                "space race", "moon race", "mars race", "artemis", "isro", "starship", "black hole", "exoplanet", "propulsion",
-                "asteroid mining", "cnsa", "blue origin", "rocket lab", "launches", "landing", "dark matter"
-            ])
-            if is_priority:
-                overall_growth_score = min(overall_growth_score + 15.0, 100.0)
+            countries = ["usa", "united states", "china", "india", "japan", "russia", "south korea", "uae", "united arab emirates", "israel", "european union", "eu", "canada", "australia", "saudi arabia", "türkiye", "turkey", "brazil", "nasa", "isro", "cnsa", "esa", "jaxa", "roscosmos", "kari", "csa"]
+            space_kws = ["space", "exploration", "rocket", "launch", "landing", "moon", "mars", "satellite", "exoplanet", "telescope", "black hole", "asteroid", "orbit", "astronaut", "artemis", "starship", "spacex", "blue origin", "rocket lab", "hail mary"]
+            ai_kws = ["ai", "artificial intelligence", "robot", "autonomous", "machine learning", "neural network", "algorithm", "automation"]
+            
+            has_country = any(c_kw in text_to_check for c_kw in countries)
+            has_space = any(s_kw in text_to_check for s_kw in space_kws)
+            has_ai = any(a_kw in text_to_check for a_kw in ai_kws)
+            
+            if has_country and has_space and has_ai:
+                overall_growth_score = min(overall_growth_score + 25.0, 100.0)
                 
             c["trend_score"] = ts
             c["competition_score"] = comp
