@@ -7,7 +7,7 @@
 ![GitHub Actions](https://img.shields.io/badge/Automation-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-Active_Development-yellow?style=flat)
 
-> **⚠️ Project Status:** This project is under **active development** and will continue to be updated based on needs and improvements. Some features (like the analytics dashboard) are not fully finished yet and may have known bugs. The core video generation pipeline is stable and working. If you want to make custom changes, clone the repo and run locally — see [Running the Pipeline](#%EF%B8%8F-running-the-pipeline) below.
+> **⚠️ Note:** This project is under **active development**. The core video generation pipeline is stable and running 100% on autopilot, but some secondary features are still being polished. See the [Project Status & Known Issues](#-project-status--known-issues) section at the bottom for more details.
 
 ---
 
@@ -306,11 +306,16 @@ You can also run the pipeline entirely from your local machine without GitHub Ac
 
 ---
 
-## 📌 Known Issues & Roadmap
+## 📌 Project Status & Known Issues
 
-- **Dashboard:** The analytics dashboard (`dashboard/index.html`) is not fully finished and has some known bugs. It will be improved in future updates.
-- **Reddit Source:** Reddit API returns 403 errors from GitHub Actions servers. The pipeline handles this gracefully and uses other sources instead.
-- **Thumbnail AI:** Some Imagen models may not be available; the pipeline automatically falls back to a local thumbnail generator.
+This project is under **active development** and will continue to receive updates, bug fixes, and new features based on real-world testing. 
+
+While the core video generation and uploading pipeline is fully stable, please be aware of the following:
+
+- **Analytics Dashboard:** The local browser dashboard (`dashboard/index.html`) is not fully finished and has some known bugs. It will be improved in future updates.
+- **Reddit Source:** The Reddit API sometimes returns 403 errors when called from GitHub Actions servers. The pipeline handles this gracefully by falling back to other trending sources.
+- **Thumbnail AI:** Some Google Imagen models may occasionally be unavailable; the pipeline will automatically fall back to a local typography-based thumbnail generator when this happens.
+- **Running Locally:** If you want to customize the pipeline (change topics, voices, posting schedule, etc.), clone the repo, make your changes, and run `python python/main.py` locally. 
 
 This project will continue to be updated and improved over time.
 
