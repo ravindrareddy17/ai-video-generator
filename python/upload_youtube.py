@@ -234,6 +234,13 @@ def get_authenticated_service():
                     "from Google Cloud Console and place it in the project root."
                 )
                 
+            if os.environ.get("GITHUB_ACTIONS") == "true":
+                raise RuntimeError(
+                    "YouTube authentication failed or token is missing/expired. "
+                    "Cannot start browser-based OAuth flow in GitHub Actions environment. "
+                    "Please run the pipeline locally to re-authenticate, then update the TOKEN_PICKLE_BASE64 secret."
+                )
+
             logger.info("No valid cached credentials found. Starting browser OAuth flow...")
             flow = InstalledAppFlow.from_client_secrets_file(str(CLIENT_SECRET_FILE), SCOPES)
             flow.redirect_uri = "http://localhost:8090/"
