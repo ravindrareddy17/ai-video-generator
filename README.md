@@ -5,6 +5,9 @@
 ![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)
 ![FFmpeg](https://img.shields.io/badge/FFmpeg-Required-orange?logo=ffmpeg)
 ![GitHub Actions](https://img.shields.io/badge/Automation-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Active_Development-yellow?style=flat)
+
+> **⚠️ Project Status:** This project is under **active development** and will continue to be updated based on needs and improvements. Some features (like the analytics dashboard) are not fully finished yet and may have known bugs. The core video generation pipeline is stable and working. If you want to make custom changes, clone the repo and run locally — see [Running the Pipeline](#%EF%B8%8F-running-the-pipeline) below.
 
 ---
 
@@ -245,6 +248,8 @@ Edit `config/settings.json` to customize:
 
 ## 📊 Analytics Dashboard
 
+> **⚠️ Note:** The dashboard is still a work in progress and may have some bugs. It is functional but not fully polished yet. Updates will come in future versions.
+
 View performance stats across all platforms:
 
 ```bash
@@ -285,6 +290,29 @@ Full logs are saved to `logs/pipeline.log`.
 3. Commit your changes (`git commit -m 'Add my feature'`)
 4. Push (`git push origin feature/my-feature`)
 5. Open a Pull Request
+
+---
+
+## 🔧 Running Locally with Your Own Changes
+
+If you want to customize the pipeline (change topics, voices, posting schedule, etc.):
+
+1. Clone the repo to your local machine
+2. Make your changes to the code
+3. Test locally with `python python/main.py`
+4. Once satisfied, push to your fork and let GitHub Actions handle the rest
+
+You can also run the pipeline entirely from your local machine without GitHub Actions — just run `python python/main.py` whenever you want to generate and upload a video.
+
+---
+
+## 📌 Known Issues & Roadmap
+
+- **Dashboard:** The analytics dashboard (`dashboard/index.html`) is not fully finished and has some known bugs. It will be improved in future updates.
+- **Reddit Source:** Reddit API returns 403 errors from GitHub Actions servers. The pipeline handles this gracefully and uses other sources instead.
+- **Thumbnail AI:** Some Imagen models may not be available; the pipeline automatically falls back to a local thumbnail generator.
+
+This project will continue to be updated and improved over time.
 
 ---
 
