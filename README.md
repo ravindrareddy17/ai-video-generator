@@ -1,106 +1,56 @@
-<![CDATA[<div align="center">
+# 🚀 AI Video Generator V2 — The Shortest Orbit
 
-# 🚀 AI Video Generator V2 — *The Shortest Orbit*
+**Fully autonomous AI pipeline that creates and publishes short-form videos to YouTube, Instagram & Facebook — with zero human intervention.**
 
-### Fully Autonomous AI-Powered Short-Form Video Pipeline
-
-**Finds trending topics → Writes scripts → Generates voice → Downloads visuals → Edits video → Uploads to YouTube, Instagram & Facebook — all on autopilot.**
-
-[![Pipeline](https://img.shields.io/badge/Pipeline-12_Steps-blueviolet?style=for-the-badge)](#-pipeline-overview)
-[![Platforms](https://img.shields.io/badge/Platforms-YouTube_|_Instagram_|_Facebook-red?style=for-the-badge)](#-multi-platform-publishing)
-[![Automation](https://img.shields.io/badge/Automation-GitHub_Actions-2088FF?style=for-the-badge)](#-cicd-automation-github-actions)
-[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](#-license)
-
-</div>
+![Python](https://img.shields.io/badge/Python-3.11+-blue?logo=python&logoColor=white)
+![FFmpeg](https://img.shields.io/badge/FFmpeg-Required-orange?logo=ffmpeg)
+![GitHub Actions](https://img.shields.io/badge/Automation-GitHub_Actions-2088FF?logo=githubactions&logoColor=white)
 
 ---
 
-## 📖 What Is This?
+## 🎯 What Does This Do?
 
-**AI Video Generator V2** is a production-grade, end-to-end Python pipeline that automatically creates and publishes short-form vertical videos (YouTube Shorts, Instagram Reels, Facebook Reels) — with **zero human intervention**.
+This project automatically creates viral short videos and posts them to social media **5 times per day** — completely hands-free.
 
-Every run of the pipeline:
-
-1. 🔍 Scans **15+ real-time sources** (Google Trends, Google News, Reddit, NASA, SpaceX, Nature, arXiv, OpenAI, DeepMind, etc.) to find the most viral trending topic.
-2. ✍️ Writes a concise, engaging narration script using an LLM with built-in **fact-checking** and **quality control**.
-3. 🎙️ Generates a natural-sounding voiceover with Microsoft Neural TTS.
-4. 🎬 Downloads matching royalty-free stock footage, assembles it into a vertical video, and mixes in mood-matched background music.
-5. 💬 Burns stylized karaoke-style subtitles directly onto the video.
-6. 🖼️ Generates a high-CTR thumbnail using AI image generation.
-7. 📤 Uploads the finished video simultaneously to **YouTube**, **Instagram**, and **Facebook**.
-8. 📊 Harvests post-upload analytics from all platforms and feeds them into a **self-learning AI engine** that improves future content.
-
-The entire pipeline runs in **~5 minutes** and is scheduled to execute **5 times per day** via GitHub Actions — posting content at globally optimized prime-time hours.
-
----
-
-## ✨ Key Features
-
-| Feature | Description |
-|---|---|
-| 🔥 **Viral Topic Discovery** | Aggregates 1,500+ topics from 15 real-time sources every run |
-| 🧠 **AI Script Generation** | Groq LLM writes scripts with psychological hooks for maximum retention |
-| ✅ **Automated Fact-Checking** | AI verifies every claim before publishing; regenerates if inaccurate |
-| 🎙️ **Neural Voice Narration** | Microsoft Edge TTS with multiple voice profiles and audio normalization |
-| 🎬 **Smart Video Assembly** | Downloads stock footage from Pexels/Pixabay, handles deduplication, crops to 9:16 |
-| 🎵 **Mood-Matched Music** | AI selects music profile based on topic; downloads royalty-free tracks |
-| 💬 **Karaoke Subtitles** | Word-level timing alignment with custom fonts, colors, and styling |
-| 🖼️ **AI Thumbnail Generation** | Google Imagen or intelligent local fallback with typography |
-| 📤 **Multi-Platform Publishing** | Simultaneous upload to YouTube Shorts, Instagram Reels, and Facebook Reels |
-| 📊 **Analytics Harvesting** | Automatically tracks views, likes, reach, and engagement across all platforms |
-| 🤖 **Self-Learning Engine** | AI analyzes past performance to predict and improve future content |
-| ⏰ **Fully Automated Scheduling** | GitHub Actions CI/CD runs 5x daily at global prime-time hours |
-| 🛡️ **Visual Deduplication** | Tracks previously used stock footage to ensure every video looks unique |
-| 📈 **Monetization Tracking** | Monitors YouTube Partner Program readiness (subscribers + watch hours) |
-
----
-
-## 🏗️ Pipeline Overview
-
-The pipeline consists of **12 sequential steps**, orchestrated by `main.py`:
+**One command. One pipeline. Three platforms. Zero effort.**
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                        AI VIDEO GENERATOR V2                            │
-├─────────────────────────────────────────────────────────────────────────┤
-│                                                                         │
-│  Step 1   → 🔍 Find Viral Topics        (15+ real-time sources)        │
-│  Step 2   → ✍️  Generate Script & SEO    (Groq LLM + metadata)         │
-│  Step 2.5 → ✅ Fact-Check Script         (AI claim verification)        │
-│  Step 2.6 → 🏆 Quality Control          (AI quality gate)              │
-│  Step 3   → 🎙️ Generate Voice           (Microsoft Neural TTS)         │
-│  Step 4   → 💬 Create Subtitles         (Word-level karaoke SRT)       │
-│  Step 5   → 🔎 Generate Search Queries  (Visual scene prompts)         │
-│  Step 6   → 📥 Download Stock Footage   (Pexels + Pixabay)             │
-│  Step 7   → 🎬 Assemble Silent Video    (FFmpeg crop/scale/concat)     │
-│  Step 7.5 → 🎵 Download Background Music(Mood-matched royalty-free)    │
-│  Step 8   → 🔊 Mix Audio               (Voice + music + ducking)      │
-│  Step 9   → 💬 Burn Subtitles           (Hardcoded styled captions)    │
-│  Step 10  → 🖼️ Generate Thumbnail       (AI Imagen / local fallback)   │
-│  Step 11  → 📤 Publish to Platforms     (YouTube + Instagram + FB)     │
-│  Step 11.5→ 📊 Harvest Analytics        (Views, likes, engagement)     │
-│  Step 12  → 🤖 Self-Learning Loop       (AI performance analysis)      │
-│                                                                         │
-└─────────────────────────────────────────────────────────────────────────┘
+python python/main.py
 ```
+
+**Here's what happens when you run it:**
+
+1. 🔍 Scans **15+ sources** (Google Trends, NASA, SpaceX, arXiv, Reddit, etc.) for trending topics
+2. ✍️ AI writes a short, engaging video script using Groq LLM
+3. ✅ AI fact-checks the script and fixes any inaccuracies
+4. 🎙️ Converts the script to a natural voiceover using Microsoft Neural TTS
+5. 🎬 Downloads matching stock footage from Pexels/Pixabay
+6. 🎵 Selects and downloads mood-matched background music
+7. 🔊 Assembles video + voice + music with professional audio ducking
+8. 💬 Burns stylized karaoke subtitles onto the video
+9. 🖼️ Generates an eye-catching thumbnail using AI
+10. 📤 Uploads to **YouTube Shorts**, **Instagram Reels**, and **Facebook Reels**
+11. 📊 Collects analytics (views, likes, engagement) from all platforms
+12. 🤖 AI learns from past performance to make better videos next time
+
+**Total time: ~5 minutes per video.**
 
 ---
 
-## 🛠️ Technology Stack
+## 🛠️ Tech Stack
 
-| Component | Technology |
-|---|---|
-| **LLM / Content Engine** | Groq Cloud API (`llama-3.3-70b-versatile`) |
-| **Voice Narration (TTS)** | Microsoft Edge TTS (free, neural, high-quality) |
-| **Stock Footage** | Pexels API (primary) + Pixabay API (fallback) |
-| **Thumbnail Generation** | Google Gemini AI / Imagen (with Pillow local fallback) |
-| **Video Processing** | FFmpeg (crop, scale, concat, audio mix, subtitle burn) |
-| **YouTube Upload** | YouTube Data API v3 (OAuth 2.0) |
-| **Instagram / Facebook** | Meta Graph API (OAuth) |
-| **Database** | SQLite (video tracking, analytics, AI learning) |
-| **CI/CD Automation** | GitHub Actions (5x daily cron schedule) |
-| **Analytics Dashboard** | HTML + Chart.js (local browser dashboard) |
-| **Language** | Python 3.11+ |
+| What | Technology |
+|:-----|:-----------|
+| AI Brain | Groq Cloud API (Llama 3.3 70B) |
+| Voice | Microsoft Edge TTS (free, neural) |
+| Stock Footage | Pexels API + Pixabay API |
+| Thumbnails | Google Imagen AI + Pillow fallback |
+| Video Editing | FFmpeg |
+| YouTube Upload | YouTube Data API v3 (OAuth 2.0) |
+| Instagram/Facebook | Meta Graph API |
+| Database | SQLite |
+| Automation | GitHub Actions (5x daily cron) |
+| Language | Python 3.11+ |
 
 ---
 
@@ -108,97 +58,78 @@ The pipeline consists of **12 sequential steps**, orchestrated by `main.py`:
 
 ```
 AI-VIDEO-V2/
-├── .github/
-│   └── workflows/
-│       └── main.yml                 # GitHub Actions CI/CD workflow
 │
-├── python/                          # Core pipeline modules
-│   ├── main.py                      # 🎯 Pipeline orchestrator (entry point)
-│   ├── find_viral_topics.py         # Step 1:  Viral topic discovery
-│   ├── generate_content.py          # Step 2:  Script & metadata generation
-│   ├── verify_facts.py              # Step 2.5: AI fact-checking
-│   ├── quality_checker.py           # Step 2.6: Script quality control
-│   ├── generate_voice.py            # Step 3:  TTS voice narration
-│   ├── create_subtitles.py          # Step 4:  Karaoke subtitle alignment
-│   ├── generate_search_queries.py   # Step 5:  Visual search prompts
-│   ├── download_videos.py           # Step 6:  Stock footage downloader
-│   ├── create_video.py              # Step 7:  Video assembly (FFmpeg)
-│   ├── download_music.py            # Step 7.5: Background music
-│   ├── add_audio.py                 # Step 8:  Audio mixing
-│   ├── burn_subtitles.py            # Step 9:  Subtitle burning
-│   ├── generate_thumbnail.py        # Step 10: Thumbnail generation
-│   ├── publish_service.py           # Step 11: Multi-platform publisher
-│   ├── upload_youtube.py            # YouTube Shorts uploader
-│   ├── upload_instagram.py          # Instagram Reels uploader
-│   ├── upload_facebook.py           # Facebook Reels uploader
-│   ├── harvest_analytics.py         # Step 11.5: Analytics harvesting
-│   ├── self_learning.py             # Step 12: AI self-learning engine
-│   ├── meta_auth.py                 # Meta (Instagram/Facebook) auth
-│   └── dashboard_app.py             # Analytics dashboard server
+├── python/                     ← Core pipeline modules
+│   ├── main.py                 ← Entry point (runs everything)
+│   ├── find_viral_topics.py    ← Step 1: Find trending topics
+│   ├── generate_content.py     ← Step 2: Write script + SEO metadata
+│   ├── verify_facts.py         ← Step 2.5: Fact-check the script
+│   ├── quality_checker.py      ← Step 2.6: Quality control gate
+│   ├── generate_voice.py       ← Step 3: Text-to-speech voiceover
+│   ├── create_subtitles.py     ← Step 4: Karaoke-style subtitles
+│   ├── generate_search_queries.py ← Step 5: Visual search prompts
+│   ├── download_videos.py      ← Step 6: Download stock clips
+│   ├── create_video.py         ← Step 7: Assemble video (FFmpeg)
+│   ├── download_music.py       ← Step 7.5: Background music
+│   ├── add_audio.py            ← Step 8: Mix voice + music
+│   ├── burn_subtitles.py       ← Step 9: Burn subtitles onto video
+│   ├── generate_thumbnail.py   ← Step 10: AI thumbnail
+│   ├── publish_service.py      ← Step 11: Upload to all platforms
+│   ├── upload_youtube.py       ← YouTube uploader
+│   ├── upload_instagram.py     ← Instagram uploader
+│   ├── upload_facebook.py      ← Facebook uploader
+│   └── harvest_analytics.py    ← Step 11.5: Collect analytics
 │
-├── automation/                      # Platform-specific analytics & AI
-│   ├── ai/                          # Self-learning, prediction, recommendation
-│   ├── youtube/                     # YouTube analytics module
-│   ├── instagram/                   # Instagram analytics module
-│   ├── facebook/                    # Facebook analytics module
-│   ├── competitor/                  # Competitor analysis module
-│   └── database/                    # Platform-isolated SQLite databases
+├── automation/                 ← Analytics + AI learning
+│   ├── ai/                     ← Self-learning engine
+│   ├── youtube/                ← YouTube analytics
+│   ├── instagram/              ← Instagram analytics
+│   ├── facebook/               ← Facebook analytics
+│   └── database/               ← Platform databases
 │
-├── utils/                           # Shared utilities
-│   ├── config.py                    # Configuration loader
-│   ├── database.py                  # SQLite database manager
-│   ├── ffmpeg.py                    # FFmpeg/FFprobe wrapper
-│   ├── helpers.py                   # General helper functions
-│   ├── logger.py                    # Structured logging
-│   ├── paths.py                     # Centralized path definitions
-│   └── retry.py                     # Retry/backoff utilities
+├── utils/                      ← Shared utilities
+│   ├── config.py               ← Settings loader
+│   ├── database.py             ← SQLite manager
+│   ├── ffmpeg.py               ← FFmpeg wrapper
+│   ├── logger.py               ← Logging
+│   └── paths.py                ← Path definitions
 │
-├── config/
-│   └── settings.json                # Global configuration & styling
+├── config/settings.json        ← Customization settings
+├── dashboard/index.html        ← Analytics dashboard (browser)
+├── assets/fonts/               ← Custom subtitle fonts
+├── assets/music/               ← Background music
+├── output/                     ← Final video + thumbnail
+├── logs/                       ← Pipeline logs
 │
-├── dashboard/                       # Browser-based analytics dashboard
-│   ├── index.html                   # Dashboard UI
-│   └── chart.js                     # Chart.js library
-│
-├── assets/
-│   ├── music/                       # Background music tracks
-│   └── fonts/                       # Custom subtitle fonts (Bebas Neue, Cinzel)
-│
-├── data/                            # Runtime data (topics, scripts, databases)
-├── audio/                           # Generated voiceovers & timing data
-├── captions/                        # Generated subtitle files (.srt)
-├── downloads/videos/                # Downloaded stock footage
-├── output/                          # Final video (short.mp4) & thumbnail
-├── logs/                            # Pipeline execution logs
-├── temp/                            # Temporary processing files
-│
-├── .env                             # API keys (git-ignored)
-├── client_secret.json               # Google OAuth credentials (git-ignored)
-├── token.pickle                     # Cached YouTube auth token (git-ignored)
-└── requirements.txt                 # Python dependencies
+├── .github/workflows/main.yml  ← GitHub Actions automation
+├── .env                        ← API keys (git-ignored)
+├── requirements.txt            ← Python dependencies
+└── README.md                   ← You are here!
 ```
 
 ---
 
-## 🚀 Setup & Installation
+## 🚀 Quick Start
 
-### Prerequisites
-
-- **Python 3.11+**
-- **FFmpeg** & **FFprobe** installed and added to your system's `PATH`
+### Step 1: Install FFmpeg
 
 ```bash
-# Verify FFmpeg is installed
-ffmpeg -version
-ffprobe -version
+# Windows
+winget install Gyan.FFmpeg
+
+# Mac
+brew install ffmpeg
+
+# Linux
+sudo apt install ffmpeg
 ```
 
-> **Install FFmpeg:**
-> - **Windows:** `winget install Gyan.FFmpeg` or download from [gyan.dev](https://www.gyan.dev/ffmpeg/builds/)
-> - **macOS:** `brew install ffmpeg`
-> - **Linux:** `sudo apt install ffmpeg`
+Verify installation:
+```bash
+ffmpeg -version
+```
 
-### 1. Clone & Install Dependencies
+### Step 2: Clone & Install
 
 ```bash
 git clone https://github.com/ravindrareddy17/ai-video-generator.git
@@ -206,226 +137,161 @@ cd ai-video-generator
 pip install -r requirements.txt
 ```
 
-### 2. Configure API Keys
+### Step 3: Add Your API Keys
 
 Create a `.env` file in the project root:
 
 ```env
-# Required — Content & Video Generation
-GROQ_API_KEY=gsk_your_groq_api_key
-PEXELS_API_KEY=your_pexels_api_key
-PIXABAY_API_KEY=your_pixabay_api_key
-GEMINI_API_KEY=your_gemini_api_key
+# Required
+GROQ_API_KEY=your_groq_key
+PEXELS_API_KEY=your_pexels_key
+PIXABAY_API_KEY=your_pixabay_key
+GEMINI_API_KEY=your_gemini_key
 
-# Optional — Multi-Platform Publishing (Instagram & Facebook)
+# Optional (for Instagram & Facebook)
 META_APP_ID=your_meta_app_id
 META_APP_SECRET=your_meta_app_secret
-META_ACCESS_TOKEN=your_meta_access_token
-FACEBOOK_PAGE_ID=your_facebook_page_id
-INSTAGRAM_BUSINESS_ACCOUNT_ID=your_instagram_business_id
+META_ACCESS_TOKEN=your_meta_token
+FACEBOOK_PAGE_ID=your_fb_page_id
+INSTAGRAM_BUSINESS_ACCOUNT_ID=your_ig_id
 ```
 
-> **Where to get API keys:**
-> | Key | Source |
-> |---|---|
-> | `GROQ_API_KEY` | [console.groq.com](https://console.groq.com) (free tier available) |
-> | `PEXELS_API_KEY` | [pexels.com/api](https://www.pexels.com/api/) (free) |
-> | `PIXABAY_API_KEY` | [pixabay.com/api/docs](https://pixabay.com/api/docs/) (free) |
-> | `GEMINI_API_KEY` | [aistudio.google.com](https://aistudio.google.com/apikey) (free tier) |
-> | Meta keys | [developers.facebook.com](https://developers.facebook.com/) |
+**Where to get free API keys:**
 
-### 3. Setup YouTube Upload (Google OAuth)
+| Key | Get it from |
+|:----|:------------|
+| Groq | [console.groq.com](https://console.groq.com) |
+| Pexels | [pexels.com/api](https://www.pexels.com/api/) |
+| Pixabay | [pixabay.com/api/docs](https://pixabay.com/api/docs/) |
+| Gemini | [aistudio.google.com](https://aistudio.google.com/apikey) |
+| Meta | [developers.facebook.com](https://developers.facebook.com/) |
 
-1. Go to the [Google Cloud Console](https://console.cloud.google.com/).
-2. Create a new project and enable the **YouTube Data API v3**.
-3. Go to **APIs & Services** → **Credentials** → **Configure Consent Screen**.
-4. Choose **External**, fill in basic details, and add your email to test users.
-5. Create an **OAuth client ID** → select **Desktop app** → download the JSON.
-6. Rename the file to `client_secret.json` and place it in the project root.
+### Step 4: Setup YouTube Upload
 
-> On your first run, a browser window will open for authentication. After granting access, `token.pickle` is saved automatically and all future runs are headless.
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project
+3. Enable **YouTube Data API v3**
+4. Go to **Credentials** → Create **OAuth Client ID** (Desktop App)
+5. Download the JSON file → rename to `client_secret.json` → place in project root
+6. Run the pipeline once — a browser window opens for login
+7. After login, `token.pickle` is saved and all future runs are automatic
 
-### 4. Setup Instagram & Facebook (Optional)
-
-If you want multi-platform publishing, configure a [Meta Developer App](https://developers.facebook.com/) with the following permissions:
-- `instagram_content_publish`, `instagram_basic`, `pages_manage_posts`, `publish_video`
-
-Set the corresponding environment variables in your `.env` file.
-
----
-
-## ▶️ Running the Pipeline
-
-### Full Pipeline (Recommended)
+### Step 5: Run It!
 
 ```bash
 python python/main.py
 ```
 
-This single command runs all 12 steps end-to-end in approximately **5 minutes**, producing a finished video and uploading it to all configured platforms.
-
-### Individual Steps (For Debugging)
-
-Each module can be run independently:
-
-```bash
-python python/find_viral_topics.py       # Step 1:   Find trending topics
-python python/generate_content.py        # Step 2:   Generate script & metadata
-python python/verify_facts.py            # Step 2.5: Fact-check the script
-python python/quality_checker.py         # Step 2.6: Quality control
-python python/generate_voice.py          # Step 3:   Generate voiceover
-python python/create_subtitles.py        # Step 4:   Create subtitles
-python python/generate_search_queries.py # Step 5:   Generate visual queries
-python python/download_videos.py         # Step 6:   Download stock footage
-python python/create_video.py            # Step 7:   Assemble silent video
-python python/download_music.py          # Step 7.5: Download background music
-python python/add_audio.py              # Step 8:   Mix audio
-python python/burn_subtitles.py         # Step 9:   Burn subtitles
-python python/generate_thumbnail.py     # Step 10:  Generate thumbnail
-python python/upload_youtube.py         # Step 11:  Upload to YouTube
-```
+That's it! Your video will be generated and uploaded in ~5 minutes.
 
 ---
 
-## ⏰ CI/CD Automation (GitHub Actions)
+## ⏰ Automated Scheduling (GitHub Actions)
 
-The pipeline runs fully automated via GitHub Actions on a **5x daily schedule**, optimized for global prime-time hours:
+The pipeline runs **5 times per day** automatically via GitHub Actions:
 
-| Schedule (UTC) | US (EST) | UK (BST) | India (IST) | Target Audience |
-|---|---|---|---|---|
-| `0 11 * * *` | 7:00 AM | 12:00 PM | 4:30 PM | Morning commute peak |
-| `0 15 * * *` | 11:00 AM | 4:00 PM | 8:30 PM | US lunch & EU afternoon |
-| `30 18 * * *` | 2:30 PM | 7:30 PM | 12:00 AM | US afternoon & EU prime-time |
-| `0 22 * * *` | 6:00 PM | 11:00 PM | 3:30 AM | US evening peak |
-| `30 1 * * *` | 9:30 PM | 2:30 AM | 7:00 AM | US late night & Asia morning |
+| Time (UTC) | Time (IST) | Time (EST) | Purpose |
+|:-----------|:-----------|:-----------|:--------|
+| 11:00 AM | 4:30 PM | 7:00 AM | Morning commute peak |
+| 3:00 PM | 8:30 PM | 11:00 AM | US lunch + EU afternoon |
+| 6:30 PM | 12:00 AM | 2:30 PM | US afternoon + EU prime-time |
+| 10:00 PM | 3:30 AM | 6:00 PM | US evening peak |
+| 1:30 AM | 7:00 AM | 9:30 PM | US late night + Asia morning |
 
-### Setting Up GitHub Actions
+### How to Enable GitHub Actions
 
-1. Push this repository to GitHub.
-2. Go to **Settings** → **Secrets and variables** → **Actions**.
-3. Add the following **Repository Secrets**:
+1. Push the repo to GitHub
+2. Go to **Settings** → **Secrets and variables** → **Actions**
+3. Add these secrets:
 
-| Secret Name | Value |
-|---|---|
+| Secret Name | What to put |
+|:------------|:------------|
 | `GROQ_API_KEY` | Your Groq API key |
 | `PEXELS_API_KEY` | Your Pexels API key |
 | `PIXABAY_API_KEY` | Your Pixabay API key |
 | `GEMINI_API_KEY` | Your Gemini API key |
-| `TOKEN_PICKLE_BASE64` | Base64-encoded `token.pickle` * |
-| `CLIENT_SECRET_BASE64` | Base64-encoded `client_secret.json` * |
+| `TOKEN_PICKLE_BASE64` | Base64 of your `token.pickle` file |
+| `CLIENT_SECRET_BASE64` | Base64 of your `client_secret.json` file |
 | `META_APP_ID` | Your Meta App ID |
 | `META_APP_SECRET` | Your Meta App Secret |
 | `META_ACCESS_TOKEN` | Your Meta Access Token |
 | `FACEBOOK_PAGE_ID` | Your Facebook Page ID |
-| `INSTAGRAM_BUSINESS_ACCOUNT_ID` | Your Instagram Business Account ID |
+| `INSTAGRAM_BUSINESS_ACCOUNT_ID` | Your Instagram Business ID |
 
-> \* **To encode files to base64:**
-> ```bash
-> # On Linux/Mac
-> base64 -w 0 token.pickle
-> base64 -w 0 client_secret.json
->
-> # On Windows (PowerShell)
-> [Convert]::ToBase64String([IO.File]::ReadAllBytes("token.pickle"))
-> [Convert]::ToBase64String([IO.File]::ReadAllBytes("client_secret.json"))
-> ```
+**How to convert files to base64:**
+```bash
+# Linux / Mac
+base64 -w 0 token.pickle
 
-4. The pipeline will now run automatically 5 times per day!
+# Windows (PowerShell)
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("token.pickle"))
+```
 
-You can also trigger a manual run from the **Actions** tab → **Run workflow**.
+4. Go to **Actions** tab → click **Run workflow** to test it!
+
+---
+
+## ⚙️ Customization
+
+Edit `config/settings.json` to customize:
+
+- **AI Voice** — Choose from Microsoft Neural voices (e.g., `en-US-GuyNeural`, `en-US-AvaNeural`)
+- **Subtitle Style** — Font, size, color, outline, position
+- **Video Quality** — Resolution, framerate, CRF quality level
+- **Audio Mix** — Voice vs. music volume balance
+- **Upload Settings** — Privacy status, category, daily limits
 
 ---
 
 ## 📊 Analytics Dashboard
 
-A built-in browser-based analytics dashboard is included for tracking performance across all platforms.
+View performance stats across all platforms:
 
 ```bash
-# Launch the dashboard
 python python/dashboard_app.py
 ```
 
-Then open `dashboard/index.html` in your browser to view:
-- 📈 Views, likes, and engagement trends over time
-- 📊 Platform-by-platform performance comparison
-- 🎯 Monetization progress tracking (YouTube Partner Program)
-- 🤖 AI prediction accuracy metrics
+Then open `dashboard/index.html` in your browser.
 
 ---
 
-## 🤖 Self-Learning AI Engine
+## 🔒 Security Note
 
-The pipeline includes a built-in **self-learning feedback loop** that continuously improves content quality:
-
-1. **Analytics Harvesting** — After each upload, the system collects real performance data (views, likes, engagement) from YouTube, Instagram, and Facebook.
-2. **Prediction vs. Reality** — The AI compares its predicted performance against actual results to calibrate its models.
-3. **Insight Generation** — The learning engine analyzes patterns across all historical videos to identify what topics, hooks, and styles perform best.
-4. **Content Optimization** — Future scripts and metadata are influenced by these learned insights, creating a positive feedback loop.
-
-All learning data is stored in local SQLite databases and synced to the repository automatically.
+Your credentials are always safe:
+- `.env`, `token.pickle`, and `client_secret.json` are in `.gitignore` — they never get uploaded
+- GitHub Secrets are encrypted — nobody can see them
+- Making the repo public does **NOT** expose your API keys
 
 ---
 
-## ⚙️ Configuration
+## 📝 Troubleshooting
 
-Customize video properties, voice, subtitles, and more in `config/settings.json`:
+| Problem | Solution |
+|:--------|:---------|
+| Pipeline fails at Step 1 | Check your `GROQ_API_KEY` in `.env` |
+| No stock footage downloaded | Check your `PEXELS_API_KEY` in `.env` |
+| YouTube upload fails | Delete `token.pickle` and re-authenticate |
+| GitHub Actions fails | Check **Actions** tab for error logs |
+| "Token expired" error | Re-run auth and update `TOKEN_PICKLE_BASE64` secret |
 
-| Setting | Options |
-|---|---|
-| **LLM Model** | Groq model selection & temperature |
-| **Voice Profile** | Microsoft Neural voices (`en-US-SteffanNeural`, `en-US-GuyNeural`, `en-US-AvaNeural`, etc.) |
-| **Video Format** | Target resolution (default: 1080×1920), framerate, CRF quality |
-| **Audio Mix** | Voice volume, music volume, sidechain ducking parameters |
-| **Subtitle Style** | Font family, size, colors, outline thickness, vertical position |
-| **Upload Settings** | Privacy status, category, daily upload limits per platform |
-
----
-
-## 🔒 Security
-
-All sensitive data is protected:
-
-- API keys are stored in `.env` (git-ignored) and GitHub Secrets (encrypted)
-- OAuth tokens (`token.pickle`, `client_secret.json`) are git-ignored
-- The `.gitignore` is pre-configured to prevent accidental credential leaks
-- Meta/YouTube tokens are reconstructed at runtime from encrypted GitHub Secrets
-
----
-
-## 📈 Logging & Troubleshooting
-
-- **Logs:** `logs/pipeline.log` — Detailed execution log for every pipeline run
-- **Output:** `output/short.mp4` and `output/thumbnail.png` — Final generated assets
-- **Temp files:** `temp/` — Automatically cleaned up after each successful run
-- **Database:** `data/shortest_orbit_v3.db` — Central video tracking database
-
-If a pipeline run fails, check `logs/pipeline.log` for detailed error messages and stack traces.
+Full logs are saved to `logs/pipeline.log`.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Feel free to:
-
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+1. Fork this repo
+2. Create a branch (`git checkout -b feature/my-feature`)
+3. Commit your changes (`git commit -m 'Add my feature'`)
+4. Push (`git push origin feature/my-feature`)
 5. Open a Pull Request
 
 ---
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
+Open source under the [MIT License](LICENSE).
 
 ---
 
-<div align="center">
-
 **Built with ❤️ by [@ravindrareddy17](https://github.com/ravindrareddy17)**
-
-*Automating content creation, one video at a time.*
-
-</div>
-]]>
