@@ -64,6 +64,11 @@ jobs:
         run: |
           python python/main.py
 
+      - name: Harvest Analytics
+        if: always()
+        run: |
+          python python/harvest_analytics.py || echo "Analytics harvest skipped"
+
       - name: Commit and Push Database Updates
         if: always()
         run: |
