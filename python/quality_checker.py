@@ -42,7 +42,7 @@ def check_script_quality(content: dict) -> bool:
             
     # 3. LLM Grammar, Pacing, and Loop Validation
     api_key = get_groq_key()
-    model = 'llama-3.3-70b-versatile' # Hardcode 70B for quality assurance
+    model = 'llama-3.1-8b-instant' # Fallback to 8B due to rate limits
     client = Groq(api_key=api_key)
     
     system_prompt = (
