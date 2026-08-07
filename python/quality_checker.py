@@ -20,19 +20,13 @@ def check_script_quality(content: dict) -> bool:
     word_count = content.get("word_count", 0)
     
     # 1. Programmatic length checks
-    if word_count < 35 or word_count > 70:
-        logger.error(f"Quality Check Failed: Word count ({word_count}) is outside the acceptable range (35-70 words) for a 20-second Short.")
+    if word_count < 100 or word_count > 180:
+        logger.error(f"Quality Check Failed: Word count ({word_count}) is outside the acceptable range (100-180 words) for a 50-second Short.")
         return False
         
     # 1.5. Programmatic comment-bait question check
     if not narration.strip().endswith("?"):
         logger.error("Quality Check Failed: Narration script must end with a question mark (?) to promote viewer discussion.")
-        return False
-        
-    # 1.6. Programmatic AI element check
-    ai_keywords = ["ai", "robot", "autonomous", "machine learning", "neural network", "algorithm", "automation", "artificial intelligence"]
-    if not any(kw in narration.lower() for kw in ai_keywords):
-        logger.error("Quality Check Failed: Narration script must contain at least one AI or robotics keyword to link space and AI.")
         return False
         
     # 2. Programmatic repetitive wording checks

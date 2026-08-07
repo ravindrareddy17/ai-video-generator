@@ -242,7 +242,7 @@ def run_pipeline() -> bool:
 
 
 if __name__ == "__main__":
-    max_attempts = 3
+    max_attempts = 5
     success = False
     for attempt in range(1, max_attempts + 1):
         print(f"\n--- PIPELINE ATTEMPT {attempt}/{max_attempts} ---")

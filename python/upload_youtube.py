@@ -462,6 +462,25 @@ def run() -> str | None:
             video_url = f"https://youtube.com/shorts/{video_id}"
             logger.info(f"Upload complete! Watch your video here: {video_url}")
             
+            # Post a top-level comment to bait engagement
+            try:
+                youtube.commentThreads().insert(
+                    part="snippet",
+                    body={
+                        "snippet": {
+                            "videoId": video_id,
+                            "topLevelComment": {
+                                "snippet": {
+                                    "textOriginal": "👇 What's YOUR answer? Drop it in the comments below!"
+                                }
+                            }
+                        }
+                    }
+                ).execute()
+                logger.info(f"Successfully posted auto-comment on video {video_id}")
+            except Exception as e:
+                logger.warning(f"Failed to post auto-comment on video {video_id}: {e}")
+            
             try:
                 # 1. Update central shortest_orbit_v3.db
                 conn = None

@@ -153,7 +153,7 @@ def generate_narration(topic_data: dict) -> dict:
         "}\n\n"
         "NON-NEGOTIABLE RULES:\n"
         "1. Start the narration exactly with the provided hook line.\n"
-        "2. Keep the script between 45 and 55 words total for a strict 20-second pacing.\n"
+        "2. Keep the script between 120 and 150 words total for a strict 50-second pacing.\n"
         "3. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
@@ -178,14 +178,14 @@ def generate_narration(topic_data: dict) -> dict:
         f"CRITICAL STRUCTURE REQUIREMENTS TO HIT THE 45-55 WORD RANGE:\n"
         f"Your script must contain exactly 3 concise, high-impact sentences:\n"
         f"Sentence 1 (Hook): Start exactly with the hook line (approx 8-12 words).\n"
-        f"Sentence 2 (Explanation & Context): Write a single detailed sentence explaining what happened, why it matters, global impact, and controversy/different viewpoints of '{viral_angle}' (approx 18-24 words).\n"
+        f"Sentence 2 (Explanation & Context): Write detailed sentences explaining what happened, why it matters, global impact, and controversy/different viewpoints of '{viral_angle}' (approx 90-110 words).\n"
         f"Sentence 3 (Loop Climax & Comment Bait): Write a final discussion-promoting question (approx 15-20 words) that baits viewers to leave comments. Do NOT repeat or append the hook line here. The narration must end with this question. The loop is created by the phrasing of the question leading grammatically into the hook when the video loops back to the start.\n\n"
-        f"Count your words carefully. Ensure the script contains between 40 and 60 words total!"
+        f"Count your words carefully. Ensure the script contains between 120 and 150 words total!"
     )
     
     logger.info(f"Calling Groq to generate Shortest Orbit script...")
     
-    # Retry loop to guarantee a minimum length of 40 words and max of 60 words
+    # Retry loop to guarantee a minimum length of 120 words and max of 150 words
     max_attempts = 5
     word_count = 0
     content = {}
@@ -194,7 +194,7 @@ def generate_narration(topic_data: dict) -> dict:
             chat_completion = client.chat.completions.create(
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Your previous generation was {word_count} words. You MUST write a script that is strictly between 40 and 60 words total! Please write exactly 3 sentences."}
+                    {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Your previous generation was {word_count} words. You MUST write a script that is strictly between 120 and 150 words total! Please write exactly 3 sentences."}
                 ],
                 model=model,
                 temperature=0.7 + (attempt * 0.05),
@@ -219,9 +219,7 @@ def generate_narration(topic_data: dict) -> dict:
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
             
             narration_text = content.get("narration", "").strip()
-            ai_keywords = ["ai", "robot", "autonomous", "machine learning", "neural network", "algorithm", "automation", "artificial intelligence"]
-            has_ai_element = any(kw in narration_text.lower() for kw in ai_keywords)
-            if 40 <= word_count <= 60 and narration_text.endswith("?") and has_ai_element:
+            if 120 <= word_count <= 180 and narration_text.endswith("?"):
                 import re
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
                 if not sentences:
@@ -233,14 +231,14 @@ def generate_narration(topic_data: dict) -> dict:
                 logger.info(f"Successfully generated script with adequate length: {content['title']}")
                 return content
             else:
-                logger.warning(f"Script verification failed (word count: {word_count}, ends with '?': {narration_text.endswith('?')}, has AI: {has_ai_element}). Retrying...")
+                logger.warning(f"Script verification failed (word count: {word_count}, ends with '?': {narration_text.endswith('?')}). Retrying...")
                 
         except Exception as e:
             logger.error(f"Error on attempt {attempt+1}: {e}")
             if attempt == max_attempts - 1:
                 raise
                 
-    logger.warning(f"Failed to generate a script with at least 40 words after {max_attempts} attempts. Proceeding to avoid crashing.")
+    logger.warning(f"Failed to generate a script with at least 120 words after {max_attempts} attempts. Proceeding to avoid crashing.")
     
     # Clean title fallback
     title_val = content.get("title", "").strip()

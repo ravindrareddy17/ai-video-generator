@@ -35,7 +35,7 @@ logger = get_logger(__name__)
 VOICE_PROFILES = {
     "deep_story": {"voice": "en-US-SteffanNeural", "rate": "+3%"},
     "energetic": {"voice": "en-US-ChristopherNeural", "rate": "+8%"},
-    "casual": {"voice": "en-US-GuyNeural", "rate": "+3%"},
+    "casual": {"voice": "en-US-AndrewMultilingualNeural", "rate": "+3%"},
     "serious": {"voice": "en-US-EricNeural", "rate": "+3%"},
 }
 
