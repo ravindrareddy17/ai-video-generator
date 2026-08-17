@@ -48,14 +48,31 @@ def extract_json_from_llm(raw_text: str) -> dict | list:
     if not raw_text:
         raise ValueError("Empty response from LLM")
         
-    clean = re.sub(r'<think>.*?</think>', '', raw_text, flags=re.DOTALL)
+    clean = re.sub(r'<think>.*?</think>', '', str(raw_text), flags=re.DOTALL)
     clean = re.sub(r'```json\s*', '', clean, flags=re.IGNORECASE)
     clean = re.sub(r'```\s*', '', clean).strip()
 
-    match = re.search(r'(\{.*\}|\[.*\])', clean, re.DOTALL)
-    if match:
-        clean = match.group(1)
-        
+    try:
+        return json.loads(clean)
+    except Exception:
+        pass
+
+    first_curly = clean.find('{')
+    last_curly = clean.rfind('}')
+    if first_curly != -1 and last_curly != -1 and last_curly > first_curly:
+        try:
+            return json.loads(clean[first_curly:last_curly+1])
+        except Exception:
+            pass
+
+    first_sq = clean.find('[')
+    last_sq = clean.rfind(']')
+    if first_sq != -1 and last_sq != -1 and last_sq > first_sq:
+        try:
+            return json.loads(clean[first_sq:last_sq+1])
+        except Exception:
+            pass
+
     return json.loads(clean)
 
 def load_json(path: Path) -> dict | list:

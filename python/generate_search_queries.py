@@ -1,11 +1,14 @@
 """
 generate_search_queries.py — Step 5 of the AI Video Generator V2 pipeline.
 
-Parses captions/voice.srt, extracts sentences, and calls the Groq LLM to
-generate visual search queries for each sentence (suitable for stock video search).
+Parses word timings / sentence boundaries, combines overall topic context with
+specific physical sentence actions, and calls LLM to generate highly accurate,
+cinematic visual search queries for stock video search.
+
+Uses call_groq_with_fallback() and extract_json_from_llm() for 100% LLM resiliency.
 
 Inputs:
-    captions/voice.srt
+    captions/word_timings.json
     data/content.json
 
 Outputs:
@@ -16,28 +19,16 @@ import sys
 from pathlib import Path
 import json
 import re
-from groq import Groq
 
 # Project imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from utils.paths import WORD_TIMINGS_FILE, CONTENT_FILE, SEARCH_QUERIES_FILE
-from utils.config import get_groq_key, get_setting
+from utils.config import call_groq_with_fallback
 from utils.logger import get_logger
-from utils.helpers import load_json, save_json
+from utils.helpers import load_json, save_json, extract_json_from_llm
 
 logger = get_logger(__name__)
-
-
-def srt_time_to_ms(time_str: str) -> float:
-    """Convert an SRT timestamp string (HH:MM:SS,mmm) to milliseconds."""
-    match = re.match(r"(\d+):(\d+):(\d+),(\d+)", time_str)
-    if not match:
-        raise ValueError(f"Invalid SRT timestamp format: {time_str}")
-        
-    hours, minutes, seconds, millis = map(int, match.groups())
-    total_ms = (hours * 3600 + minutes * 60 + seconds) * 1000 + millis
-    return float(total_ms)
 
 
 def load_sentence_timings(timings_path: Path) -> list[dict]:
@@ -86,85 +77,89 @@ def load_sentence_timings(timings_path: Path) -> list[dict]:
     return subtitles
 
 
-def generate_queries(subtitles: list[dict]) -> list[dict]:
-    """Call Groq to generate a search query for each subtitle sentence."""
-    api_key = get_groq_key()
-    model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
-    client = Groq(api_key=api_key)
+def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
+    """Call LLM with topic context to generate accurate visual search queries for stock videos."""
+    topic_title = topic_info.get("topic", topic_info.get("title", "Space & Future Tech"))
+    content_pillar = topic_info.get("content_pillar", "Space Race")
     
-    # Build list of subtitles for the user prompt
     input_items = []
     for sub in subtitles:
         input_items.append({
             "index": sub["index"],
-            "text": sub["text"]
+            "sentence": sub["text"]
         })
+        
     system_prompt = (
-        "You are an expert Hollywood Film Editor and Visual Director.\n"
-        "Your task is to extract the EXACT PHYSICAL SUBJECT / OBJECT from each narration sentence into concrete stock video search terms.\n"
-        "EVERY SCENE MUST BE A REAL VIDEO CLIP (type: 'video').\n\n"
+        "You are a master Visual Director for high-retention cinematic documentary Shorts.\n"
+        "Your job is to extract highly accurate, specific PHYSICAL VISUAL SUBJECTS for each narration sentence.\n\n"
         "RULES:\n"
-        "1. Extract the primary PHYSICAL SUBJECT of the sentence as 'query' (1-2 simple, concrete nouns, e.g. 'rocket launch', 'satellite', 'sun flare', 'telescope', 'planet earth', 'computer server', 'astronaut'). NEVER use abstract terms like 'code', 'budget', or 'impact'.\n"
-        "2. Provide 2 simple concrete alternative terms in 'fallback_queries' (e.g. ['rocket', 'spaceship']).\n"
-        "3. Stock video search engines index SIMPLE CONCRETE NOUNS best. Keep terms short and direct.\n\n"
-        "Respond in JSON format with the following structure:\n"
+        "1. Combine the OVERALL TOPIC CONTEXT with the sentence's physical subject.\n"
+        "   Example Topic: 'SpaceX Starship Secret AI Test'\n"
+        "   Sentence: 'Engineers launched a new satellite.'\n"
+        "   GOOD Query: 'spacex rocket launch'\n"
+        "   BAD Query: 'engineers'\n"
+        "2. Stock video search engines (Pexels/Pixabay) index 1-3 simple concrete nouns best (e.g., 'rocket launch', 'satellite orbit', 'planet earth space', 'computer server', 'astronaut space', 'sun flare').\n"
+        "3. Provide 3 concrete fallbacks in 'fallback_queries' (e.g. ['rocket', 'spacecraft', 'space launch']).\n"
+        "4. Output strictly valid JSON matching this schema:\n"
         "{\n"
         "  \"queries\": [\n"
         "    {\n"
         "       \"index\": 1,\n"
-        "       \"type\": \"video\",\n"
-        "       \"query\": \"rocket launch\",\n"
-        "       \"fallback_queries\": [\"rocket\", \"spacecraft\"]\n"
-        "    },\n"
-        "    ...\n"
+        "       \"query\": \"spacex starship launch\",\n"
+        "       \"fallback_queries\": [\"rocket launch\", \"spacecraft space\", \"rocket\"]\n"
+        "    }\n"
         "  ]\n"
         "}"
     )
     
-    user_prompt = f"Generate search queries for these narration lines:\n\n{json.dumps(input_items, indent=2)}"
+    user_prompt = (
+        f"OVERALL TOPIC: {topic_title}\n"
+        f"CONTENT PILLAR: {content_pillar}\n\n"
+        f"NARRATION SENTENCES:\n{json.dumps(input_items, indent=2)}"
+    )
     
-    logger.info("Calling Groq LLM to generate visual search queries...")
+    logger.info("Calling resilient LLM handler to generate visual search queries...")
+    raw_response = call_groq_with_fallback(system_prompt, user_prompt, temperature=0.3)
+    
+    if hasattr(raw_response, "choices") and raw_response.choices:
+        response_text = raw_response.choices[0].message.content
+    elif hasattr(raw_response, "text"):
+        response_text = raw_response.text
+    elif hasattr(raw_response, "content"):
+        response_text = raw_response.content
+    else:
+        response_text = str(raw_response)
+
+    logger.info(f"RAW LLM RESPONSE RECV: {repr(response_text)[:200]}")
+
     try:
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            model=model,
-            temperature=0.4,
-            response_format={"type": "json_object"}
-        )
-        
-        response_text = chat_completion.choices[0].message.content
-        result_json = json.loads(response_text)
+        result_json = extract_json_from_llm(response_text)
         queries_list = result_json.get("queries", [])
         
         query_map = {item.get("index"): item.get("query", "space motion") for item in queries_list}
         fallback_map = {item.get("index"): item.get("fallback_queries", []) for item in queries_list}
-        prompt_map = {item.get("index"): "" for item in queries_list}
-        type_map = {item.get("index"): "video" for item in queries_list}
         
         output_queries = []
         for sub in subtitles:
             q = query_map.get(sub["index"], "space motion")
             fb = fallback_map.get(sub["index"], [])
-            t = "video"
+            
             # Sanitize query (remove punctuation, normalize spaces)
-            q = re.sub(r'[^\w\s]', '', q).strip().lower()
-            if not q:
-                q = "space motion"
+            q_clean = re.sub(r'[^\w\s]', '', q).strip().lower()
+            if not q_clean:
+                q_clean = "space motion"
                 
             clean_fallbacks = []
             for f in fb:
                 cf = re.sub(r'[^\w\s]', '', str(f)).strip().lower()
-                if cf:
+                if cf and cf not in clean_fallbacks:
                     clean_fallbacks.append(cf)
                     
             output_queries.append({
                 "subtitle_index": sub["index"],
                 "text": sub["text"],
-                "type": t,
-                "query": q,
+                "type": "video",
+                "query": q_clean,
                 "fallback_queries": clean_fallbacks,
                 "image_prompt": "",
                 "start": sub["start"],
@@ -177,18 +172,19 @@ def generate_queries(subtitles: list[dict]) -> list[dict]:
         return output_queries
         
     except Exception as e:
-        logger.error(f"Error calling Groq for search queries: {e}")
-        # Return fallback queries based on keywords in each sentence
-        logger.warning("Using fallback keyword extraction for search queries.")
+        logger.error(f"Error parsing LLM response for search queries: {e}")
+        # Rule fallback based on sentence keywords
         output_queries = []
         for sub in subtitles:
-            # simple fallback: take first 3 words of text
-            words = [w.strip().lower() for w in sub["text"].split() if len(w) > 3][:3]
-            q = " ".join(words) if words else "science background"
+            words = [w.strip().lower() for w in sub["text"].split() if len(w.strip()) > 3][:2]
+            q = (" ".join(words) + " space") if words else "space motion"
             output_queries.append({
                 "subtitle_index": sub["index"],
                 "text": sub["text"],
+                "type": "video",
                 "query": q,
+                "fallback_queries": ["rocket launch", "satellite orbit", "space motion"],
+                "image_prompt": "",
                 "start": sub["start"],
                 "end": sub["end"],
                 "start_ms": sub["start_ms"],
@@ -209,7 +205,8 @@ def run() -> list[dict]:
     if not subtitles:
         raise ValueError("Loaded timings are empty or invalid.")
         
-    queries = generate_queries(subtitles)
+    topic_info = load_json(CONTENT_FILE) if CONTENT_FILE.exists() else {}
+    queries = generate_queries(subtitles, topic_info)
     save_json(queries, SEARCH_QUERIES_FILE)
     logger.info(f"Search queries saved to {SEARCH_QUERIES_FILE}")
     

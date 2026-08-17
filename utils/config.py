@@ -88,8 +88,21 @@ def call_gemini_fallback(messages):
     else:
         raise RuntimeError(f"Gemini API fallback failed with HTTP {resp.status_code}: {resp.text}")
 
-def call_groq_with_fallback(client, messages, initial_model=None, **kwargs):
+def call_groq_with_fallback(client=None, messages=None, initial_model=None, **kwargs):
     """Executes Groq chat completion with automatic model fallback and Gemini API backup on RateLimitError (HTTP 429)."""
+    if isinstance(client, str) and isinstance(messages, str):
+        sys_p = client
+        usr_p = messages
+        messages = [{"role": "system", "content": sys_p}, {"role": "user", "content": usr_p}]
+        client = None
+    elif isinstance(client, (list, dict)) and messages is None:
+        messages = client
+        client = None
+
+    if client is None or isinstance(client, str):
+        from groq import Groq
+        client = Groq(api_key=get_groq_key())
+
     models = list(GROQ_MODELS)
     if initial_model and initial_model in models:
         models.remove(initial_model)
