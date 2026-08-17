@@ -341,9 +341,9 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
     model = get_setting('llm', 'model', 'openai/gpt-oss-120b')
     client = Groq(api_key=api_key)
     
-    # Take top 40 candidates to limit token usage
+    # Take top 12 candidates to optimize token usage
     topics_sorted = sorted(topics, key=lambda x: x["score_signal"], reverse=True)
-    top_candidates = topics_sorted[:40]
+    top_candidates = topics_sorted[:12]
     
     candidate_list_str = "\n".join([f"- {t['title']} (Source: {t['source']})" for t in top_candidates])
     

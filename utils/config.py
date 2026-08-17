@@ -48,9 +48,9 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 GROQ_MODELS = [
-    "openai/gpt-oss-120b",
     "qwen/qwen3.6-27b",
-    "groq/compound-mini"
+    "groq/compound-mini",
+    "openai/gpt-oss-120b"
 ]
 
 def call_groq_with_fallback(client, messages, initial_model=None, **kwargs):
