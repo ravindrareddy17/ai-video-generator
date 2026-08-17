@@ -104,7 +104,6 @@ def run_pipeline() -> bool:
         content, metadata = generate_content.run(topic)
         contract["video_strategy"]["topic"] = topic_title
         contract["script"]["text"] = content.get("narration", "")
-        v4_engine.transition_state(contract, "SCORED")
         logger.info(f"Step 2 Complete. Title: '{content.get('title')}' ({time.time() - step_start:.2f}s)")
         
         # ── Step 2.5: Verify Facts ──────────────────────────────────
@@ -142,7 +141,7 @@ def run_pipeline() -> bool:
             mark_pending_videos_failed()
             return False
             
-        v4_engine.transition_state(contract, "QUALITY_CHECKED")
+        v4_engine.transition_state(contract, "SCORED")
         logger.info(f"Step 2.6 Complete. Script quality & accuracy gate verified. ({time.time() - step_start:.2f}s)")
         
         # ── Step 3: Generate Voice ──────────────────────────────────
@@ -191,6 +190,7 @@ def run_pipeline() -> bool:
         step_start = time.time()
         logger.info(">>> Step 10: Burning subtitles onto video...")
         final_video = burn_subtitles.run()
+        v4_engine.transition_state(contract, "CREATED")
         logger.info(f"Step 10 Complete. Final video burned at: {final_video.name} ({time.time() - step_start:.2f}s)")
         
         # ── Step 10.5: Technical Media QA ───────────────────────────
@@ -202,6 +202,7 @@ def run_pipeline() -> bool:
             mark_pending_videos_failed()
             return False
             
+        v4_engine.transition_state(contract, "QUALITY_CHECKED")
         v4_engine.transition_state(contract, "APPROVED")
         logger.info(f"Step 10.5 Complete. Technical Media QA PASSED. ({time.time() - step_start:.2f}s)")
         
