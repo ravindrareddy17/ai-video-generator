@@ -198,12 +198,15 @@ def generate_narration(topic_data: dict) -> dict:
                 ],
                 model=model,
                 temperature=0.7 + (attempt * 0.05),
-                max_tokens=1000,
-                response_format={"type": "json_object"}
+                max_tokens=3000
             )
             
             response_text = chat_completion.choices[0].message.content
-            content = json.loads(response_text)
+            import re
+            clean_text = re.sub(r'<think>.*?</think>', '', response_text, flags=re.DOTALL)
+            clean_text = re.sub(r'```json\s*', '', clean_text)
+            clean_text = re.sub(r'```\s*', '', clean_text).strip()
+            content = json.loads(clean_text)
             content["hooks_data"] = hooks_data
             
             # Clean title if it contains only hashtags or is empty

@@ -484,14 +484,14 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             if has_country and has_space and has_ai:
                 overall_growth_score = min(overall_growth_score + 25.0, 100.0)
                 
-            c["trend_score"] = ts
-            c["competition_score"] = comp
-            c["audience_interest"] = ai
-            c["evergreen_score"] = eg
-            c["virality_score"] = vs
-            c["education_score"] = eds
-            c["ctr_prediction"] = ctr
-            c["retention_prediction"] = ret
+            c["trend_score"] = float(c.get("trend_score", 80.0))
+            c["competition_score"] = float(c.get("competition_score", 80.0))
+            c["audience_interest"] = float(c.get("audience_interest", 85.0))
+            c["evergreen_score"] = float(c.get("evergreen_score", 80.0))
+            c["virality_score"] = float(c.get("virality_score", 85.0))
+            c["education_score"] = float(c.get("education_score", 80.0))
+            c["ctr_prediction"] = float(c.get("ctr_prediction", 85.0))
+            c["retention_prediction"] = float(c.get("retention_prediction", 85.0))
             c["overall_growth_score"] = overall_growth_score
             c["selected_topic"] = f"{c.get('hook_line')} {c.get('viral_angle')}"
             c["source_headline"] = c.get("source_headline", best_fallback["title"] if 'best_fallback' in locals() else "Unknown Source")
