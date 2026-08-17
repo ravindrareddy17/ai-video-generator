@@ -96,7 +96,7 @@ def run_self_learning_loop() -> bool:
         
         # 2. Call Groq to formulate new learning insights
         api_key = get_groq_key()
-        model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
+        model = get_setting('llm', 'model', 'qwen/qwen3.6-27b')
         client = Groq(api_key=api_key)
         
         system_prompt = (
@@ -139,17 +139,18 @@ def run_self_learning_loop() -> bool:
         user_prompt = f"Analyze this multi-platform performance data and output separate platform parameters:\n\n{json.dumps(perf_data, indent=2)}"
         
         logger.info("Calling Groq to analyze multi-platform performance analytics...")
-        completion = client.chat.completions.create(
+        from utils.config import call_groq_with_fallback
+        from utils.helpers import extract_json_from_llm
+        completion = call_groq_with_fallback(
+            client=client,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            model=model,
-            temperature=0.3,
-            response_format={"type": "json_object"}
+            initial_model=model,
+            temperature=0.3
         )
-        
-        insights = json.loads(completion.choices[0].message.content)
+        insights = extract_json_from_llm(completion.choices[0].message.content)
         
         # Add root-level keys for backwards compatibility using the combined channel insights
         combined = insights.get("combined", {})
