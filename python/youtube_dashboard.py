@@ -90,16 +90,6 @@ st.markdown("""
         margin-top: 4px;
     }
     
-    .badge-live {
-        background-color: rgba(63, 185, 80, 0.15);
-        color: #3FB950;
-        border: 1px solid #3FB950;
-        padding: 4px 10px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 700;
-    }
-    
     .badge-snapshot {
         background-color: rgba(255, 215, 0, 0.15);
         color: #FFD700;
@@ -132,23 +122,6 @@ st.markdown("""
         font-weight: 800;
         color: #FFFFFF;
         margin: 4px 0;
-    }
-    
-    .kpi-delta-pos {
-        color: #3FB950;
-        font-size: 12px;
-        font-weight: 700;
-    }
-    
-    .kpi-delta-neg {
-        color: #C1121F;
-        font-size: 12px;
-        font-weight: 700;
-    }
-    
-    .kpi-prev {
-        font-size: 11px;
-        color: #8B949E;
     }
 
     /* Health Score Box */
@@ -228,6 +201,7 @@ with st.sidebar:
         [
             "📊 Overview",
             "🎬 Shorts",
+            "🔍 Interactive Comparison",
             "📈 Growth",
             "🧠 Audience",
             "🔥 Winners",
@@ -257,6 +231,9 @@ health_score, health_status, health_bottleneck = compute_v4_channel_health(df_cu
 bottleneck_info = diagnose_growth_bottleneck(df_curr)
 growth_model = compute_v4_growth_model(df_curr)
 
+if not df_curr.empty:
+    df_curr['performance_class'] = df_curr.apply(lambda r: classify_video_performance(r, baselines), axis=1)
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. TOP HEADER BAR
 # ─────────────────────────────────────────────────────────────────────────────
@@ -281,7 +258,7 @@ st.markdown(f"""
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. PAGE ROUTING & VIEWS
+# 5. PAGE ROUTING & INTERACTIVE VIEWS
 # ─────────────────────────────────────────────────────────────────────────────
 
 # =============================================================================
@@ -383,38 +360,106 @@ if nav_page == "📊 Overview":
 
 
 # =============================================================================
-# VIEW 2: SHORTS (Top Shorts & Underperformers Matrix)
+# VIEW 2: SHORTS (Top Shorts, Search Filters & Detailed Inspector)
 # =============================================================================
 elif nav_page == "🎬 Shorts":
-    st.markdown("## 🎬 Shorts Performance Library")
+    st.markdown("## 🎬 Shorts Interactive Library & Inspector")
 
     if df_curr.empty:
         st.warning("No YouTube Shorts data found for the selected date range.")
     else:
-        df_curr['performance_class'] = df_curr.apply(lambda r: classify_video_performance(r, baselines), axis=1)
+        # Interactive Search and Filters
+        fcol1, fcol2, fcol3 = st.columns(3)
+        with fcol1:
+            search_query = st.text_input("🔍 Search Shorts by Title:", "")
+        with fcol2:
+            pillar_filter = st.selectbox("Filter by Pillar:", ["ALL PILLARS"] + list(df_curr['content_pillar'].unique()))
+        with fcol3:
+            class_filter = st.selectbox("Filter by Performance:", ["ALL CLASSES"] + list(df_curr['performance_class'].unique()))
 
-        tab1, tab2 = st.sort_values = st.tabs(["🏆 Top Performing Shorts", "⚠️ Underperforming Shorts"])
+        filtered_df = df_curr.copy()
+        if search_query:
+            filtered_df = filtered_df[filtered_df['title'].str.contains(search_query, case=False, na=False)]
+        if pillar_filter != "ALL PILLARS":
+            filtered_df = filtered_df[filtered_df['content_pillar'] == pillar_filter]
+        if class_filter != "ALL CLASSES":
+            filtered_df = filtered_df[filtered_df['performance_class'] == class_filter]
+
+        tab1, tab2, tab3 = st.tabs(["🏆 Filtered Shorts Library", "⚠️ Underperforming Shorts", "🔍 Video Detail Inspector"])
 
         with tab1:
-            top_df = df_curr.sort_values('views', ascending=False)[
-                ['video_id', 'title', 'uploaded_at', 'views', 'viewer_choice', 'apv', 'avd', 'likes', 'comments', 'subscribers_gained', 'subs_per_1000', 'performance_class']
-            ]
-            st.dataframe(top_df, use_container_width=True)
+            display_cols = ['video_id', 'title', 'uploaded_at', 'views', 'viewer_choice', 'apv', 'avd', 'likes', 'comments', 'subscribers_gained', 'subs_per_1000', 'performance_class']
+            st.dataframe(filtered_df[display_cols].sort_values('views', ascending=False), use_container_width=True)
+
+            # Export button
+            st.download_button(
+                "📥 Export Shorts Analytics to CSV",
+                filtered_df[display_cols].to_csv(index=False),
+                "youtube_shorts_analytics.csv",
+                "text/csv"
+            )
 
         with tab2:
-            under_df = df_curr[df_curr['views'] < baselines['views']['median']].copy()
+            under_df = filtered_df[filtered_df['views'] < baselines['views']['median']].copy()
             if under_df.empty:
                 st.info("No underperforming Shorts detected below median baseline!")
             else:
                 under_df['likely_bottleneck'] = under_df.apply(diagnose_underperformer, axis=1)
-                under_table = under_df[
-                    ['title', 'uploaded_at', 'views', 'viewer_choice', 'apv', 'subscribers_gained', 'likely_bottleneck']
-                ]
+                under_table = under_df[['title', 'uploaded_at', 'views', 'viewer_choice', 'apv', 'subscribers_gained', 'likely_bottleneck']]
                 st.dataframe(under_table, use_container_width=True)
+
+        with tab3:
+            st.markdown("### 🔍 Video Detail Inspector")
+            selected_title = st.selectbox("Select Video to Inspect:", filtered_df['title'].tolist())
+            if selected_title:
+                vrow = filtered_df[filtered_df['title'] == selected_title].iloc[0]
+                
+                vcol1, vcol2 = st.columns([1, 1])
+                with vcol1:
+                    st.markdown(f"#### 📜 **{vrow['title']}**")
+                    st.markdown(f"- **Uploaded At:** {vrow['uploaded_at']}")
+                    st.markdown(f"- **Pillar:** {vrow['content_pillar']}")
+                    st.markdown(f"- **Hook Pattern:** {vrow['hook_pattern']}")
+                    st.markdown(f"- **Performance Class:** `<span style='color:#FFD700; font-weight:700;'>{vrow['performance_class']}</span>`", unsafe_allow_html=True)
+                    st.markdown(f"- **Likely Bottleneck:** {diagnose_underperformer(vrow)}")
+                    st.divider()
+                    st.markdown("**Narration Script:**")
+                    st.info(vrow.get('script', 'Script text unavailable.'))
+
+                with vcol2:
+                    st.plotly_chart(render_retention_curve_chart(vrow['title'], vrow['apv']), use_container_width=True)
+                    mcol1, mcol2, mcol3 = st.columns(3)
+                    mcol1.metric("Views", f"{vrow['views']:,}")
+                    mcol2.metric("Viewer Choice", f"{vrow['viewer_choice']:.1f}%")
+                    mcol3.metric("APV", f"{vrow['apv']:.1f}%")
 
 
 # =============================================================================
-# VIEW 3: GROWTH (Trend & Velocity Analytics)
+# VIEW 3: INTERACTIVE VIDEO COMPARISON TOOL
+# =============================================================================
+elif nav_page == "🔍 Interactive Comparison":
+    st.markdown("## 🔍 Interactive Side-by-Side Video Comparison")
+    
+    if df_curr.empty:
+        st.warning("No video data available to compare.")
+    else:
+        selected_titles = st.multiselect(
+            "Select up to 5 Shorts to Compare Side-by-Side:",
+            df_curr['title'].tolist(),
+            default=df_curr['title'].head(3).tolist()[:3]
+        )
+
+        if selected_titles:
+            comp_df = df_curr[df_curr['title'].isin(selected_titles)].copy()
+            comp_metrics = comp_df[
+                ['title', 'views', 'viewer_choice', 'apv', 'avd', 'likes', 'comments', 'shares', 'subscribers_gained', 'subs_per_1000', 'content_pillar', 'hook_pattern', 'performance_class']
+            ].set_index('title').T
+
+            st.dataframe(comp_metrics, use_container_width=True)
+
+
+# =============================================================================
+# VIEW 4: GROWTH (Trend & Velocity Analytics)
 # =============================================================================
 elif nav_page == "📈 Growth":
     st.markdown("## 📈 Channel Growth & Velocity Analytics")
@@ -445,7 +490,7 @@ elif nav_page == "📈 Growth":
 
 
 # =============================================================================
-# VIEW 4: TOPICS
+# VIEW 5: TOPICS
 # =============================================================================
 elif nav_page == "🎯 Topics":
     st.markdown("## 🎯 Topic Performance & Sample Size Confidence")
@@ -478,7 +523,7 @@ elif nav_page == "🎯 Topics":
 
 
 # =============================================================================
-# VIEW 5: HOOKS
+# VIEW 6: HOOKS
 # =============================================================================
 elif nav_page == "🪝 Hooks":
     st.markdown("## 🪝 Hook Pattern Analysis")
@@ -496,7 +541,7 @@ elif nav_page == "🪝 Hooks":
 
 
 # =============================================================================
-# VIEW 6: RETENTION & DURATIONS
+# VIEW 7: RETENTION & DURATIONS
 # =============================================================================
 elif nav_page == "⏱ Retention":
     st.markdown("## ⏱ Duration Buckets & Retention Analysis")
@@ -509,7 +554,7 @@ elif nav_page == "⏱ Retention":
 
 
 # =============================================================================
-# VIEW 7: SUBSCRIBERS
+# VIEW 8: SUBSCRIBERS
 # =============================================================================
 elif nav_page == "👥 Subscribers":
     st.markdown("## 👥 Subscriber Conversion Center")
@@ -528,7 +573,7 @@ elif nav_page == "👥 Subscribers":
 
 
 # =============================================================================
-# VIEW 8: V4 LEARNING & NEXT VIDEO RECOMMENDATIONS
+# VIEW 9: V4 LEARNING & NEXT VIDEO RECOMMENDATIONS
 # =============================================================================
 elif nav_page == "🧠 V4 Learning" or nav_page == "💡 Next Video":
     st.markdown("## 🧠 V4 Audience Memory & Next Video Generator")
@@ -553,7 +598,7 @@ elif nav_page == "🧠 V4 Learning" or nav_page == "💡 Next Video":
 
 
 # =============================================================================
-# VIEW 9: DATA HEALTH
+# VIEW 10: DATA HEALTH
 # =============================================================================
 elif nav_page == "⚙ Data Health":
     st.markdown("## ⚙ YouTube Data Health & System Status")
