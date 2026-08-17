@@ -412,24 +412,18 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
     
     logger.info("Calling Groq LLM to scan and score viral topics...")
     try:
-        chat_completion = client.chat.completions.create(
+        completion = client.chat.completions.create(
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
             model=model,
-            temperature=0.7,
-            response_format={"type": "json_object"}
+            temperature=0.7
         )
         
-        response_text = chat_completion.choices[0].message.content
-        clean_text = response_text.strip()
-        if clean_text.startswith("```json"):
-            clean_text = clean_text[7:-3]
-        if clean_text.startswith("```"):
-            clean_text = clean_text[3:-3]
-            
-        result_dict = json.loads(clean_text)
+        response_text = completion.choices[0].message.content
+        from utils.helpers import extract_json_from_llm
+        result_dict = extract_json_from_llm(response_text)
         concepts = result_dict if isinstance(result_dict, list) else result_dict.get("topics", result_dict.get("concepts", []))
         if not concepts and isinstance(result_dict, dict):
             concepts = [result_dict]

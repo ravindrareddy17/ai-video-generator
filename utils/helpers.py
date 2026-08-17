@@ -43,6 +43,21 @@ def save_json(data: dict | list, path: Path) -> None:
     logger.debug("Saved JSON (%d bytes) → %s", path.stat().st_size, path)
 
 
+def extract_json_from_llm(raw_text: str) -> dict | list:
+    """Robustly extract and parse JSON from raw LLM text outputs, handling thinking tags and markdown code blocks."""
+    if not raw_text:
+        raise ValueError("Empty response from LLM")
+        
+    clean = re.sub(r'<think>.*?</think>', '', raw_text, flags=re.DOTALL)
+    clean = re.sub(r'```json\s*', '', clean, flags=re.IGNORECASE)
+    clean = re.sub(r'```\s*', '', clean).strip()
+
+    match = re.search(r'(\{.*\}|\[.*\])', clean, re.DOTALL)
+    if match:
+        clean = match.group(1)
+        
+    return json.loads(clean)
+
 def load_json(path: Path) -> dict | list:
     """Read and return JSON content from *path*.
 

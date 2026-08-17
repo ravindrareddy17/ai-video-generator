@@ -74,10 +74,10 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
                     {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Make sure the hooks are highly engaging and score at least 85.0!"}
                 ],
                 model=model,
-                temperature=0.7 + (attempt * 0.1),
-                response_format={"type": "json_object"}
+                temperature=0.7 + (attempt * 0.1)
             )
-            data = json.loads(completion.choices[0].message.content)
+            from utils.helpers import extract_json_from_llm
+            data = extract_json_from_llm(completion.choices[0].message.content)
             hooks = data.get("hooks", [])
             if not hooks:
                 continue
@@ -202,11 +202,8 @@ def generate_narration(topic_data: dict) -> dict:
             )
             
             response_text = chat_completion.choices[0].message.content
-            import re
-            clean_text = re.sub(r'<think>.*?</think>', '', response_text, flags=re.DOTALL)
-            clean_text = re.sub(r'```json\s*', '', clean_text)
-            clean_text = re.sub(r'```\s*', '', clean_text).strip()
-            content = json.loads(clean_text)
+            from utils.helpers import extract_json_from_llm
+            content = extract_json_from_llm(response_text)
             content["hooks_data"] = hooks_data
             
             # Clean title if it contains only hashtags or is empty
