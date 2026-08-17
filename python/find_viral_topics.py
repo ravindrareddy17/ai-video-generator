@@ -338,7 +338,7 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         }
         
     api_key = get_groq_key()
-    model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
+    model = get_setting('llm', 'model', 'qwen/qwen3.6-27b')
     client = Groq(api_key=api_key)
     
     # Take top 40 candidates to limit token usage
