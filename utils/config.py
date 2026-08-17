@@ -47,6 +47,43 @@ except ImportError:
 # Settings helpers
 # ---------------------------------------------------------------------------
 
+GROQ_MODELS = [
+    "openai/gpt-oss-120b",
+    "qwen/qwen3.6-27b",
+    "groq/compound-mini"
+]
+
+def call_groq_with_fallback(client, messages, initial_model=None, **kwargs):
+    """Executes Groq chat completion with automatic model fallback on RateLimitError (HTTP 429)."""
+    models = list(GROQ_MODELS)
+    if initial_model and initial_model in models:
+        models.remove(initial_model)
+        models.insert(0, initial_model)
+    elif initial_model:
+        models.insert(0, initial_model)
+
+    last_error = None
+    for model in models:
+        try:
+            log.info(f"Calling Groq model: {model}...")
+            kwargs_copy = dict(kwargs)
+            kwargs_copy.pop('model', None)
+            return client.chat.completions.create(
+                model=model,
+                messages=messages,
+                **kwargs_copy
+            )
+        except Exception as e:
+            err_str = str(e)
+            if "429" in err_str or "rate_limit_exceeded" in err_str or "Rate limit" in err_str:
+                log.warning(f"Rate limit hit for model {model}. Retrying with fallback model...")
+                last_error = e
+                continue
+            else:
+                raise e
+    if last_error:
+        raise last_error
+
 @lru_cache(maxsize=1)
 def load_settings() -> dict[str, Any]:
     """Load and return *config/settings.json* as a dictionary.

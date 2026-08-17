@@ -412,12 +412,14 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
     
     logger.info("Calling Groq LLM to scan and score viral topics...")
     try:
-        completion = client.chat.completions.create(
+        from utils.config import call_groq_with_fallback
+        completion = call_groq_with_fallback(
+            client=client,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            model=model,
+            initial_model=model,
             temperature=0.7
         )
         

@@ -68,12 +68,14 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
     for attempt in range(3):
         try:
             logger.info(f"Generating optimized hooks (attempt {attempt + 1}/3)...")
-            completion = client.chat.completions.create(
+            from utils.config import call_groq_with_fallback
+            completion = call_groq_with_fallback(
+                client=client,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Make sure the hooks are highly engaging and score at least 85.0!"}
                 ],
-                model=model,
+                initial_model=model,
                 temperature=0.7 + (attempt * 0.1)
             )
             from utils.helpers import extract_json_from_llm
@@ -191,12 +193,14 @@ def generate_narration(topic_data: dict) -> dict:
     content = {}
     for attempt in range(max_attempts):
         try:
-            chat_completion = client.chat.completions.create(
+            from utils.config import call_groq_with_fallback
+            chat_completion = call_groq_with_fallback(
+                client=client,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Your previous generation was {word_count} words. You MUST write a script that is strictly between 120 and 150 words total! Please write exactly 3 sentences."}
                 ],
-                model=model,
+                initial_model=model,
                 temperature=0.7 + (attempt * 0.05),
                 max_tokens=3000
             )
