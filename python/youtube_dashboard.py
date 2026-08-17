@@ -9,11 +9,29 @@ Run with:
 streamlit run python/youtube_dashboard.py
 """
 
+import sys
+import importlib
+from pathlib import Path
+from datetime import datetime
 import streamlit as st
 import pandas as pd
-from datetime import datetime
 
-# Local modular layers
+# Ensure parent path is in sys.path
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+# Import local modular layers with explicit reload to prevent Streamlit hot-reload cache errors
+import dashboard_data
+import dashboard_metrics
+import dashboard_charts
+import dashboard_components
+import dashboard_pages
+
+importlib.reload(dashboard_data)
+importlib.reload(dashboard_metrics)
+importlib.reload(dashboard_charts)
+importlib.reload(dashboard_components)
+importlib.reload(dashboard_pages)
+
 from dashboard_data import (
     load_youtube_videos_df,
     filter_df_by_date_range,
