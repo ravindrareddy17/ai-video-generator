@@ -29409,3 +29409,64 @@ groq.NotFoundError: Error code: 404 - {'error': {'message': 'The model `llama-3.
 2026-08-17 16:56:06,026 | generate_content | ERROR | Error on attempt 3: Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}
 2026-08-17 16:56:06,072 | generate_content | ERROR | Error on attempt 4: Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}
 2026-08-17 16:56:06,123 | generate_content | ERROR | Error on attempt 5: Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}
+2026-08-17 16:56:06,123 | orchestrator | CRITICAL | Pipeline crashed during execution! Error: Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}
+Traceback (most recent call last):
+  File "E:\ai_gen\AI-VIDEO-V2\python\main.py", line 104, in run_pipeline
+    content, metadata = generate_content.run(topic)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 358, in run
+    content = generate_narration(topic_data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 194, in generate_narration
+    chat_completion = client.chat.completions.create(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\site-packages\groq\resources\chat\completions.py", line 462, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\site-packages\groq\_base_client.py", line 1284, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\site-packages\groq\_base_client.py", line 1071, in request
+    raise self._make_status_error_from_response(err.response) from None
+groq.NotFoundError: Error code: 404 - {'error': {'message': 'The model `llama-3.1-8b-instant` does not exist or you do not have access to it.', 'type': 'invalid_request_error', 'code': 'model_not_found'}}
+2026-08-17 16:56:36,128 | orchestrator | INFO | ==================================================
+2026-08-17 16:56:36,128 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-17 16:56:36,128 | orchestrator | INFO | ==================================================
+2026-08-17 16:56:36,174 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+2026-08-17 16:56:36,216 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 8.1.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers
+2026-08-17 16:56:36,221 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-17 16:56:36,222 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-17 16:56:36,222 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-17 16:56:36,222 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-17 16:56:36,844 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-17 16:56:36,845 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-17 16:56:37,363 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-17 16:56:37,365 | find_viral_topics | INFO | Fetching hot topics from r/spacex...
+2026-08-17 16:56:37,753 | find_viral_topics | WARNING | Reddit r/spacex returned status code 403
+2026-08-17 16:56:37,755 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-17 16:56:38,133 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-17 16:56:38,133 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-17 16:56:38,519 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-17 16:56:38,520 | find_viral_topics | INFO | Fetching hot topics from r/artificial...
+2026-08-17 16:56:38,883 | find_viral_topics | WARNING | Reddit r/artificial returned status code 403
+2026-08-17 16:56:38,883 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-17 16:56:39,262 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-17 16:56:39,263 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-17 16:56:39,655 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-17 16:56:39,656 | find_viral_topics | INFO | Fetching hot topics from r/ISRO...
+2026-08-17 16:56:40,027 | find_viral_topics | WARNING | Reddit r/ISRO returned status code 403
+2026-08-17 16:56:40,028 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-17 16:56:40,028 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-17 16:56:41,179 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-17 16:56:41,180 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-17 16:56:41,613 | find_viral_topics | WARNING | Error fetching RSS from NASA News: IncompleteRead(0 bytes read)
+2026-08-17 16:56:41,615 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-17 16:56:41,960 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-17 16:56:41,960 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-17 16:56:43,138 | find_viral_topics | WARNING | Error fetching RSS from SpaceX: IncompleteRead(13694 bytes read)
+2026-08-17 16:56:43,139 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-17 16:56:43,963 | find_viral_topics | WARNING | Error fetching RSS from MIT News: IncompleteRead(375968 bytes read, 145157 more expected)
+2026-08-17 16:56:43,963 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-17 16:56:44,196 | find_viral_topics | INFO | Fetched 0 topics from Nature Journal.
+2026-08-17 16:56:44,197 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-17 16:56:46,107 | find_viral_topics | WARNING | Error fetching RSS from ScienceDaily Space: IncompleteRead(11506 bytes read)
