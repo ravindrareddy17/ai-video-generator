@@ -35,8 +35,10 @@ import create_video
 import download_music
 import add_audio
 import burn_subtitles
+from python.v4_contract_engine import V4ContractEngine
 import generate_thumbnail
 import publish_service
+import media_qa
 import automation.youtube.analytics as yt_analytics
 import automation.instagram.analytics as ig_analytics
 import automation.facebook.analytics as fb_analytics
@@ -88,25 +90,40 @@ def run_pipeline() -> bool:
         step_start = time.time()
         logger.info(">>> Step 1: Searching for viral space/science/AI topics...")
         topic = find_viral_topics.run()
-        logger.info(f"Step 1 Complete. Selected topic: '{topic.get('selected_topic')}' ({time.time() - step_start:.2f}s)")
+        topic_title = topic.get('selected_topic', 'Space Exploration Breakthrough')
+        logger.info(f"Step 1 Complete. Selected topic: '{topic_title}' ({time.time() - step_start:.2f}s)")
+        
+        # Initialize V4 Master Contract
+        v4_engine = V4ContractEngine()
+        contract = v4_engine.create_draft_contract(topic_title)
+        v4_engine.transition_state(contract, "RESEARCHED")
         
         # ── Step 2: Generate Content ────────────────────────────────
         step_start = time.time()
         logger.info(">>> Step 2: Generating narration script and metadata...")
         content, metadata = generate_content.run(topic)
+        contract["video_strategy"]["topic"] = topic_title
+        contract["script"]["text"] = content.get("narration", "")
+        v4_engine.transition_state(contract, "SCORED")
         logger.info(f"Step 2 Complete. Title: '{content.get('title')}' ({time.time() - step_start:.2f}s)")
         
         # ── Step 2.5: Verify Facts ──────────────────────────────────
         step_start = time.time()
         logger.info(">>> Step 2.5: Running AI fact checking on script narration...")
-        if not verify_facts.run():
+        fact_passed = verify_facts.run()
+        if not fact_passed:
             logger.warning("Fact checking flagged critical claims! Attempting script regeneration...")
             mark_pending_videos_failed()
             content, metadata = generate_content.run(topic)
-            if not verify_facts.run():
+            fact_passed = verify_facts.run()
+            if not fact_passed:
                 logger.critical("Regenerated script failed fact checking again. Aborting run for safety.")
+                contract["research"]["verification_status"] = "rejected"
+                v4_engine.save_contract(contract)
                 mark_pending_videos_failed()
                 return False
+        contract["research"]["verification_status"] = "verified"
+        v4_engine.transition_state(contract, "VERIFIED")
         logger.info(f"Step 2.5 Complete. Script narration fact-verified. ({time.time() - step_start:.2f}s)")
         
         # ── Step 2.6: Run Quality Checker ───────────────────────────
@@ -114,9 +131,19 @@ def run_pipeline() -> bool:
         logger.info(">>> Step 2.6: Running script quality control...")
         if not quality_checker.run():
             logger.critical("Script failed quality control checks. Aborting run.")
+            v4_engine.save_contract(contract)
             mark_pending_videos_failed()
             return False
-        logger.info(f"Step 2.6 Complete. Script quality verified. ({time.time() - step_start:.2f}s)")
+            
+        gate_passed, gate_msg = v4_engine.validate_accuracy_gate(contract)
+        if not gate_passed:
+            logger.critical(f"Accuracy Gate Veto Triggered! {gate_msg}. Aborting publication.")
+            v4_engine.save_contract(contract)
+            mark_pending_videos_failed()
+            return False
+            
+        v4_engine.transition_state(contract, "QUALITY_CHECKED")
+        logger.info(f"Step 2.6 Complete. Script quality & accuracy gate verified. ({time.time() - step_start:.2f}s)")
         
         # ── Step 3: Generate Voice ──────────────────────────────────
         step_start = time.time()
@@ -160,11 +187,23 @@ def run_pipeline() -> bool:
         video_audio = add_audio.run()
         logger.info(f"Step 8 Complete. Audio mixed: {video_audio.name} ({time.time() - step_start:.2f}s)")
         
-        # ── Step 9: Burn Subtitles ──────────────────────────────────
+        # ── Step 10: Burn Subtitles ─────────────────────────────────
         step_start = time.time()
-        logger.info(">>> Step 9: Hardcoding styled subtitles...")
+        logger.info(">>> Step 10: Burning subtitles onto video...")
         final_video = burn_subtitles.run()
-        logger.info(f"Step 9 Complete. Final Short generated at: {final_video.name} ({time.time() - step_start:.2f}s)")
+        logger.info(f"Step 10 Complete. Final video burned at: {final_video.name} ({time.time() - step_start:.2f}s)")
+        
+        # ── Step 10.5: Technical Media QA ───────────────────────────
+        step_start = time.time()
+        logger.info(">>> Step 10.5: Running Technical Media QA validation...")
+        if not media_qa.run():
+            logger.critical("Technical Media QA Failed! Video file is invalid or corrupt. Aborting upload.")
+            v4_engine.save_contract(contract)
+            mark_pending_videos_failed()
+            return False
+            
+        v4_engine.transition_state(contract, "APPROVED")
+        logger.info(f"Step 10.5 Complete. Technical Media QA PASSED. ({time.time() - step_start:.2f}s)")
         
         # ── Step 10: Generate Thumbnail ─────────────────────────────
         step_start = time.time()

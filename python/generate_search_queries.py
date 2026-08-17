@@ -99,23 +99,23 @@ def generate_queries(subtitles: list[dict]) -> list[dict]:
             "index": sub["index"],
             "text": sub["text"]
         })
-        
     system_prompt = (
-        "You are an expert director of stock footage and search engine optimizer.\n"
-        "Your task is to convert a list of narration sentences into high-relevance, literal search queries "
-        "for vertical stock videos (on Pexels or Pixabay).\n"
-        "ALL QUERIES MUST relate to space, science, AI, or futuristic technology.\n\n"
+        "You are an expert Hollywood Film Editor and Visual Director.\n"
+        "Your task is to extract the EXACT PHYSICAL SUBJECT / OBJECT from each narration sentence into concrete stock video search terms.\n"
+        "EVERY SCENE MUST BE A REAL VIDEO CLIP (type: 'video').\n\n"
         "RULES:\n"
-        "1. For each input sentence, generate exactly ONE query.\n"
-        "2. Keep queries extremely short (1-3 words maximum).\n"
-        "3. CRITICAL: Use LITERAL, concrete nouns (e.g., 'rocket launch', 'planet earth', 'server room', 'telescope', 'astronaut', 'microscope').\n"
-        "4. DO NOT use abstract or cinematic terms (NEVER use 'cinematic', 'volumetric', 'HDR', 'dark', 'glow', 'futuristic', 'concept'). These break stock video search engines.\n"
-        "5. Avoid overly specific queries. If the sentence is about 'Elon Musk launching Starship', the query should just be 'rocket launch' or 'spacecraft'.\n"
-        "6. Maximize variety. Do not repeat the exact same search query for multiple sentences.\n\n"
+        "1. Extract the primary PHYSICAL SUBJECT of the sentence as 'query' (1-2 simple, concrete nouns, e.g. 'rocket launch', 'satellite', 'sun flare', 'telescope', 'planet earth', 'computer server', 'astronaut'). NEVER use abstract terms like 'code', 'budget', or 'impact'.\n"
+        "2. Provide 2 simple concrete alternative terms in 'fallback_queries' (e.g. ['rocket', 'spaceship']).\n"
+        "3. Stock video search engines index SIMPLE CONCRETE NOUNS best. Keep terms short and direct.\n\n"
         "Respond in JSON format with the following structure:\n"
         "{\n"
         "  \"queries\": [\n"
-        "    {\"index\": 1, \"query\": \"black hole animation\"},\n"
+        "    {\n"
+        "       \"index\": 1,\n"
+        "       \"type\": \"video\",\n"
+        "       \"query\": \"rocket launch\",\n"
+        "       \"fallback_queries\": [\"rocket\", \"spacecraft\"]\n"
+        "    },\n"
         "    ...\n"
         "  ]\n"
         "}"
@@ -139,21 +139,34 @@ def generate_queries(subtitles: list[dict]) -> list[dict]:
         result_json = json.loads(response_text)
         queries_list = result_json.get("queries", [])
         
-        # Map generated queries back to subtitles
-        query_map = {item.get("index"): item.get("query", "abstract background") for item in queries_list}
+        query_map = {item.get("index"): item.get("query", "space motion") for item in queries_list}
+        fallback_map = {item.get("index"): item.get("fallback_queries", []) for item in queries_list}
+        prompt_map = {item.get("index"): "" for item in queries_list}
+        type_map = {item.get("index"): "video" for item in queries_list}
         
         output_queries = []
         for sub in subtitles:
-            q = query_map.get(sub["index"], "abstract loop")
+            q = query_map.get(sub["index"], "space motion")
+            fb = fallback_map.get(sub["index"], [])
+            t = "video"
             # Sanitize query (remove punctuation, normalize spaces)
             q = re.sub(r'[^\w\s]', '', q).strip().lower()
             if not q:
-                q = "abstract animation"
+                q = "space motion"
                 
+            clean_fallbacks = []
+            for f in fb:
+                cf = re.sub(r'[^\w\s]', '', str(f)).strip().lower()
+                if cf:
+                    clean_fallbacks.append(cf)
+                    
             output_queries.append({
                 "subtitle_index": sub["index"],
                 "text": sub["text"],
+                "type": t,
                 "query": q,
+                "fallback_queries": clean_fallbacks,
+                "image_prompt": "",
                 "start": sub["start"],
                 "end": sub["end"],
                 "start_ms": sub["start_ms"],

@@ -338,7 +338,7 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         }
         
     api_key = get_groq_key()
-    model = get_setting('llm', 'model', 'llama-3.1-8b-instant')
+    model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     client = Groq(api_key=api_key)
     
     # Take top 40 candidates to limit token usage
@@ -380,14 +380,12 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "      \"viral_angle\": \"the ONE most surprising fact hiding in this story — stated in plain language a 12-year-old would understand\",\n"
         "      \"hook_line\": \"first 2 seconds — must sound almost unbelievable, framed as a question or shocking statement. MUST be a scientifically true statement, NEVER fabricate statistics, numbers, or percentages.\",\n"
         "      \"why_it_could_go_viral\": \"1 sentence: what makes people want to comment, share, or argue about this\",\n"
-        "      \"trend_score\": 75.5, // Float between 0.0 and 100.0, scoring current public interest\n"
-        "      \"competition_score\": 45.0, // Float between 0.0 and 100.0, scoring how many channels are posting about this\n"
-        "      \"audience_interest\": 85.0, // Float between 0.0 and 100.0, scoring interest level of general public\n"
-        "      \"evergreen_score\": 60.0, // Float between 0.0 and 100.0, scoring how long this topic stays relevant\n"
-        "      \"virality_score\": 80.0, // Float between 0.0 and 100.0, scoring shareability\n"
-        "      \"education_score\": 70.0, // Float between 0.0 and 100.0, scoring educational value\n"
-        "      \"ctr_prediction\": 78.0, // Float between 0.0 and 100.0, predicting click-through rate\n"
-        "      \"retention_prediction\": 75.0, // Float between 0.0 and 100.0, predicting audience retention\n"
+        "      \"interest_score\": 8.5, // 0.0 to 10.0 scale (Public Interest)\n"
+        "      \"conflict_score\": 9.0, // 0.0 to 10.0 scale (Geopolitical / Space Race Conflict)\n"
+        "      \"novelty_score\": 8.0, // 0.0 to 10.0 scale (Freshness / Uniqueness)\n"
+        "      \"curiosity_score\": 9.0, // 0.0 to 10.0 scale (Immediate Question in Viewer Mind)\n"
+        "      \"stakes_score\": 9.5, // 0.0 to 10.0 scale (Money, Power, Future Consequence)\n"
+        "      \"brand_fit_score\": 10.0, // 0.0 to 10.0 scale (Fit for The Shortest Orbit: Space + AI + Future Tech)\n"
         "      \"risk_flag\": \"note if this topic is too technical, too uncertain/early-stage research, or too niche to simplify honestly — flag rather than force it\"\n"
         "    }\n"
         "  ]\n"
@@ -448,17 +446,30 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         # Score each candidate and write to database
         db_candidates = []
         for c in safe_concepts:
-            ts = float(c.get("trend_score", 50.0))
-            comp = float(c.get("competition_score", 50.0))
-            ai = float(c.get("audience_interest", 50.0))
-            eg = float(c.get("evergreen_score", 50.0))
-            vs = float(c.get("virality_score", 50.0))
-            eds = float(c.get("education_score", 50.0))
-            ctr = float(c.get("ctr_prediction", 50.0))
-            ret = float(c.get("retention_prediction", 50.0))
+            i_score = float(c.get("interest_score", c.get("audience_interest", 8.0)))
+            c_score = float(c.get("conflict_score", 8.0))
+            n_score = float(c.get("novelty_score", 8.0))
+            q_score = float(c.get("curiosity_score", 8.0))
+            s_score = float(c.get("stakes_score", 8.0))
+            b_score = float(c.get("brand_fit_score", 9.0))
             
-            # Overall growth score calculation using strict weights
-            overall_growth_score = (ts * 0.2) + (ai * 0.2) + (vs * 0.2) + (eds * 0.1) + (ctr * 0.15) + (ret * 0.15)
+            # Normalize to 0-10 scale if on 0-100
+            if i_score > 10.0: i_score /= 10.0
+            if c_score > 10.0: c_score /= 10.0
+            if n_score > 10.0: n_score /= 10.0
+            if q_score > 10.0: q_score /= 10.0
+            if s_score > 10.0: s_score /= 10.0
+            if b_score > 10.0: b_score /= 10.0
+            
+            # V4 TopicScore Formula: 0.25(I) + 0.20(C) + 0.20(N) + 0.15(Q) + 0.10(S) + 0.10(B)
+            topic_score = (0.25 * i_score) + (0.20 * c_score) + (0.20 * n_score) + (0.15 * q_score) + (0.10 * s_score) + (0.10 * b_score)
+            
+            # V4 Historical Winner Bonus: 0.80 * TopicScore + 0.20 * HistoricalSimilarityScore
+            hist_sim_score = float(c.get("historical_similarity_score", 8.0))
+            if hist_sim_score > 10.0: hist_sim_score /= 10.0
+            
+            final_topic_score = (topic_score * 0.80) + (hist_sim_score * 0.20)
+            overall_growth_score = final_topic_score * 10.0  # scale to 100 for legacy compatibility
             
             # Apply priority boost for strict Space Frontier niche (Country + Space + AI)
             text_to_check = (c.get("viral_angle", "") + " " + c.get("hook_line", "")).lower()

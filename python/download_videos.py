@@ -14,8 +14,11 @@ Outputs:
 import sys
 from pathlib import Path
 import json
+import random
 import time
 import requests
+import subprocess
+import urllib.parse
 
 # Project imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -74,126 +77,157 @@ def get_recent_used_visual_ids() -> set[str]:
     return used_ids
 
 
-def search_pexels(query: str, used_ids: set[str] = None) -> tuple[str | None, str | None]:
-    """Search Pexels for a vertical video matching the query. Returns (download_url, video_id)."""
-    if used_ids is None:
-        used_ids = set()
-        
+def fetch_pexels_candidates(query: str, used_ids: set[str]) -> list[dict]:
+    """Fetch video candidates from Pexels."""
     api_key = get_pexels_key()
     url = "https://api.pexels.com/v1/videos/search"
     headers = {"Authorization": api_key}
+    params = {"query": query, "orientation": "portrait", "per_page": 15}
     
-    params = {
-        "query": query,
-        "orientation": "portrait",
-        "per_page": 8
-    }
-    
-    logger.info(f"Searching Pexels for: '{query}'")
+    candidates = []
     try:
         response = requests.get(url, headers=headers, params=params, timeout=15)
-        if response.status_code != 200:
-            logger.warning(f"Pexels search API returned status {response.status_code}")
-            return None, None
-            
-        data = response.json()
-        videos = data.get("videos", [])
-        if not videos:
-            return None, None
-            
-        for video in videos:
-            v_id = str(video.get("id"))
-            if v_id in used_ids:
-                logger.info(f"Visual Deduplication: Skipping used Pexels video {v_id}")
-                continue
-                
-            video_files = video.get("video_files", [])
-            hd_files = []
-            for vf in video_files:
-                w = vf.get("width") or 0
-                h = vf.get("height") or 0
-                link = vf.get("link")
-                if h > w and link and "mp4" in link:
-                    hd_files.append(vf)
-                    
-            if hd_files:
-                hd_files.sort(key=lambda x: x.get("height") or 0, reverse=True)
-                best_link = hd_files[0]["link"]
-                return best_link, v_id
-                
-        # Landscape fallback
-        for video in videos:
-            v_id = str(video.get("id"))
-            if v_id in used_ids:
-                continue
-            files = sorted(video.get("video_files", []), key=lambda x: x.get("height") or 0, reverse=True)
-            if files:
-                return files[0]["link"], v_id
-                
+        if response.status_code == 200:
+            videos = response.json().get("videos", [])
+            for video in videos:
+                v_id = f"pexels_{video.get('id')}"
+                if v_id in used_ids:
+                    continue
+                video_files = video.get("video_files", [])
+                hd_files = []
+                for vf in video_files:
+                    w = vf.get("width") or 0
+                    h = vf.get("height") or 0
+                    link = vf.get("link")
+                    if link and "mp4" in link:
+                        hd_files.append((h > w, h, link))
+                if hd_files:
+                    hd_files.sort(key=lambda x: x[1], reverse=True)
+                    is_vert, height, link = hd_files[0]
+                    candidates.append({"url": link, "id": v_id, "source": "Pexels", "is_vertical": is_vert, "height": height})
     except Exception as e:
-        logger.error(f"Error searching Pexels: {e}")
-        
-    return None, None
+        logger.error(f"Error fetching Pexels candidates: {e}")
+    return candidates
 
 
-def search_pixabay(query: str, used_ids: set[str] = None) -> tuple[str | None, str | None]:
-    """Search Pixabay for a vertical video matching the query. Returns (download_url, video_id)."""
+def fetch_pixabay_candidates(query: str, used_ids: set[str]) -> list[dict]:
+    """Fetch video candidates from Pixabay."""
+    api_key = get_pixabay_key()
+    url = "https://pixabay.com/api/videos/"
+    params = {"key": api_key, "q": query, "video_type": "all", "per_page": 15}
+    
+    candidates = []
+    try:
+        response = requests.get(url, params=params, timeout=15)
+        if response.status_code == 200:
+            hits = response.json().get("hits", [])
+            for hit in hits:
+                v_id = f"pixabay_{hit.get('id')}"
+                if v_id in used_ids:
+                    continue
+                videos_dict = hit.get("videos", {})
+                for quality in ["large", "medium", "small"]:
+                    v_info = videos_dict.get(quality)
+                    if v_info and v_info.get("url"):
+                        w = v_info.get("width") or 0
+                        h = v_info.get("height") or 0
+                        link = v_info.get("url")
+                        candidates.append({"url": link, "id": v_id, "source": "Pixabay", "is_vertical": (h > w), "height": h})
+                        break
+    except Exception as e:
+        logger.error(f"Error fetching Pixabay candidates: {e}")
+    return candidates
+
+
+def search_dual_sources(query: str, used_ids: set[str] = None) -> tuple[str | None, str | None, str | None]:
+    """Query BOTH Pexels and Pixabay simultaneously, aggregate candidates, and pick the best video clip."""
     if used_ids is None:
         used_ids = set()
         
-    api_key = get_pixabay_key()
-    url = "https://pixabay.com/api/videos/"
+    logger.info(f"Searching DUAL SOURCES (Pexels + Pixabay) for: '{query}'")
+    pexels_cands = fetch_pexels_candidates(query, used_ids)
+    pixabay_cands = fetch_pixabay_candidates(query, used_ids)
     
-    params = {
-        "key": api_key,
-        "q": query,
-        "video_type": "all",
-        "per_page": 8
-    }
-    
-    logger.info(f"Searching Pixabay for: '{query}'")
-    try:
-        response = requests.get(url, params=params, timeout=15)
-        if response.status_code != 200:
-            logger.warning(f"Pixabay search API returned status {response.status_code}")
-            return None, None
-            
-        data = response.json()
-        hits = data.get("hits", [])
-        if not hits:
-            return None, None
-            
-        for hit in hits:
-            v_id = str(hit.get("id"))
-            if v_id in used_ids:
-                logger.info(f"Visual Deduplication: Skipping used Pixabay video {v_id}")
-                continue
-                
-            videos_dict = hit.get("videos", {})
-            for quality in ["large", "medium", "small"]:
-                v_info = videos_dict.get(quality)
-                if v_info:
-                    w = v_info.get("width") or 0
-                    h = v_info.get("height") or 0
-                    url_link = v_info.get("url")
-                    if h > w and url_link:
-                        return url_link, v_id
-                        
-        # Landscape fallback
-        for hit in hits:
-            v_id = str(hit.get("id"))
-            if v_id in used_ids:
-                continue
-            videos_dict = hit.get("videos", {})
-            for quality in ["large", "medium", "small"]:
-                v_info = videos_dict.get(quality)
-                if v_info and v_info.get("url"):
-                    return v_info["url"], v_id
-                    
-    except Exception as e:
-        logger.error(f"Error searching Pixabay: {e}")
+    all_candidates = pexels_cands + pixabay_cands
+    if not all_candidates:
+        return None, None, None
         
-    return None, None
+    # Separate vertical and landscape clips
+    verticals = [c for c in all_candidates if c["is_vertical"]]
+    landscapes = [c for c in all_candidates if not c["is_vertical"]]
+    
+    pool = verticals if verticals else landscapes
+    if not pool:
+        return None, None, None
+        
+    # Sort pool by resolution/height descending
+    pool.sort(key=lambda x: x["height"], reverse=True)
+    
+    # Pick randomly from the top 5 highest resolution candidates across both platforms for variety
+    top_candidates = pool[:min(5, len(pool))]
+    winner = random.choice(top_candidates)
+    
+    logger.info(f"Selected best candidate from {winner['source']} (Res Height: {winner['height']}px, ID: {winner['id']})")
+    return winner["url"], winner["id"], winner["source"]
+
+
+def generate_ai_image_video(prompt: str, output_file: Path, duration: float) -> Path:
+    """Generate an AI image from Pollinations and convert it to a video with a Ken Burns effect."""
+    logger.info(f"Generating AI Image for prompt: '{prompt}'")
+    
+    # URL encode the prompt and use the default reliable model (Flux)
+    safe_prompt = urllib.parse.quote(prompt)
+    url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=1080&height=1920&nologo=true"
+    
+    temp_image_path = output_file.with_suffix('.jpg')
+    
+    # Retry logic to ensure the image downloads successfully
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            logger.info(f"Downloading AI Image from Pollinations (Attempt {attempt+1}/{max_retries})...")
+            response = requests.get(url, timeout=30)
+            if response.status_code == 200:
+                with open(temp_image_path, 'wb') as f:
+                    f.write(response.content)
+                logger.info(f"Successfully downloaded AI Image.")
+                break
+            else:
+                logger.warning(f"Failed to download AI Image (Status {response.status_code}).")
+        except Exception as e:
+            logger.warning(f"Error downloading AI Image: {e}")
+            
+        if attempt == max_retries - 1:
+            raise Exception("Failed to generate AI image after multiple attempts.")
+        time.sleep(2)
+                
+    logger.info(f"AI Image downloaded. Converting to video with FFmpeg...")
+    
+    # zoompan=z='min(zoom+0.0015,1.15)' means zoom in slowly up to 115%
+    # d=750 ensures the zoompan doesn't reset or loop within our short clip (750 frames = 25 seconds)
+    # s=1080x1920 strictly forces output size to prevent ffmpeg dimension errors
+    cmd = [
+        "ffmpeg", "-y",
+        "-loop", "1",
+        "-i", str(temp_image_path),
+        "-vf", "zoompan=z='min(zoom+0.0015,1.15)':d=750:s=1080x1920:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)',framerate=30",
+        "-c:v", "libx264",
+        "-t", str(duration + 1.0), # give a 1s buffer
+        "-pix_fmt", "yuv420p",
+        str(output_file)
+    ]
+    
+    try:
+        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        logger.info(f"Successfully created AI video clip at {output_file}")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"FFmpeg failed to create AI video: {e}")
+        raise
+    finally:
+        if temp_image_path.exists():
+            temp_image_path.unlink()
+            
+    return output_file
 
 
 def run() -> list[Path]:
@@ -233,42 +267,68 @@ def run() -> list[Path]:
         download_url = None
         asset_id = None
         
-        # 1. Try Pexels Search
-        try:
-            download_url, asset_id = search_pexels(query, used_ids)
-        except Exception as e:
-            logger.error(f"Pexels search failed for scene {index}: {e}")
-            
-        # 2. Try Pixabay Fallback
-        if not download_url:
-            logger.info("Pexels failed/empty. Trying Pixabay fallback...")
+        # 100% Video Mode: No static images/photos
+        is_ai_scene = False
+        
+        if is_ai_scene:
+            logger.info(f">>> CONTEXT: Chosen 'image' for scene {index}.")
+            image_prompt = item.get("image_prompt", query)
             try:
-                download_url, asset_id = search_pixabay(query, used_ids)
-            except Exception as e:
-                logger.error(f"Pixabay search failed for scene {index}: {e}")
-                
-        # 3. If query fails, try generic queries
-        generic_queries = ["abstract corporate motion", "neon abstract loop", "colorful smoke loop", "scenic nature slow motion"]
-        g_idx = 0
-        while not download_url and g_idx < len(generic_queries):
-            generic_query = generic_queries[g_idx]
-            logger.warning(f"No stock video found for '{query}'. Trying generic search: '{generic_query}'...")
-            download_url, asset_id = search_pexels(generic_query, used_ids)
-            if not download_url:
-                download_url, asset_id = search_pixabay(generic_query, used_ids)
-            g_idx += 1
-            
-        # 4. Perform Download
-        if download_url:
-            try:
-                downloaded_file = download_file(download_url, output_file)
+                downloaded_file = generate_ai_image_video(image_prompt, output_file, duration)
                 downloaded_paths.append(downloaded_file)
                 successful_downloads.append(downloaded_file)
-                if asset_id:
-                    downloaded_visual_ids.add(str(asset_id))
+                download_url = "AI_GENERATED"
             except Exception as e:
-                logger.error(f"Failed to download video file: {e}")
-                download_url = None  # trigger next fallback
+                logger.error(f"Failed to generate AI image video: {e}")
+                download_url = None
+        else:
+            logger.info(f">>> NARRATIVE MATCH ENGINE: Searching videos for scene {index} ('{query}')...")
+            
+            # Construct multi-stage physical subject search list
+            search_terms = []
+            if query:
+                search_terms.append(query)
+            for fb in item.get("fallback_queries", []):
+                if fb and fb not in search_terms:
+                    search_terms.append(fb)
+            # Add individual concrete words as fallback (e.g. "rocket" from "rocket launch")
+            if query:
+                words = [w.strip() for w in query.split() if len(w.strip()) > 3]
+                for w in words:
+                    if w not in search_terms:
+                        search_terms.append(w)
+                        
+            for term in search_terms:
+                try:
+                    logger.info(f"Targeted search for narration subject: '{term}'...")
+                    download_url, asset_id, source_name = search_dual_sources(term, used_ids)
+                    if download_url:
+                        logger.info(f"Matched video clip for '{term}' from {source_name}!")
+                        break
+                except Exception as e:
+                    logger.error(f"Search for term '{term}' failed for scene {index}: {e}")
+                    
+            # If all targeted terms fail, try generic queries
+            if not download_url:
+                generic_queries = ["cinematic galaxy motion", "futuristic neon city loop", "abstract technology background", "dramatic nature slow motion"]
+                g_idx = 0
+                while not download_url and g_idx < len(generic_queries):
+                    generic_query = generic_queries[g_idx]
+                    logger.warning(f"No targeted video found for scene {index}. Trying generic search: '{generic_query}'...")
+                    download_url, asset_id, source_name = search_dual_sources(generic_query, used_ids)
+                    g_idx += 1
+                
+            # 4. Perform Download
+            if download_url:
+                try:
+                    downloaded_file = download_file(download_url, output_file)
+                    downloaded_paths.append(downloaded_file)
+                    successful_downloads.append(downloaded_file)
+                    if asset_id:
+                        downloaded_visual_ids.add(str(asset_id))
+                except Exception as e:
+                    logger.error(f"Failed to download video file: {e}")
+                    download_url = None  # trigger next fallback
                 
         # 5. Ultimate Fallback: Reuse a previous successful video or use a dummy file
         if not download_url or not output_file.exists():

@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 def verify_script_facts(narration: str) -> tuple[bool, list[dict]]:
     """Analyze script narration using Groq LLM to verify scientific credibility of claims."""
     api_key = get_groq_key()
-    model = 'llama-3.1-8b-instant' # Fallback to 8B due to rate limits
+    model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     client = Groq(api_key=api_key)
     
     system_prompt = (

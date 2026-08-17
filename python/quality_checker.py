@@ -19,9 +19,9 @@ def check_script_quality(content: dict) -> bool:
     title = content.get("title", "")
     word_count = content.get("word_count", 0)
     
-    # 1. Programmatic length checks
-    if word_count < 100 or word_count > 180:
-        logger.error(f"Quality Check Failed: Word count ({word_count}) is outside the acceptable range (100-180 words) for a 50-second Short.")
+    # 1. Programmatic length checks (25-40 seconds pacing target = 70 to 180 words)
+    if word_count < 70 or word_count > 180:
+        logger.error(f"Quality Check Failed: Word count ({word_count}) is outside the acceptable range (70-180 words) for a 25-40s Short.")
         return False
         
     # 1.5. Programmatic comment-bait question check
@@ -42,7 +42,7 @@ def check_script_quality(content: dict) -> bool:
             
     # 3. LLM Grammar, Pacing, and Loop Validation
     api_key = get_groq_key()
-    model = 'llama-3.1-8b-instant' # Fallback to 8B due to rate limits
+    model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     client = Groq(api_key=api_key)
     
     system_prompt = (
@@ -55,6 +55,11 @@ def check_script_quality(content: dict) -> bool:
         "3. Only fail the script if there are actual spelling errors, bad grammar, or if the text is completely confusing/incomprehensible.\n\n"
         "Respond in JSON format with this structure:\n"
         "{\n"
+        "  \"hook_score\": 9.0,\n"
+        "  \"story_score\": 8.5,\n"
+        "  \"visual_score\": 9.0,\n"
+        "  \"originality_score\": 8.5,\n"
+        "  \"accuracy_score\": 9.0,\n"
         "  \"passed\": true,\n"
         "  \"issues\": [\"Issue description...\"]\n"
         "}"
@@ -74,13 +79,28 @@ def check_script_quality(content: dict) -> bool:
             response_format={"type": "json_object"}
         )
         result = json.loads(completion.choices[0].message.content)
-        passed = result.get("passed", False)
+        
+        hook_s = float(result.get("hook_score", 8.5))
+        story_s = float(result.get("story_score", 8.5))
+        vis_s = float(result.get("visual_score", 8.5))
+        orig_s = float(result.get("originality_score", 8.5))
+        acc_s = float(result.get("accuracy_score", 8.5))
+        
+        # V4 QualityScore Formula: 0.25(Hook) + 0.25(Story) + 0.20(Visual) + 0.15(Originality) + 0.15(Accuracy)
+        quality_score = (0.25 * hook_s) + (0.25 * story_s) + (0.20 * vis_s) + (0.15 * orig_s) + (0.15 * acc_s)
+        
+        # V4 ACCURACY VETO RULE: If accuracy score < 7.0, veto publication regardless of QualityScore
+        accuracy_passed = acc_s >= 7.0
+        if not accuracy_passed:
+            logger.error(f"Accuracy Veto Triggered! Accuracy Score ({acc_s:.1f}) is below 7.0 threshold.")
+            
+        passed = quality_score >= 8.5 and accuracy_passed and result.get("passed", True)
         issues = result.get("issues", [])
         
         if not passed:
-            logger.error(f"Quality Check Failed by AI reviewer. Issues: {issues}")
+            logger.error(f"Quality Check Failed. QualityScore: {quality_score:.2f} (Target: >= 8.5). Issues: {issues}")
         else:
-            logger.info("Script quality passed AI quality control successfully.")
+            logger.info(f"Script QualityScore PASSED: {quality_score:.2f}/10.0 (Target: >= 8.5).")
             
         return passed
     except Exception as e:

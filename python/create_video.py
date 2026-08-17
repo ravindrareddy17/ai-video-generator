@@ -50,9 +50,8 @@ def process_scene(scene_index: int, input_path: Path, target_duration: float, te
     args = []
     
     if clip_duration < target_duration:
-        # Loop the video to exceed or match target duration
-        logger.info(f"Clip ({clip_duration}s) is shorter than target ({target_duration}s). Looping clip.")
-        # -stream_loop -1 tells FFmpeg to loop the input infinitely, which we cap with -t
+        # Seamless motion looping to ensure video NEVER freezes motionless
+        logger.info(f"Clip ({clip_duration}s) is shorter than target ({target_duration}s). Looping clip for fluid motion.")
         args.extend(["-stream_loop", "-1"])
         
     args.extend(["-i", str(input_path)])
