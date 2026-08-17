@@ -1,13 +1,8 @@
 """
-dashboard_pages.py — White/Purple Editorial SaaS Page View Renderers for V2 Command Center.
+dashboard_pages.py — Ultra-Simple Clean Page Renderers.
 
-Renders all 6 clean editorial sections:
-1. Overview Page
-2. Videos Page (+ Video Detail View)
-3. Growth Page
-4. Audience Page
-5. V4 Intelligence Page
-6. Data Health Page
+Ensures high text contrast (#111827), clean light backgrounds (#FFFFFF, #F8F9FA),
+left-aligned text, and easy readability across all 6 sections.
 """
 
 import streamlit as st
@@ -16,7 +11,7 @@ import numpy as np
 from dashboard_components import (
     render_hero_section,
     render_channel_status_panel,
-    render_editorial_kpi_card,
+    render_simple_kpi_card,
     render_bottleneck_section,
     render_v4_learned_section,
     render_section_title,
@@ -39,7 +34,7 @@ from dashboard_metrics import (
 # 1. OVERVIEW PAGE (HOMEPAGE)
 # ─────────────────────────────────────────────────────────────────────────────
 def render_overview_page(df_curr: pd.DataFrame, df_prev: pd.DataFrame, baselines: dict, bottleneck_info: dict, v4_insights: dict):
-    """Renders the pristine White/Purple Editorial SaaS Overview page."""
+    """Renders the simple clean Overview page with high contrast text and left alignment."""
 
     # HERO SECTION
     render_hero_section()
@@ -77,17 +72,17 @@ def render_overview_page(df_curr: pd.DataFrame, df_prev: pd.DataFrame, baselines
 
     r1, r2, r3, r4, r5, r6 = st.columns(6)
     with r1:
-        st.markdown(render_editorial_kpi_card("VIEWS", f"{curr_views:,}", f"{diff_views_pct:+.1f}%", f"{prev_views:,}"), unsafe_allow_html=True)
+        st.markdown(render_simple_kpi_card("VIEWS", f"{curr_views:,}", f"{diff_views_pct:+.1f}%", f"{prev_views:,}"), unsafe_allow_html=True)
     with r2:
-        st.markdown(render_editorial_kpi_card("WATCH TIME", f"{curr_watch}h", f"{diff_watch_pct:+.1f}%", f"{prev_watch}h"), unsafe_allow_html=True)
+        st.markdown(render_simple_kpi_card("WATCH TIME", f"{curr_watch}h", f"{diff_watch_pct:+.1f}%", f"{prev_watch}h"), unsafe_allow_html=True)
     with r3:
-        st.markdown(render_editorial_kpi_card("SUBSCRIBERS", f"+{curr_subs:,}", f"{diff_subs:+d}", f"+{prev_subs:,}"), unsafe_allow_html=True)
+        st.markdown(render_simple_kpi_card("SUBSCRIBERS", f"+{curr_subs:,}", f"{diff_subs:+d}", f"+{prev_subs:,}"), unsafe_allow_html=True)
     with r4:
-        st.markdown(render_editorial_kpi_card("AVG APV", f"{curr_apv}%", f"{diff_apv:+.1f}%", f"{prev_apv}%", tooltip="Average percentage of the Short watched."), unsafe_allow_html=True)
+        st.markdown(render_simple_kpi_card("AVG APV", f"{curr_apv}%", f"{diff_apv:+.1f}%", f"{prev_apv}%", tooltip="Average percentage of the Short watched."), unsafe_allow_html=True)
     with r5:
-        st.markdown(render_editorial_kpi_card("VIEWER CHOICE", f"{curr_vc}%", f"{diff_vc:+.1f}%", f"{prev_vc}%", tooltip="Percentage of viewers who chose to watch rather than swipe away."), unsafe_allow_html=True)
+        st.markdown(render_simple_kpi_card("VIEWER CHOICE", f"{curr_vc}%", f"{diff_vc:+.1f}%", f"{prev_vc}%", tooltip="Percentage of viewers who chose to watch rather than swipe away."), unsafe_allow_html=True)
     with r6:
-        st.markdown(render_editorial_kpi_card("RETURNING VIEWERS", f"{curr_ret_viewers:,}", f"{diff_ret_pct:+.1f}%", f"{prev_ret_viewers:,}"), unsafe_allow_html=True)
+        st.markdown(render_simple_kpi_card("RETURNING VIEWERS", f"{curr_ret_viewers:,}", f"{diff_ret_pct:+.1f}%", f"{prev_ret_viewers:,}"), unsafe_allow_html=True)
 
     # SECTION 3 — CHANNEL GROWTH TREND
     render_section_title("CHANNEL GROWTH", "How your channel is changing over time")
@@ -106,18 +101,18 @@ def render_overview_page(df_curr: pd.DataFrame, df_prev: pd.DataFrame, baselines
         wcol1, wcol2 = st.columns([1, 1])
         with wcol1:
             st.markdown(f"""
-            <div style="background-color: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 16px; padding: 32px 36px; height: 100%;">
-                <div style="font-size: 12px; font-weight: 700; color: #5B21F5; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">TOP PERFORMING PILLAR</div>
-                <div style="font-size: 32px; font-weight: 800; color: #0A0A0A; letter-spacing: -0.03em; margin: 4px 0;">{top_video['content_pillar']}</div>
-                <div style="font-size: 16px; font-weight: 700; color: #16A34A; margin-bottom: 12px;">+42% above channel median</div>
-                <div style="font-size: 14px; color: #555555;">TOP SHORT: <b>"{top_video['title']}"</b></div>
+            <div style="background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; text-align: left; height: 100%;">
+                <div style="font-size: 12px; font-weight: 700; color: #4F46E5; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">TOP PERFORMING PILLAR</div>
+                <div style="font-size: 28px; font-weight: 800; color: #111827; margin: 4px 0;">{top_video['content_pillar']}</div>
+                <div style="font-size: 15px; font-weight: 700; color: #16A34A; margin-bottom: 8px;">+42% above channel median</div>
+                <div style="font-size: 14px; color: #4B5563;">TOP SHORT: <b>"{top_video['title']}"</b></div>
             </div>
             """, unsafe_allow_html=True)
         with wcol2:
             st.markdown("""
-            <div style="background-color: #FFFFFF; border: 1px solid #E8E8E8; border-left: 6px solid #5B21F5; border-radius: 16px; padding: 32px 36px; height: 100%;">
-                <div style="font-size: 12px; font-weight: 700; color: #5B21F5; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px;">WHY IT WORKS</div>
-                <div style="font-size: 17px; font-weight: 600; color: #0A0A0A; line-height: 1.6; margin-top: 8px;">
+            <div style="background-color: #FFFFFF; border: 1px solid #E5E7EB; border-left: 5px solid #4F46E5; border-radius: 12px; padding: 24px; text-align: left; height: 100%;">
+                <div style="font-size: 12px; font-weight: 700; color: #4F46E5; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">WHY IT WORKS</div>
+                <div style="font-size: 15px; font-weight: 600; color: #111827; line-height: 1.6; margin-top: 6px;">
                     "Competition-based stories are currently performing significantly above the channel median because they establish high-stakes conflict in sentence 1."
                 </div>
             </div>
@@ -126,13 +121,13 @@ def render_overview_page(df_curr: pd.DataFrame, df_prev: pd.DataFrame, baselines
     # SECTION 5 — WHAT NEEDS ATTENTION?
     render_section_title("WHAT NEEDS ATTENTION?", "Primary performance bottlenecks requiring creator action")
     st.markdown(f"""
-    <div style="background-color: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 16px; padding: 28px 32px; margin-bottom: 24px;">
+    <div style="background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px; text-align: left; margin-bottom: 20px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-size: 12px; font-weight: 700; color: #888888; text-transform: uppercase;">SUBSCRIBER CONVERSION</div>
-            <span style="background-color: #FEF3C7; color: #D97706; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;">NEEDS ATTENTION</span>
+            <div style="font-size: 12px; font-weight: 700; color: #6B7280; text-transform: uppercase;">SUBSCRIBER CONVERSION</div>
+            <span style="background-color: #FEF3C7; color: #D97706; padding: 3px 10px; border-radius: 4px; font-size: 11px; font-weight: 700;">NEEDS ATTENTION</span>
         </div>
-        <div style="font-size: 32px; font-weight: 800; color: #0A0A0A; margin: 8px 0;">{df_curr['subs_per_1000'].mean():.2f} / 1K views</div>
-        <div style="font-size: 15px; color: #555555; line-height: 1.5;">
+        <div style="font-size: 28px; font-weight: 800; color: #111827; margin: 6px 0;">{df_curr['subs_per_1000'].mean():.2f} / 1K views</div>
+        <div style="font-size: 14px; color: #4B5563; line-height: 1.5;">
             "Viewers are watching the content, but very few are converting into subscribers."
         </div>
     </div>
@@ -153,12 +148,12 @@ def render_overview_page(df_curr: pd.DataFrame, df_prev: pd.DataFrame, baselines
     for col, rec in zip([rcol1, rcol2, rcol3], recs):
         with col:
             st.markdown(f"""
-            <div style="background-color: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 16px; padding: 28px 24px; height: 100%;">
-                <div style="font-size: 12px; font-weight: 800; color: #5B21F5;">#{rec['rank']} TOPIC</div>
-                <div style="font-size: 20px; font-weight: 800; color: #0A0A0A; margin: 8px 0;">{rec['topic']}</div>
-                <div style="font-size: 14px; color: #555555; margin-bottom: 12px;">"{rec['why']}"</div>
-                <div style="font-size: 14px; color: #5B21F5; font-weight: 700; margin-bottom: 8px;">V4 Opportunity: {rec['opportunity']}</div>
-                <div style="font-size: 13px; color: #888888;">Angle: <b style="color:#0A0A0A;">{rec['angle']}</b></div>
+            <div style="background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 22px; text-align: left; height: 100%;">
+                <div style="font-size: 12px; font-weight: 800; color: #4F46E5;">#{rec['rank']} TOPIC</div>
+                <div style="font-size: 18px; font-weight: 800; color: #111827; margin: 6px 0;">{rec['topic']}</div>
+                <div style="font-size: 13px; color: #4B5563; margin-bottom: 10px;">"{rec['why']}"</div>
+                <div style="font-size: 13px; color: #4F46E5; font-weight: 700; margin-bottom: 6px;">V4 Opportunity: {rec['opportunity']}</div>
+                <div style="font-size: 12px; color: #6B7280;">Angle: <b style="color:#111827;">{rec['angle']}</b></div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -176,21 +171,21 @@ def render_overview_page(df_curr: pd.DataFrame, df_prev: pd.DataFrame, baselines
 def render_v4_intelligence_page(df_curr: pd.DataFrame, baselines: dict, v4_insights: dict):
     """Technical internal strategy page strictly separated from YouTube metrics."""
     st.markdown("""
-    <div style="margin: 40px 0 24px 0;">
-        <h1 style="font-size: 38px; font-weight: 800; color: #0A0A0A; letter-spacing: -0.03em; margin: 0;">WHAT HAS V4 LEARNED?</h1>
-        <div style="font-size: 15px; color: #5B21F5; font-weight: 600; margin-top: 4px;">These are internal decision-support metrics, not YouTube metrics.</div>
+    <div style="margin: 32px 0 20px 0; text-align: left;">
+        <h1 style="font-size: 32px; font-weight: 800; color: #111827; margin: 0; letter-spacing: -0.02em;">WHAT HAS V4 LEARNED?</h1>
+        <div style="font-size: 14px; color: #4F46E5; font-weight: 600; margin-top: 4px;">These are internal decision-support metrics, not YouTube metrics.</div>
     </div>
     """, unsafe_allow_html=True)
 
     health_val, health_stat, bottleneck_name = compute_v4_channel_health(df_curr, baselines)
     st.markdown(f"""
-    <div style="background-color: #F1EDFF; border: 1px solid #E8E8E8; border-radius: 20px; padding: 32px 36px; margin-bottom: 40px;">
+    <div style="background-color: #F8F9FA; border: 1px solid #E5E7EB; border-radius: 12px; padding: 28px; margin-bottom: 32px; text-align: left;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-size: 12px; font-weight: 800; color: #5B21F5; text-transform: uppercase;">V4 CHANNEL HEALTH (INTERNAL V4 SCORE)</div>
-            <span style="font-size: 11px; font-weight: 700; color: #5B21F5; background: #FFFFFF; padding: 4px 12px; border-radius: 999px;">V4 DIAGNOSTIC</span>
+            <div style="font-size: 12px; font-weight: 800; color: #4F46E5; text-transform: uppercase;">V4 CHANNEL HEALTH (INTERNAL V4 SCORE)</div>
+            <span style="font-size: 11px; font-weight: 700; color: #4F46E5; background: #EEF2FF; padding: 3px 10px; border-radius: 4px;">V4 DIAGNOSTIC</span>
         </div>
-        <div style="font-size: 48px; font-weight: 900; color: #5B21F5; margin: 8px 0;">{health_val} / 100 <span style="font-size:20px; font-weight:700;">({health_stat})</span></div>
-        <div style="font-size: 15px; color: #555555;">Viewer Choice: <b>Strong</b> | Retention: <b>Strong</b> | Subscriber Conversion: <b style="color:#DC2626;">Weak</b> | Returning Viewers: <b>Moderate</b></div>
+        <div style="font-size: 40px; font-weight: 800; color: #4F46E5; margin: 6px 0;">{health_val} / 100 <span style="font-size:18px; font-weight:700;">({health_stat})</span></div>
+        <div style="font-size: 14px; color: #4B5563;">Viewer Choice: <b>Strong</b> | Retention: <b>Strong</b> | Subscriber Conversion: <b style="color:#DC2626;">Weak</b> | Returning Viewers: <b>Moderate</b></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -205,11 +200,11 @@ def render_v4_intelligence_page(df_curr: pd.DataFrame, baselines: dict, v4_insig
 # 3. VIDEOS PAGE & VIDEO DETAIL VIEW
 # ─────────────────────────────────────────────────────────────────────────────
 def render_videos_page(df_curr: pd.DataFrame, baselines: dict):
-    """Renders clean editorial video library with pill badges."""
+    """Renders clean video library rows with high text contrast."""
     st.markdown("""
-    <div style="margin: 40px 0 24px 0;">
-        <h1 style="font-size: 38px; font-weight: 800; color: #0A0A0A; letter-spacing: -0.03em; margin: 0;">YOUR SHORTS</h1>
-        <div style="font-size: 15px; color: #555555; margin-top: 4px;">Every published Short, performance, and diagnosis.</div>
+    <div style="margin: 32px 0 20px 0; text-align: left;">
+        <h1 style="font-size: 32px; font-weight: 800; color: #111827; margin: 0; letter-spacing: -0.02em;">YOUR SHORTS</h1>
+        <div style="font-size: 14px; color: #4B5563; margin-top: 4px;">Every published Short, performance, and diagnosis.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -222,13 +217,13 @@ def render_videos_page(df_curr: pd.DataFrame, baselines: dict):
     for _, row in df_curr.sort_values('views', ascending=False).iterrows():
         badge_html = get_performance_badge_html(row['performance_class'])
         st.markdown(f"""
-        <div style="background-color: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="font-size: 17px; font-weight: 700; color: #0A0A0A;">{row['title']}</div>
-                <div style="font-size: 13px; color: #555555; margin-top: 4px;">Published: {str(row['uploaded_at'])[:10]} | Pillar: {row['content_pillar']}</div>
+        <div style="background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 18px 24px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="text-align: left;">
+                <div style="font-size: 16px; font-weight: 700; color: #111827;">{row['title']}</div>
+                <div style="font-size: 13px; color: #6B7280; margin-top: 4px;">Published: {str(row['uploaded_at'])[:10]} | Pillar: {row['content_pillar']}</div>
             </div>
             <div style="text-align: right;">
-                <div style="font-size: 20px; font-weight: 800; color: #0A0A0A;">{row['views']:,} views &nbsp; {badge_html}</div>
+                <div style="font-size: 18px; font-weight: 800; color: #111827;">{row['views']:,} views &nbsp; {badge_html}</div>
                 <div style="font-size: 13px; color: #16A34A; margin-top: 4px;">+{row['subscribers_gained']} subs | {row['apv']:.1f}% APV</div>
             </div>
         </div>
@@ -239,11 +234,11 @@ def render_videos_page(df_curr: pd.DataFrame, baselines: dict):
 # 4. GROWTH PAGE
 # ─────────────────────────────────────────────────────────────────────────────
 def render_growth_page(df_curr: pd.DataFrame, df_prev: pd.DataFrame):
-    """Renders Growth trends page with generous whitespace."""
+    """Renders Growth trends page."""
     st.markdown("""
-    <div style="margin: 40px 0 24px 0;">
-        <h1 style="font-size: 38px; font-weight: 800; color: #0A0A0A; letter-spacing: -0.03em; margin: 0;">IS THE CHANNEL GROWING?</h1>
-        <div style="font-size: 15px; color: #555555; margin-top: 4px;">Channel trajectory across key performance metrics over time.</div>
+    <div style="margin: 32px 0 20px 0; text-align: left;">
+        <h1 style="font-size: 32px; font-weight: 800; color: #111827; margin: 0; letter-spacing: -0.02em;">IS THE CHANNEL GROWING?</h1>
+        <div style="font-size: 14px; color: #4B5563; margin-top: 4px;">Channel trajectory across key performance metrics over time.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -256,11 +251,11 @@ def render_growth_page(df_curr: pd.DataFrame, df_prev: pd.DataFrame):
 # 5. AUDIENCE PAGE
 # ─────────────────────────────────────────────────────────────────────────────
 def render_audience_page(df_curr: pd.DataFrame):
-    """Renders Audience demographics and returning viewer trends."""
+    """Renders Audience analytics page."""
     st.markdown("""
-    <div style="margin: 40px 0 24px 0;">
-        <h1 style="font-size: 38px; font-weight: 800; color: #0A0A0A; letter-spacing: -0.03em; margin: 0;">WHO IS WATCHING?</h1>
-        <div style="font-size: 15px; color: #555555; margin-top: 4px;">Audience loyalty, geography, and traffic sources.</div>
+    <div style="margin: 32px 0 20px 0; text-align: left;">
+        <h1 style="font-size: 32px; font-weight: 800; color: #111827; margin: 0; letter-spacing: -0.02em;">WHO IS WATCHING?</h1>
+        <div style="font-size: 14px; color: #4B5563; margin-top: 4px;">Audience loyalty, geography, and traffic sources.</div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -269,9 +264,9 @@ def render_audience_page(df_curr: pd.DataFrame):
 
     acol1, acol2 = st.columns(2)
     with acol1:
-        st.markdown(render_editorial_kpi_card("NEW VIEWERS", f"{tot_new:,}", "+18.4% vs prev", "12,100"), unsafe_allow_html=True)
+        st.markdown(render_simple_kpi_card("NEW VIEWERS", f"{tot_new:,}", "+18.4% vs prev", "12,100"), unsafe_allow_html=True)
     with acol2:
-        st.markdown(render_editorial_kpi_card("RETURNING VIEWERS", f"{tot_ret:,}", "+5.2% vs prev", "3,300"), unsafe_allow_html=True)
+        st.markdown(render_simple_kpi_card("RETURNING VIEWERS", f"{tot_ret:,}", "+5.2% vs prev", "3,300"), unsafe_allow_html=True)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -280,15 +275,15 @@ def render_audience_page(df_curr: pd.DataFrame):
 def render_data_health_page(df_raw: pd.DataFrame, df_curr: pd.DataFrame, last_update_str: str):
     """Renders technical data debugging page."""
     st.markdown("""
-    <div style="margin: 40px 0 24px 0;">
-        <h1 style="font-size: 38px; font-weight: 800; color: #0A0A0A; letter-spacing: -0.03em; margin: 0;">YOUTUBE DATA</h1>
-        <div style="font-size: 15px; color: #555555; margin-top: 4px;">Technical debugging and API sync status.</div>
+    <div style="margin: 32px 0 20px 0; text-align: left;">
+        <h1 style="font-size: 32px; font-weight: 800; color: #111827; margin: 0; letter-spacing: -0.02em;">YOUTUBE DATA</h1>
+        <div style="font-size: 14px; color: #4B5563; margin-top: 4px;">Technical debugging and API sync status.</div>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div style="background-color: #FFFFFF; border: 1px solid #E8E8E8; border-radius: 16px; padding: 28px 32px;">
-        <div style="font-size: 16px; font-weight: 700; color: #0A0A0A; margin-bottom: 12px;">SYSTEM DIAGNOSTICS</div>
+    <div style="background-color: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 24px 28px; text-align: left;">
+        <div style="font-size: 16px; font-weight: 700; color: #111827; margin-bottom: 10px;">SYSTEM DIAGNOSTICS</div>
         - **API Status:** LIVE YOUTUBE API AVAILABLE (Fallback Active)<br>
         - **Last Sync:** {last_update_str}<br>
         - **Videos Analyzed:** {len(df_raw)}<br>

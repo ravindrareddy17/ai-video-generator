@@ -1,12 +1,12 @@
 """
-dashboard_charts.py — Editorial Plotly Visualizations for White/Purple SaaS Dashboard V2.
+dashboard_charts.py — Clean Plotly Visualizations.
 
 Features:
 - Pure white background (#FFFFFF)
-- Primary Brand Purple line (#5B21F5)
-- Subtle gray grid (#EEEEEE)
-- Dark black text (#0A0A0A)
-- Generous padding and minimal editorial styling
+- High contrast black font (#111827)
+- Royal Indigo/Purple primary line (#4F46E5)
+- Subtle gray grid (#E5E7EB)
+- Left-aligned clean titles
 """
 
 import pandas as pd
@@ -14,39 +14,39 @@ import plotly.express as px
 import plotly.graph_objects as go
 
 
-def apply_editorial_theme(fig, title: str = ""):
-    """Applies pure white / purple editorial SaaS Plotly theme."""
+def apply_clean_theme(fig, title: str = ""):
+    """Applies clean white / indigo Plotly theme."""
     fig.update_layout(
-        title=dict(text=title, font=dict(size=18, color="#0A0A0A", family="Inter, Helvetica, Arial, sans-serif")),
+        title=dict(text=title, font=dict(size=16, color="#111827", family="sans-serif"), x=0.01),
         paper_bgcolor="#FFFFFF",
         plot_bgcolor="#FFFFFF",
-        font=dict(color="#0A0A0A", family="Inter, Helvetica, Arial, sans-serif"),
+        font=dict(color="#111827", family="sans-serif"),
         xaxis=dict(
-            gridcolor="#EEEEEE",
-            tickfont=dict(color="#555555"),
+            gridcolor="#E5E7EB",
+            tickfont=dict(color="#4B5563"),
             zeroline=False,
             showline=True,
-            linecolor="#E8E8E8"
+            linecolor="#E5E7EB"
         ),
         yaxis=dict(
-            gridcolor="#EEEEEE",
-            tickfont=dict(color="#555555"),
+            gridcolor="#E5E7EB",
+            tickfont=dict(color="#4B5563"),
             zeroline=False,
             showline=True,
-            linecolor="#E8E8E8"
+            linecolor="#E5E7EB"
         ),
-        margin=dict(l=30, r=30, t=40, b=30),
+        margin=dict(l=20, r=20, t=40, b=20),
         hovermode="x unified"
     )
     return fig
 
 
 def render_performance_trend_chart(df_curr: pd.DataFrame, df_prev: pd.DataFrame, metric: str = "views"):
-    """Renders one large clean line chart for performance trends over time using #5B21F5 purple."""
+    """Renders one clean line chart for performance trends over time using #4F46E5."""
     if df_curr.empty:
         fig = go.Figure()
-        fig.add_annotation(text="No video data available for selected date range", showarrow=False, font=dict(color="#555555", size=14))
-        return apply_editorial_theme(fig, "Channel Growth Trend")
+        fig.add_annotation(text="No video data available for selected date range", showarrow=False, font=dict(color="#4B5563", size=14))
+        return apply_clean_theme(fig, "Performance Trend")
 
     df_sorted = df_curr.sort_values('uploaded_at')
 
@@ -59,14 +59,14 @@ def render_performance_trend_chart(df_curr: pd.DataFrame, df_prev: pd.DataFrame,
 
     fig = go.Figure()
 
-    # Current period purple line (#5B21F5)
+    # Current period line (#4F46E5)
     fig.add_trace(go.Scatter(
         x=df_sorted['uploaded_at'],
         y=df_sorted[metric],
         mode='lines+markers',
         name='Current Period',
-        line=dict(color='#5B21F5', width=3.5),
-        marker=dict(size=7, color='#5B21F5')
+        line=dict(color='#4F46E5', width=3),
+        marker=dict(size=6, color='#4F46E5')
     ))
 
     # Previous period comparison line
@@ -77,17 +77,17 @@ def render_performance_trend_chart(df_curr: pd.DataFrame, df_prev: pd.DataFrame,
             y=df_prev_sorted[metric].head(len(df_sorted)),
             mode='lines',
             name='Previous Period',
-            line=dict(color='#888888', width=1.5, dash='dash')
+            line=dict(color='#9CA3AF', width=1.5, dash='dash')
         ))
 
-    return apply_editorial_theme(fig, title)
+    return apply_clean_theme(fig, title)
 
 
 def render_topic_confidence_chart(df: pd.DataFrame):
-    """Renders Topic Intelligence bar chart in primary brand purple."""
+    """Renders Topic Intelligence bar chart."""
     if df.empty:
         fig = go.Figure()
-        return apply_editorial_theme(fig, "Topic Performance")
+        return apply_clean_theme(fig, "Topic Performance")
 
     summary = df.groupby('content_pillar').agg(
         median_views=('views', 'median'),
@@ -99,18 +99,18 @@ def render_topic_confidence_chart(df: pd.DataFrame):
         x='content_pillar',
         y='median_views',
         text='video_count',
-        color_discrete_sequence=['#5B21F5'],
+        color_discrete_sequence=['#4F46E5'],
         labels={'content_pillar': 'Content Pillar', 'median_views': 'Median Views', 'video_count': 'Videos'}
     )
     fig.update_traces(texttemplate='%{text} videos', textposition='outside')
-    return apply_editorial_theme(fig, "Median Views by Content Pillar")
+    return apply_clean_theme(fig, "Median Views by Content Pillar")
 
 
 def render_hook_pattern_chart(df: pd.DataFrame):
     """Renders Hook Intelligence bar chart."""
     if df.empty:
         fig = go.Figure()
-        return apply_editorial_theme(fig, "Hook Pattern Performance")
+        return apply_clean_theme(fig, "Hook Pattern Performance")
 
     summary = df.groupby('hook_pattern').agg(
         avg_viewer_choice=('viewer_choice', 'mean')
@@ -120,7 +120,7 @@ def render_hook_pattern_chart(df: pd.DataFrame):
         summary,
         x='hook_pattern',
         y='avg_viewer_choice',
-        color_discrete_sequence=['#7C3AED'],
+        color_discrete_sequence=['#6366F1'],
         labels={'hook_pattern': 'Hook Pattern', 'avg_viewer_choice': 'Avg Viewer Choice (%)'}
     )
-    return apply_editorial_theme(fig, "Viewer Choice Rate by Hook Pattern")
+    return apply_clean_theme(fig, "Viewer Choice Rate by Hook Pattern")

@@ -1,13 +1,12 @@
 """
 youtube_dashboard.py — THE SHORTEST ORBIT YouTube Growth Command Center V2.
 
-White / Black / Purple Editorial SaaS Redesign.
-Reproduces the design language of modern SaaS products:
-- Pure white background (#FFFFFF)
-- Bold black typography (#0A0A0A)
-- Brand Purple accent (#5B21F5)
-- Clean horizontal top navigation
-- Generous whitespace & editorial typography (1280px controlled width)
+Simple, Clean, High-Contrast UI/UX.
+- Pure White background (#FFFFFF)
+- High Contrast Black text (#111827)
+- Royal Indigo/Purple brand accent (#4F46E5)
+- Left-aligned clean typography
+- 1280px controlled centered width
 
 Run with:
 streamlit run python/youtube_dashboard.py
@@ -46,7 +45,7 @@ from dashboard_metrics import (
     diagnose_growth_bottleneck
 )
 from dashboard_components import (
-    render_purple_top_announcement_bar
+    render_top_banner
 )
 from dashboard_pages import (
     render_overview_page,
@@ -58,7 +57,7 @@ from dashboard_pages import (
 )
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 1. STREAMLIT PAGE CONFIG & PURE WHITE EDITORIAL CSS
+# 1. STREAMLIT PAGE CONFIG & CLEAN WHITE STYLING
 # ─────────────────────────────────────────────────────────────────────────────
 st.set_page_config(
     page_title="THE SHORTEST ORBIT — YouTube Growth Command Center",
@@ -67,14 +66,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Pure White / Black / Purple Editorial CSS (#FFFFFF bg, #0A0A0A text, #5B21F5 purple)
+# Clean High-Contrast CSS (#FFFFFF bg, #111827 black text, #4F46E5 indigo accent)
 st.markdown("""
 <style>
     /* Pure White App Background */
     .stApp {
         background-color: #FFFFFF;
-        color: #0A0A0A;
-        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: #111827;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
     
     /* Control Container Max Width (1280px Centered) */
@@ -85,49 +84,47 @@ st.markdown("""
         margin: 0 auto !important;
     }
 
-    /* Hide default Streamlit sidebar toggle if not needed */
+    /* Sidebar Styling */
     section[data-testid="stSidebar"] {
-        background-color: #F9FAFB;
-        border-right: 1px solid #E8E8E8;
+        background-color: #F8F9FA;
+        border-right: 1px solid #E5E7EB;
     }
 
-    /* Purple Pill Buttons */
+    /* Indigo Pill Buttons */
     .stButton>button {
-        background-color: #5B21F5 !important;
+        background-color: #4F46E5 !important;
         color: #FFFFFF !important;
         border: none !important;
-        border-radius: 999px !important;
-        padding: 10px 24px !important;
+        border-radius: 6px !important;
+        padding: 8px 20px !important;
         font-weight: 700 !important;
-        font-size: 14px !important;
+        font-size: 13px !important;
         transition: all 0.2s ease !important;
     }
     .stButton>button:hover {
-        background-color: #7C3AED !important;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(91, 33, 245, 0.25) !important;
+        background-color: #4338CA !important;
     }
 
     /* Horizontal Radio Tabs Styling */
     div[role="radiogroup"] {
         display: flex;
         flex-direction: row;
-        gap: 16px;
+        gap: 12px;
     }
     div[role="radiogroup"] > label {
         background-color: #FFFFFF;
-        border: 1px solid #E8E8E8;
-        border-radius: 999px;
-        padding: 8px 18px;
+        border: 1px solid #E5E7EB;
+        border-radius: 6px;
+        padding: 6px 16px;
         font-weight: 600;
-        font-size: 14px;
-        color: #555555;
+        font-size: 13px;
+        color: #4B5563;
         cursor: pointer;
         transition: all 0.2s ease;
     }
     div[role="radiogroup"] > label:hover {
-        border-color: #5B21F5;
-        color: #5B21F5;
+        border-color: #4F46E5;
+        color: #4F46E5;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -145,10 +142,10 @@ def load_data():
 df_raw, v4_insights = load_data()
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 3. TOP PURPLE ANNOUNCEMENT BAR
+# 3. TOP BANNER
 # ─────────────────────────────────────────────────────────────────────────────
 last_update_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-render_purple_top_announcement_bar("STORED YOUTUBE DATA", last_update_str)
+render_top_banner("STORED YOUTUBE DATA", last_update_str)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 4. MAIN HORIZONTAL NAVIGATION BAR & CONTROLS
@@ -157,8 +154,8 @@ nav_col1, nav_col2, nav_col3 = st.columns([2, 4, 1])
 
 with nav_col1:
     st.markdown("""
-    <div style="padding-top: 6px;">
-        <span style="font-size: 22px; font-weight: 800; color: #0A0A0A; letter-spacing: -0.03em;">THE SHORTEST ORBIT</span>
+    <div style="padding-top: 4px; text-align: left;">
+        <span style="font-size: 20px; font-weight: 800; color: #111827; letter-spacing: -0.02em;">THE SHORTEST ORBIT</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -178,7 +175,7 @@ with nav_col3:
 
 st.divider()
 
-# Optional Date Range selector dropdown
+# Time Window selector dropdown
 date_col1, date_col2 = st.columns([1, 4])
 with date_col1:
     date_option = st.selectbox(
@@ -192,7 +189,7 @@ baselines = compute_channel_baselines(df_curr)
 bottleneck_info = diagnose_growth_bottleneck(df_curr)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 5. ROUTE TO EDITORIAL SAAS PAGES
+# 5. ROUTE TO CLEAN PAGES
 # ─────────────────────────────────────────────────────────────────────────────
 if nav_page == "Overview":
     render_overview_page(df_curr, df_prev, baselines, bottleneck_info, v4_insights)
