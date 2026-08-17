@@ -76,7 +76,9 @@ def call_groq_with_fallback(client, messages, initial_model=None, **kwargs):
         except Exception as e:
             err_str = str(e)
             if "429" in err_str or "rate_limit_exceeded" in err_str or "Rate limit" in err_str:
-                log.warning(f"Rate limit hit for model {model}. Retrying with fallback model...")
+                log.warning(f"Rate limit hit for model {model}. Pausing 5s for token reset before fallback...")
+                import time
+                time.sleep(5)
                 last_error = e
                 continue
             else:
