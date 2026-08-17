@@ -60,7 +60,8 @@ def process_scene(scene_index: int, input_path: Path, target_duration: float, te
     args.extend([
         "-vf", vf_filter,
         "-c:v", "libx264",
-        "-preset", "medium",
+        "-preset", "fast",
+        "-threads", "4",
         "-crf", "22",
         "-pix_fmt", "yuv420p",
         "-t", str(target_duration),
