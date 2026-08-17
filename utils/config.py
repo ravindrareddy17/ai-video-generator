@@ -53,8 +53,43 @@ GROQ_MODELS = [
     "openai/gpt-oss-120b"
 ]
 
+class GeminiMessageWrapper:
+    def __init__(self, content):
+        self.content = content
+
+class GeminiChoiceWrapper:
+    def __init__(self, content):
+        self.message = GeminiMessageWrapper(content)
+
+class GeminiCompletionWrapper:
+    def __init__(self, content):
+        self.choices = [GeminiChoiceWrapper(content)]
+
+def call_gemini_fallback(messages):
+    """Fallback LLM caller using Gemini 2.5 Flash API when Groq rate limits are exceeded."""
+    import requests
+    log.info("Switching to Gemini 2.5 Flash API fallback...")
+    key = os.getenv("GEMINI_API_KEY") or os.getenv("GEMINI_KEY", "")
+    if not key:
+        raise ValueError("GEMINI_API_KEY environment variable is missing for fallback LLM")
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={key}"
+    
+    prompt = ""
+    for m in messages:
+        role = m.get("role", "user")
+        content = m.get("content", "")
+        prompt += f"[{role.upper()}]:\n{content}\n\n"
+        
+    payload = {"contents": [{"parts": [{"text": prompt}]}]}
+    resp = requests.post(url, json=payload, timeout=30)
+    if resp.status_code == 200:
+        text = resp.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+        return GeminiCompletionWrapper(text)
+    else:
+        raise RuntimeError(f"Gemini API fallback failed with HTTP {resp.status_code}: {resp.text}")
+
 def call_groq_with_fallback(client, messages, initial_model=None, **kwargs):
-    """Executes Groq chat completion with automatic model fallback on RateLimitError (HTTP 429)."""
+    """Executes Groq chat completion with automatic model fallback and Gemini API backup on RateLimitError (HTTP 429)."""
     models = list(GROQ_MODELS)
     if initial_model and initial_model in models:
         models.remove(initial_model)
@@ -76,15 +111,22 @@ def call_groq_with_fallback(client, messages, initial_model=None, **kwargs):
         except Exception as e:
             err_str = str(e)
             if "429" in err_str or "rate_limit_exceeded" in err_str or "Rate limit" in err_str:
-                log.warning(f"Rate limit hit for model {model}. Pausing 5s for token reset before fallback...")
+                log.warning(f"Rate limit hit for model {model}. Pausing 2s for token reset before fallback...")
                 import time
-                time.sleep(5)
+                time.sleep(2)
                 last_error = e
                 continue
             else:
                 raise e
-    if last_error:
-        raise last_error
+
+    log.warning("All Groq models rate-limited. Activating Gemini 2.5 Flash fallback...")
+    try:
+        return call_gemini_fallback(messages)
+    except Exception as gem_err:
+        log.error(f"Gemini fallback also failed: {gem_err}")
+        if last_error:
+            raise last_error
+        raise gem_err
 
 @lru_cache(maxsize=1)
 def load_settings() -> dict[str, Any]:
