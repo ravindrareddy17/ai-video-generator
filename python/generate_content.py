@@ -110,7 +110,7 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
 def generate_narration(topic_data: dict) -> dict:
     """Generate script content for the YouTube Short via Groq LLM using The Shortest Orbit prompt."""
     api_key = get_groq_key()
-    model = get_setting('llm', 'model', 'qwen/qwen3.6-27b')
+    model = get_setting('llm', 'model', 'openai/gpt-oss-120b')
     
     client = Groq(api_key=api_key)
     

@@ -42,7 +42,7 @@ def check_script_quality(content: dict) -> bool:
             
     # 3. LLM Grammar, Pacing, and Loop Validation
     api_key = get_groq_key()
-    model = get_setting('llm', 'model', 'qwen/qwen3.6-27b')
+    model = get_setting('llm', 'model', 'openai/gpt-oss-120b')
     client = Groq(api_key=api_key)
     
     system_prompt = (
