@@ -254,6 +254,25 @@ def get_gemini_key() -> str:
 
 
 # ---------------------------------------------------------------------------
+# AWS accessors
+# ---------------------------------------------------------------------------
+
+def get_aws_access_key_id() -> str:
+    """Return AWS_ACCESS_KEY_ID from environment."""
+    return _require_env("AWS_ACCESS_KEY_ID")
+
+
+def get_aws_secret_access_key() -> str:
+    """Return AWS_SECRET_ACCESS_KEY from environment."""
+    return _require_env("AWS_SECRET_ACCESS_KEY")
+
+
+def get_aws_region() -> str:
+    """Return AWS_REGION or AWS_DEFAULT_REGION from environment (defaults to us-east-1)."""
+    return os.getenv("AWS_REGION", os.getenv("AWS_DEFAULT_REGION", "us-east-1")).strip()
+
+
+# ---------------------------------------------------------------------------
 # Meta / Facebook / Instagram accessors
 # ---------------------------------------------------------------------------
 
