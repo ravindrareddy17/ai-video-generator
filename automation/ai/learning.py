@@ -256,18 +256,19 @@ def run_learning_engine() -> bool:
         """
         
         try:
-            chat_completion = client.chat.completions.create(
+            chat_completion = call_groq_with_fallback(
+                client=client,
                 messages=[
                     {"role": "system", "content": "You are a database analytics learning model. Return JSON only."},
                     {"role": "user", "content": user_prompt}
                 ],
-                model=model,
-                response_format={"type": "json_object"},
+                initial_model="qwen/qwen3.6-27b",
                 temperature=0.2,
                 max_tokens=1024
             )
             
-            p_insights = json.loads(chat_completion.choices[0].message.content)
+            content_str = chat_completion.choices[0].message.content
+            p_insights = extract_json_from_llm(content_str)
             insights[platform] = p_insights
             logger.info(f"Learned insights successfully for: {platform}")
             
