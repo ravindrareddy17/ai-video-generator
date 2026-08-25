@@ -163,19 +163,11 @@ def run_pipeline() -> bool:
         queries = generate_search_queries.run()
         logger.info(f"Step 5 Complete. Generated {len(queries)} scene search prompts. ({time.time() - step_start:.2f}s)")
         
-        # ── Step 6: Generate AI Videos (AWS Bedrock 1st Preference) ────
+        # ── Step 6: Download Real Animated / Motion MP4 Videos ───────────
         step_start = time.time()
-        logger.info(">>> Step 6: Generating AI video clips via AWS Bedrock (1st Preference)...")
-        try:
-            clips = generate_aws_videos.run()
-            if not clips or len(clips) == 0:
-                logger.warning("AWS Bedrock returned 0 clips. Falling back to stock video downloader...")
-                clips = download_videos.run()
-        except Exception as aws_err:
-            logger.warning(f"AWS Bedrock video generation error: {aws_err}. Falling back to stock video downloader...")
-            clips = download_videos.run()
-            
-        logger.info(f"Step 6 Complete. Generated {len(clips)} AI video clips. ({time.time() - step_start:.2f}s)")
+        logger.info(">>> Step 6: Fetching Real Animated / High-Motion 4K Video Clips...")
+        clips = download_videos.run()
+        logger.info(f"Step 6 Complete. Downloaded {len(clips)} real animated motion video clips. ({time.time() - step_start:.2f}s)")
         
         # ── Step 7: Create Silent Video ──────────────────────────────
         step_start = time.time()
