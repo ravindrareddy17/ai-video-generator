@@ -25,7 +25,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from utils.paths import SEARCH_QUERIES_FILE, DOWNLOADS_VIDEOS_DIR
 from utils.logger import get_logger
-from utils.config import get_aws_access_key_id, get_aws_secret_access_key, get_aws_region, get_setting
+from utils.config import (
+    get_aws_bedrock_api_key,
+    get_aws_access_key_id,
+    get_aws_secret_access_key,
+    get_aws_region,
+    get_setting
+)
 from utils.helpers import clean_directory
 
 logger = get_logger("generate_aws_videos")
@@ -49,80 +55,75 @@ def create_ken_burns_motion_video(image_path: Path, output_file: Path, duration:
 
 def generate_video_with_bedrock(prompt: str, output_file: Path, duration: float = 6.0) -> Path | None:
     """Calls AWS Bedrock (Amazon Nova Reel / Titan Video) to generate a video clip."""
-    try:
-        import boto3
-    except ImportError:
-        logger.error("boto3 package not installed.")
-        return None
+    bedrock_key = get_aws_bedrock_api_key()
+    aws_key = get_aws_access_key_id()
+    aws_secret = get_aws_secret_access_key()
+    aws_region = get_aws_region()
 
-    try:
-        aws_key = get_aws_access_key_id()
-        aws_secret = get_aws_secret_access_key()
-        aws_region = get_aws_region()
-        if not aws_key or not aws_secret:
-            logger.warning("AWS Access Key or Secret Key is empty.")
-            return None
-    except Exception as e:
-        logger.warning(f"AWS Credentials check failed: {e}")
-        return None
+    # Attempt 1: Boto3 Bedrock Runtime
+    if aws_key and aws_secret and aws_key.startswith("AKIA"):
+        try:
+            import boto3
+            session = boto3.Session(
+                aws_access_key_id=aws_key,
+                aws_secret_access_key=aws_secret,
+                region_name=aws_region
+            )
+            bedrock = session.client(service_name='bedrock-runtime')
+            model_id = get_setting('aws_bedrock', 'video_model', 'amazon.nova-reel-v1:0')
 
-    try:
-        session = boto3.Session(
-            aws_access_key_id=aws_key,
-            aws_secret_access_key=aws_secret,
-            region_name=aws_region
-        )
-        bedrock = session.client(service_name='bedrock-runtime')
-        model_id = get_setting('aws_bedrock', 'video_model', 'amazon.nova-reel-v1:0')
+            logger.info(f"Submitting AI Video prompt to AWS Bedrock ({model_id}): '{prompt}'...")
 
-        logger.info(f"Submitting AI Video prompt to AWS Bedrock ({model_id}): '{prompt}'...")
+            body = json.dumps({
+                "taskType": "TEXT_TO_VIDEO",
+                "textToVideoParams": {
+                    "text": f"Cinematic 4k vertical space documentary scene, {prompt}"
+                },
+                "videoGenerationConfig": {
+                    "durationSeconds": max(5, int(duration)),
+                    "fps": 30,
+                    "dimension": "1080x1920"
+                }
+            })
 
-        body = json.dumps({
-            "taskType": "TEXT_TO_VIDEO",
-            "textToVideoParams": {
-                "text": f"Cinematic 4k vertical space documentary scene, {prompt}"
-            },
-            "videoGenerationConfig": {
-                "durationSeconds": max(5, int(duration)),
-                "fps": 30,
-                "dimension": "1080x1920"
-            }
-        })
+            response = bedrock.invoke_model(
+                modelId=model_id,
+                body=body,
+                accept="application/json",
+                contentType="application/json"
+            )
+            
+            resp_body = json.loads(response.get('body').read())
+            video_bytes_b64 = resp_body.get('videoBytes')
+            if video_bytes_b64:
+                import base64
+                output_file.write_bytes(base64.b64decode(video_bytes_b64))
+                logger.info(f"Successfully generated AWS Bedrock video clip at {output_file}")
+                return output_file
+        except Exception as exc:
+            logger.warning(f"AWS Bedrock direct invoke error: {exc}. Trying AI Motion FX fallback...")
 
-        response = bedrock.invoke_model(
-            modelId=model_id,
-            body=body,
-            accept="application/json",
-            contentType="application/json"
-        )
-        
-        resp_body = json.loads(response.get('body').read())
-        video_bytes_b64 = resp_body.get('videoBytes')
-        if video_bytes_b64:
-            import base64
-            output_file.write_bytes(base64.b64decode(video_bytes_b64))
-            logger.info(f"Successfully generated AWS Bedrock video clip at {output_file}")
-            return output_file
-
-    except Exception as exc:
-        logger.warning(f"AWS Bedrock direct video generation unavailable ({exc}). Using AI Motion FX fallback...")
-
-    # High-Res AI Image + Ken Burns Motion Fallback
-    try:
-        safe_prompt = urllib.parse.quote(f"dramatic cinematic vertical 4k space future tech scene, {prompt}")
-        img_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=1080&height=1920&nologo=true"
-        temp_img = output_file.with_suffix(".jpg")
-        
-        resp = requests.get(img_url, timeout=20)
-        if resp.status_code == 200:
-            temp_img.write_bytes(resp.content)
-            res_path = create_ken_burns_motion_video(temp_img, output_file, duration)
-            if temp_img.exists():
-                temp_img.unlink()
-            return res_path
-    except Exception as img_err:
-        logger.error(f"AI Motion FX fallback failed for scene: {img_err}")
-        
+    # Attempt 2: High-Res Photorealistic AI Motion FX Generator
+    logger.info(f"Generating photorealistic AI video scene for: '{prompt}'...")
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            safe_prompt = urllib.parse.quote(f"cinematic 4k vertical space documentary scene, {prompt}, hyperrealistic")
+            img_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=1080&height=1920&nologo=true"
+            temp_img = output_file.with_suffix(".jpg")
+            
+            resp = requests.get(img_url, timeout=35)
+            if resp.status_code == 200:
+                temp_img.write_bytes(resp.content)
+                res_path = create_ken_burns_motion_video(temp_img, output_file, duration)
+                if temp_img.exists():
+                    temp_img.unlink()
+                logger.info(f"Successfully generated 9:16 AI video scene: {output_file.name}")
+                return res_path
+        except Exception as img_err:
+            logger.warning(f"AI Motion FX attempt {attempt+1} failed: {img_err}")
+            time.sleep(2)
+            
     return None
 
 
