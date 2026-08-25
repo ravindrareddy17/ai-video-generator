@@ -43,7 +43,7 @@ def generate_video_with_bedrock_nova_reel(prompt: str, output_file: Path, durati
     aws_key = get_aws_access_key_id()
     aws_secret = get_aws_secret_access_key()
     aws_region = get_aws_region()
-    model_id = get_setting('aws_bedrock', 'video_model', 'amazon.nova-reel-v1:0')
+    model_id = get_setting('aws_bedrock', 'video_model', 'amazon.nova-reel-v1:1')
     s3_bucket = get_setting('aws', 's3_output_bucket_name', 'the-shortest-orbit-nova-reel')
     role_arn = get_setting('aws', 'role_arn', 'arn:aws:iam::719312763637:role/BedrockNovaReelExecutionRole')
 
