@@ -257,14 +257,19 @@ def get_gemini_key() -> str:
 # AWS accessors
 # ---------------------------------------------------------------------------
 
+def get_aws_bedrock_api_key() -> str:
+    """Return AWS_BEDROCK_API_KEY from environment."""
+    return os.getenv("AWS_BEDROCK_API_KEY", "").strip()
+
+
 def get_aws_access_key_id() -> str:
     """Return AWS_ACCESS_KEY_ID from environment."""
-    return _require_env("AWS_ACCESS_KEY_ID")
+    return os.getenv("AWS_ACCESS_KEY_ID", "").strip()
 
 
 def get_aws_secret_access_key() -> str:
     """Return AWS_SECRET_ACCESS_KEY from environment."""
-    return _require_env("AWS_SECRET_ACCESS_KEY")
+    return os.getenv("AWS_SECRET_ACCESS_KEY", "").strip()
 
 
 def get_aws_region() -> str:
