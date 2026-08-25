@@ -35992,3 +35992,551 @@ json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
 2026-08-25 19:58:27,704 | generate_aws_videos | INFO | Submitting AI Video Prompt to Amazon Bedrock Nova Reel API (amazon.nova-reel-v1:0): 'world map space competition'...
 2026-08-25 19:58:30,364 | generate_aws_videos | WARNING | Amazon Bedrock Nova Reel invocation notice: An error occurred (ValidationException) when calling the StartAsyncInvoke operation: Operation not allowed
 2026-08-25 19:58:30,365 | generate_aws_videos | INFO | Completed Amazon Bedrock Nova Reel generation cycle. Generated: 0 clips.
+2026-08-25 20:11:05,873 | utils.database | INFO | Initializing SQLite database at: E:\ai_gen\AI-VIDEO-V2\data\shortest_orbit_v3.db
+2026-08-25 20:11:05,885 | utils.database | INFO | Database schema initialized successfully.
+2026-08-25 20:11:07,023 | orchestrator | INFO | ==================================================
+2026-08-25 20:11:07,023 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-25 20:11:07,023 | orchestrator | INFO | ==================================================
+2026-08-25 20:11:07,114 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+2026-08-25 20:11:07,182 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 8.1.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers
+2026-08-25 20:11:07,199 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-25 20:11:07,199 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-25 20:11:07,199 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-25 20:11:07,201 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-25 20:11:10,483 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-25 20:11:10,483 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-25 20:11:18,244 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-25 20:11:18,244 | find_viral_topics | INFO | Fetching hot topics from r/spacex...
+2026-08-25 20:11:33,456 | find_viral_topics | ERROR | Error fetching Reddit r/spacex: HTTPSConnectionPool(host='www.reddit.com', port=443): Read timed out.
+2026-08-25 20:11:33,457 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-25 20:11:36,176 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-25 20:11:36,176 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-25 20:11:41,499 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-25 20:11:41,499 | find_viral_topics | INFO | Fetching hot topics from r/artificial...
+2026-08-25 20:11:46,895 | find_viral_topics | WARNING | Reddit r/artificial returned status code 403
+2026-08-25 20:11:46,896 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-25 20:11:52,878 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-25 20:11:52,879 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-25 20:11:57,897 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-25 20:11:57,898 | find_viral_topics | INFO | Fetching hot topics from r/ISRO...
+2026-08-25 20:12:11,978 | find_viral_topics | WARNING | Reddit r/ISRO returned status code 403
+2026-08-25 20:12:11,980 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-25 20:12:11,980 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-25 20:12:15,356 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-25 20:12:15,356 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-25 20:12:19,186 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-25 20:12:19,187 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-25 20:12:23,598 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-25 20:12:23,599 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-25 20:12:27,864 | find_viral_topics | INFO | Fetched 107 topics from SpaceX.
+2026-08-25 20:12:27,864 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-25 20:12:37,817 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-25 20:12:37,817 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-25 20:12:45,431 | find_viral_topics | INFO | Fetched 75 topics from Nature Journal.
+2026-08-25 20:12:45,431 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-25 20:12:47,995 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-25 20:12:47,995 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-25 20:12:49,360 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-25 20:12:49,361 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-25 20:13:13,935 | find_viral_topics | INFO | Fetched 585 topics from arXiv AI.
+2026-08-25 20:13:13,936 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-25 20:13:18,736 | find_viral_topics | INFO | Fetched 180 topics from arXiv Astro.
+2026-08-25 20:13:18,737 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-25 20:13:21,307 | find_viral_topics | INFO | Fetched 101 topics from OpenAI.
+2026-08-25 20:13:21,308 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-25 20:13:22,383 | find_viral_topics | INFO | Fetched 100 topics from Anthropic.
+2026-08-25 20:13:22,384 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-25 20:13:23,603 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-25 20:13:23,604 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-25 20:13:24,801 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-25 20:13:24,802 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-25 20:13:25,510 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-25 20:13:25,511 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1618
+2026-08-25 20:13:25,556 | python.upload_youtube | INFO | Refreshing expired YouTube access token...
+2026-08-25 20:13:26,125 | python.upload_youtube | INFO | Cached authenticated credentials to E:\ai_gen\AI-VIDEO-V2\token.pickle
+2026-08-25 20:13:26,157 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-25 20:13:26,580 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:13:26,581 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-25 20:13:27,899 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:13:27,899 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-25 20:13:27,903 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-25 20:13:28,196 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-25 20:13:31,988 | find_viral_topics | INFO | Groq selected and scored topic. Growth Score: 87.64 | Hook: 'Breaking: SpaceX is set to launch the world’s first AI‑powered satellites – a game changer in the space‑tech race!'
+2026-08-25 20:13:32,049 | find_viral_topics | INFO | Selected topic saved to E:\ai_gen\AI-VIDEO-V2\data\viral_topics.json
+2026-08-25 20:13:32,049 | orchestrator | INFO | Step 1 Complete. Selected topic: 'Breaking: SpaceX is set to launch the world’s first AI‑powered satellites – a game changer in the space‑tech race! SpaceX will put the first AI‑brain satellites into orbit, using Nvidia chips that can think and react in space before anyone else does.' (144.85s)
+2026-08-25 20:13:32,051 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-25 20:13:32,051 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-25 20:13:32,051 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-25 20:13:32,241 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-25 20:13:34,208 | generate_content | INFO | Optimized hook accepted on attempt 1: 'EXPOSED: Nvidia chips will DESTROY traditional satellites' (Score: 94.0)
+2026-08-25 20:13:34,209 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-25 20:13:40,832 | generate_content | INFO | Generated script (Attempt 1/5). Word count: 131
+2026-08-25 20:13:40,833 | generate_content | WARNING | Script verification failed (word count: 131, ends with '?': False). Retrying...
+2026-08-25 20:14:16,317 | generate_content | INFO | Generated script (Attempt 2/5). Word count: 120
+2026-08-25 20:14:16,318 | generate_content | INFO | Successfully generated script with adequate length: Nvidia Chips vs Traditional Satellites
+2026-08-25 20:14:16,321 | generate_content | INFO | Content saved to E:\ai_gen\AI-VIDEO-V2\data\content.json
+2026-08-25 20:14:16,512 | generate_content | INFO | Calling Groq to generate YouTube metadata...
+2026-08-25 20:14:37,660 | generate_content | INFO | YouTube metadata saved to E:\ai_gen\AI-VIDEO-V2\data\metadata.json
+2026-08-25 20:14:37,669 | generate_content | INFO | Video logged to central shortest_orbit_v3.db as ID: 523
+2026-08-25 20:14:37,675 | generate_content | INFO | Video logged to youtube.db as ID: 269
+2026-08-25 20:14:37,682 | generate_content | INFO | Video logged to instagram.db
+2026-08-25 20:14:37,690 | generate_content | INFO | Video logged to facebook.db
+2026-08-25 20:14:37,696 | generate_content | INFO | Video hooks logged to automation.db
+2026-08-25 20:14:37,699 | orchestrator | INFO | Step 2 Complete. Title: 'Nvidia Chips vs Traditional Satellites' (65.65s)
+2026-08-25 20:14:37,700 | orchestrator | INFO | >>> Step 2.5: Running AI fact checking on script narration...
+2026-08-25 20:14:37,700 | verify_facts | INFO | === STEP 2.5: VERIFY FACTS ===
+2026-08-25 20:14:37,890 | verify_facts | INFO | Calling Groq to verify script facts...
+2026-08-25 20:14:54,449 | verify_facts | INFO | Verified Claim: 'Nvidia chips will destroy traditional satellites, ...' | Accuracy: 20.0%
+2026-08-25 20:14:54,450 | verify_facts | INFO | Verified Claim: 'SpaceX announced that its upcoming Starlink‑V cons...' | Accuracy: 15.0%
+2026-08-25 20:14:54,468 | verify_facts | INFO | Verified Claim: 'These satellites will enable real‑time image analy...' | Accuracy: 30.0%
+2026-08-25 20:14:54,469 | verify_facts | INFO | Verified Claim: 'Proponents argue this leap will slash latency, boo...' | Accuracy: 80.0%
+2026-08-25 20:14:54,469 | verify_facts | INFO | Verified Claim: 'Critics warn that such self‑directing hardware cou...' | Accuracy: 85.0%
+2026-08-25 20:14:54,469 | verify_facts | WARNING | Fact checking failed! 3 claims were flagged as highly uncertain or incorrect.
+2026-08-25 20:14:54,469 | orchestrator | WARNING | Fact checking flagged critical claims! Attempting script regeneration...
+2026-08-25 20:14:54,493 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-25 20:14:54,682 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-25 20:15:06,547 | generate_content | INFO | Optimized hook accepted on attempt 1: 'EXPOSED: Nvidia chips will think in space before humans!' (Score: 92.0)
+2026-08-25 20:15:06,548 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-25 20:15:20,846 | generate_content | INFO | Generated script (Attempt 1/5). Word count: 120
+2026-08-25 20:15:20,847 | generate_content | INFO | Successfully generated script with adequate length: Nvidia AI Chips Power SpaceX's First Smart Satellites
+2026-08-25 20:15:20,849 | generate_content | INFO | Content saved to E:\ai_gen\AI-VIDEO-V2\data\content.json
+2026-08-25 20:15:21,026 | generate_content | INFO | Calling Groq to generate YouTube metadata...
+2026-08-25 20:15:25,901 | generate_content | INFO | YouTube metadata saved to E:\ai_gen\AI-VIDEO-V2\data\metadata.json
+2026-08-25 20:15:25,909 | generate_content | INFO | Video logged to central shortest_orbit_v3.db as ID: 524
+2026-08-25 20:15:25,918 | generate_content | INFO | Video logged to youtube.db as ID: 270
+2026-08-25 20:15:25,926 | generate_content | INFO | Video logged to instagram.db
+2026-08-25 20:15:25,933 | generate_content | INFO | Video logged to facebook.db
+2026-08-25 20:15:25,939 | generate_content | INFO | Video hooks logged to automation.db
+2026-08-25 20:15:25,942 | verify_facts | INFO | === STEP 2.5: VERIFY FACTS ===
+2026-08-25 20:15:26,136 | verify_facts | INFO | Calling Groq to verify script facts...
+2026-08-25 20:15:55,183 | verify_facts | INFO | Verified Claim: 'SpaceX announced its LunaNet‑AI program, launching...' | Accuracy: 20.0%
+2026-08-25 20:15:55,184 | verify_facts | INFO | Verified Claim: 'These satellites can process sensor data, adjust o...' | Accuracy: 25.0%
+2026-08-25 20:15:55,184 | verify_facts | INFO | Verified Claim: 'A capability no nation has yet demonstrated...' | Accuracy: 30.0%
+2026-08-25 20:15:55,184 | verify_facts | INFO | Verified Claim: 'The move promises faster communications for emergi...' | Accuracy: 70.0%
+2026-08-25 20:15:55,185 | verify_facts | INFO | Verified Claim: 'A strategic edge over China’s Tiangong AI modules...' | Accuracy: 20.0%
+2026-08-25 20:15:55,185 | verify_facts | INFO | Verified Claim: 'Regulators worry about machine‑only decision‑makin...' | Accuracy: 80.0%
+2026-08-25 20:15:55,185 | verify_facts | INFO | Verified Claim: 'Private control of such intelligent hardware could...' | Accuracy: 75.0%
+2026-08-25 20:15:55,186 | verify_facts | WARNING | Fact checking failed! 5 claims were flagged as highly uncertain or incorrect.
+2026-08-25 20:15:55,186 | orchestrator | CRITICAL | Regenerated script failed fact checking again. Aborting run for safety.
+2026-08-25 20:15:55,189 | python.v4_contract_engine | INFO | Saved V4 Contract manifest to E:\ai_gen\AI-VIDEO-V2\data\v4_contracts\orbit_v4_1787669012.json and E:\ai_gen\AI-VIDEO-V2\output\v4_contract.json
+2026-08-25 20:16:25,209 | orchestrator | INFO | ==================================================
+2026-08-25 20:16:25,209 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-25 20:16:25,209 | orchestrator | INFO | ==================================================
+2026-08-25 20:16:25,255 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+2026-08-25 20:16:25,292 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 8.1.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers
+2026-08-25 20:16:25,304 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-25 20:16:25,304 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-25 20:16:25,304 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-25 20:16:25,305 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-25 20:16:26,255 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-25 20:16:26,255 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-25 20:16:27,441 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-25 20:16:27,443 | find_viral_topics | INFO | Fetching hot topics from r/spacex...
+2026-08-25 20:16:28,454 | find_viral_topics | WARNING | Reddit r/spacex returned status code 403
+2026-08-25 20:16:28,455 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-25 20:16:30,436 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-25 20:16:30,437 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-25 20:16:32,014 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-25 20:16:32,015 | find_viral_topics | INFO | Fetching hot topics from r/artificial...
+2026-08-25 20:16:35,032 | find_viral_topics | WARNING | Reddit r/artificial returned status code 403
+2026-08-25 20:16:35,032 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-25 20:16:36,142 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-25 20:16:36,143 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-25 20:16:37,116 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-25 20:16:37,117 | find_viral_topics | INFO | Fetching hot topics from r/ISRO...
+2026-08-25 20:16:40,453 | find_viral_topics | WARNING | Reddit r/ISRO returned status code 403
+2026-08-25 20:16:40,454 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-25 20:16:40,455 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-25 20:16:42,037 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-25 20:16:42,038 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-25 20:16:42,660 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-25 20:16:42,661 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-25 20:16:43,162 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-25 20:16:43,162 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-25 20:16:44,638 | find_viral_topics | INFO | Fetched 107 topics from SpaceX.
+2026-08-25 20:16:44,639 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-25 20:16:47,154 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-25 20:16:47,154 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-25 20:16:48,554 | find_viral_topics | INFO | Fetched 0 topics from Nature Journal.
+2026-08-25 20:16:48,554 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-25 20:16:50,153 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-25 20:16:50,154 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-25 20:16:50,914 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-25 20:16:50,914 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-25 20:16:53,405 | find_viral_topics | INFO | Fetched 585 topics from arXiv AI.
+2026-08-25 20:16:53,407 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-25 20:16:55,135 | find_viral_topics | INFO | Fetched 180 topics from arXiv Astro.
+2026-08-25 20:16:55,136 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-25 20:16:56,320 | find_viral_topics | INFO | Fetched 101 topics from OpenAI.
+2026-08-25 20:16:56,321 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-25 20:16:58,452 | find_viral_topics | INFO | Fetched 100 topics from Anthropic.
+2026-08-25 20:16:58,453 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-25 20:16:59,772 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-25 20:16:59,773 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-25 20:17:00,614 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-25 20:17:00,615 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-25 20:17:01,395 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-25 20:17:01,397 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1544
+2026-08-25 20:17:01,423 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-25 20:17:01,783 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:17:01,784 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-25 20:17:02,331 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:17:02,332 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-25 20:17:02,336 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-25 20:17:02,507 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-25 20:17:03,960 | find_viral_topics | INFO | Groq selected and scored topic. Growth Score: 80.80 | Hook: 'None'
+2026-08-25 20:17:03,963 | find_viral_topics | INFO | Selected topic saved to E:\ai_gen\AI-VIDEO-V2\data\viral_topics.json
+2026-08-25 20:17:03,964 | orchestrator | INFO | Step 1 Complete. Selected topic: 'None None' (38.66s)
+2026-08-25 20:17:03,964 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-25 20:17:03,964 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-25 20:17:03,964 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-25 20:17:04,142 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-25 20:17:10,477 | generate_content | ERROR | Failed to generate optimized hooks on attempt 1: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:17:10,478 | generate_content | INFO | Generating optimized hooks (attempt 2/3)...
+2026-08-25 20:17:16,743 | generate_content | ERROR | Failed to generate optimized hooks on attempt 2: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:17:16,744 | generate_content | INFO | Generating optimized hooks (attempt 3/3)...
+2026-08-25 20:17:23,194 | generate_content | ERROR | Failed to generate optimized hooks on attempt 3: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:17:23,194 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-25 20:17:34,754 | generate_content | ERROR | Error on attempt 1: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:18:14,742 | generate_content | ERROR | Error on attempt 2: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:18:46,453 | generate_content | ERROR | Error on attempt 3: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:19:18,718 | generate_content | ERROR | Error on attempt 4: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:19:50,719 | generate_content | ERROR | Error on attempt 5: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:19:50,719 | orchestrator | CRITICAL | Pipeline crashed during execution! Error: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "E:\ai_gen\AI-VIDEO-V2\python\main.py", line 105, in run_pipeline
+    content, metadata = generate_content.run(topic)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 362, in run
+    content = generate_narration(topic_data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 210, in generate_narration
+    content = extract_json_from_llm(response_text)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\utils\helpers.py", line 76, in extract_json_from_llm
+    return json.loads(clean)
+           ^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:20:20,919 | orchestrator | INFO | ==================================================
+2026-08-25 20:20:20,919 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-25 20:20:20,920 | orchestrator | INFO | ==================================================
+2026-08-25 20:20:20,982 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+2026-08-25 20:20:21,048 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 8.1.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers
+2026-08-25 20:20:21,055 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-25 20:20:21,055 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-25 20:20:21,056 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-25 20:20:21,056 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-25 20:20:21,952 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-25 20:20:21,953 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-25 20:20:24,477 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-25 20:20:24,477 | find_viral_topics | INFO | Fetching hot topics from r/spacex...
+2026-08-25 20:20:26,041 | find_viral_topics | WARNING | Reddit r/spacex returned status code 403
+2026-08-25 20:20:26,041 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-25 20:20:27,219 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-25 20:20:27,219 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-25 20:20:28,772 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-25 20:20:28,772 | find_viral_topics | INFO | Fetching hot topics from r/artificial...
+2026-08-25 20:20:32,083 | find_viral_topics | WARNING | Reddit r/artificial returned status code 403
+2026-08-25 20:20:32,083 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-25 20:20:33,642 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-25 20:20:33,642 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-25 20:20:35,508 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-25 20:20:35,508 | find_viral_topics | INFO | Fetching hot topics from r/ISRO...
+2026-08-25 20:20:38,555 | find_viral_topics | WARNING | Reddit r/ISRO returned status code 403
+2026-08-25 20:20:38,555 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-25 20:20:38,555 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-25 20:20:40,044 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-25 20:20:40,044 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-25 20:20:41,019 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-25 20:20:41,019 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-25 20:20:41,565 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-25 20:20:41,565 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-25 20:20:42,926 | find_viral_topics | INFO | Fetched 107 topics from SpaceX.
+2026-08-25 20:20:42,926 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-25 20:20:46,460 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-25 20:20:46,462 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-25 20:20:47,046 | find_viral_topics | INFO | Fetched 0 topics from Nature Journal.
+2026-08-25 20:20:47,047 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-25 20:20:48,885 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-25 20:20:48,885 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-25 20:20:49,712 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-25 20:20:49,712 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-25 20:20:58,015 | find_viral_topics | INFO | Fetched 585 topics from arXiv AI.
+2026-08-25 20:20:58,016 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-25 20:21:04,695 | find_viral_topics | INFO | Fetched 180 topics from arXiv Astro.
+2026-08-25 20:21:04,697 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-25 20:21:06,407 | find_viral_topics | INFO | Fetched 101 topics from OpenAI.
+2026-08-25 20:21:06,407 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-25 20:21:08,145 | find_viral_topics | INFO | Fetched 100 topics from Anthropic.
+2026-08-25 20:21:08,145 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-25 20:21:09,381 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-25 20:21:09,381 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-25 20:21:10,735 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-25 20:21:10,735 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-25 20:21:11,547 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-25 20:21:11,550 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1544
+2026-08-25 20:21:11,564 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-25 20:21:12,054 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:21:12,056 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-25 20:21:12,839 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:21:12,840 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-25 20:21:12,845 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-25 20:21:13,019 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-25 20:21:20,526 | find_viral_topics | ERROR | Error calling Groq for topic selection: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:21:20,530 | find_viral_topics | INFO | Selected topic saved to E:\ai_gen\AI-VIDEO-V2\data\viral_topics.json
+2026-08-25 20:21:20,531 | orchestrator | INFO | Step 1 Complete. Selected topic: 'Wikipedia Trend: Main Page' (59.48s)
+2026-08-25 20:21:20,532 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-25 20:21:20,532 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-25 20:21:20,532 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-25 20:21:20,705 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-25 20:21:23,117 | generate_content | INFO | Optimized hook accepted on attempt 1: 'EXPOSED: Wikipedia's Main Page deletes controversial facts overnight' (Score: 92.3)
+2026-08-25 20:21:23,118 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-25 20:21:31,631 | generate_content | ERROR | Error on attempt 1: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:21:51,951 | generate_content | ERROR | Error on attempt 2: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:22:30,852 | generate_content | ERROR | Error on attempt 3: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:23:04,083 | generate_content | ERROR | Error on attempt 4: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:23:36,042 | generate_content | ERROR | Error on attempt 5: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:23:36,043 | orchestrator | CRITICAL | Pipeline crashed during execution! Error: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "E:\ai_gen\AI-VIDEO-V2\python\main.py", line 105, in run_pipeline
+    content, metadata = generate_content.run(topic)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 362, in run
+    content = generate_narration(topic_data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 210, in generate_narration
+    content = extract_json_from_llm(response_text)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\utils\helpers.py", line 76, in extract_json_from_llm
+    return json.loads(clean)
+           ^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:24:06,051 | orchestrator | INFO | ==================================================
+2026-08-25 20:24:06,051 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-25 20:24:06,051 | orchestrator | INFO | ==================================================
+2026-08-25 20:24:06,117 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+2026-08-25 20:24:06,179 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 8.1.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers
+2026-08-25 20:24:06,185 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-25 20:24:06,185 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-25 20:24:06,185 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-25 20:24:06,185 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-25 20:24:07,331 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-25 20:24:07,331 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-25 20:24:09,349 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-25 20:24:09,349 | find_viral_topics | INFO | Fetching hot topics from r/spacex...
+2026-08-25 20:24:10,807 | find_viral_topics | WARNING | Reddit r/spacex returned status code 403
+2026-08-25 20:24:10,807 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-25 20:24:12,230 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-25 20:24:12,231 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-25 20:24:13,585 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-25 20:24:13,585 | find_viral_topics | INFO | Fetching hot topics from r/artificial...
+2026-08-25 20:24:15,158 | find_viral_topics | WARNING | Reddit r/artificial returned status code 403
+2026-08-25 20:24:15,159 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-25 20:24:16,498 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-25 20:24:16,498 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-25 20:24:17,960 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-25 20:24:17,961 | find_viral_topics | INFO | Fetching hot topics from r/ISRO...
+2026-08-25 20:24:19,656 | find_viral_topics | WARNING | Reddit r/ISRO returned status code 403
+2026-08-25 20:24:19,657 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-25 20:24:19,657 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-25 20:24:21,140 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-25 20:24:21,140 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-25 20:24:21,730 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-25 20:24:21,731 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-25 20:24:22,386 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-25 20:24:22,386 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-25 20:24:23,913 | find_viral_topics | INFO | Fetched 107 topics from SpaceX.
+2026-08-25 20:24:23,913 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-25 20:24:25,965 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-25 20:24:25,966 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-25 20:24:26,993 | find_viral_topics | INFO | Fetched 75 topics from Nature Journal.
+2026-08-25 20:24:26,994 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-25 20:24:28,783 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-25 20:24:28,783 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-25 20:24:29,612 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-25 20:24:29,613 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-25 20:24:34,270 | find_viral_topics | INFO | Fetched 585 topics from arXiv AI.
+2026-08-25 20:24:34,272 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-25 20:24:35,947 | find_viral_topics | INFO | Fetched 180 topics from arXiv Astro.
+2026-08-25 20:24:35,948 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-25 20:24:37,362 | find_viral_topics | INFO | Fetched 101 topics from OpenAI.
+2026-08-25 20:24:37,362 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-25 20:24:38,651 | find_viral_topics | INFO | Fetched 100 topics from Anthropic.
+2026-08-25 20:24:38,652 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-25 20:24:39,634 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-25 20:24:39,635 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-25 20:24:40,912 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-25 20:24:40,913 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-25 20:24:41,781 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-25 20:24:41,783 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1619
+2026-08-25 20:24:41,793 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-25 20:24:42,294 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:24:42,295 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-25 20:24:42,880 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:24:42,881 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-25 20:24:42,884 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-25 20:24:43,083 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-25 20:24:49,983 | find_viral_topics | ERROR | Error calling Groq for topic selection: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:24:49,986 | find_viral_topics | INFO | Selected topic saved to E:\ai_gen\AI-VIDEO-V2\data\viral_topics.json
+2026-08-25 20:24:49,986 | orchestrator | INFO | Step 1 Complete. Selected topic: 'Wikipedia Trend: Main Page' (43.80s)
+2026-08-25 20:24:49,986 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-25 20:24:49,986 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-25 20:24:49,986 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-25 20:24:50,160 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-25 20:24:52,003 | generate_content | INFO | Optimized hook accepted on attempt 1: 'EXPOSED: Wikipedia's Main Page is secretly manipulating trends!' (Score: 92.0)
+2026-08-25 20:24:52,003 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-25 20:25:00,458 | generate_content | ERROR | Error on attempt 1: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:26:46,551 | generate_content | ERROR | Error on attempt 2: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:26:54,797 | generate_content | ERROR | Error on attempt 3: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:27:03,282 | generate_content | ERROR | Error on attempt 4: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:27:32,797 | generate_content | ERROR | Error on attempt 5: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:27:32,798 | orchestrator | CRITICAL | Pipeline crashed during execution! Error: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "E:\ai_gen\AI-VIDEO-V2\python\main.py", line 105, in run_pipeline
+    content, metadata = generate_content.run(topic)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 362, in run
+    content = generate_narration(topic_data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 210, in generate_narration
+    content = extract_json_from_llm(response_text)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\utils\helpers.py", line 76, in extract_json_from_llm
+    return json.loads(clean)
+           ^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\json\__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\json\decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:28:02,805 | orchestrator | INFO | ==================================================
+2026-08-25 20:28:02,806 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-25 20:28:02,807 | orchestrator | INFO | ==================================================
+2026-08-25 20:28:02,870 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 8.1.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers
+2026-08-25 20:28:02,928 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 8.1.2-full_build-www.gyan.dev Copyright (c) 2007-2026 the FFmpeg developers
+2026-08-25 20:28:02,935 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-25 20:28:02,935 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-25 20:28:02,935 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-25 20:28:02,935 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-25 20:28:03,506 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-25 20:28:03,506 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-25 20:28:04,530 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-25 20:28:04,531 | find_viral_topics | INFO | Fetching hot topics from r/spacex...
+2026-08-25 20:28:05,892 | find_viral_topics | WARNING | Reddit r/spacex returned status code 403
+2026-08-25 20:28:05,893 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-25 20:28:06,755 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-25 20:28:06,756 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-25 20:28:07,677 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-25 20:28:07,678 | find_viral_topics | INFO | Fetching hot topics from r/artificial...
+2026-08-25 20:28:08,615 | find_viral_topics | WARNING | Reddit r/artificial returned status code 403
+2026-08-25 20:28:08,615 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-25 20:28:09,814 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-25 20:28:09,814 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-25 20:28:10,684 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-25 20:28:10,685 | find_viral_topics | INFO | Fetching hot topics from r/ISRO...
+2026-08-25 20:28:11,712 | find_viral_topics | WARNING | Reddit r/ISRO returned status code 403
+2026-08-25 20:28:11,713 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-25 20:28:11,714 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-25 20:28:13,139 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-25 20:28:13,140 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-25 20:28:13,665 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-25 20:28:13,666 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-25 20:28:14,124 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-25 20:28:14,125 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-25 20:28:15,281 | find_viral_topics | INFO | Fetched 105 topics from SpaceX.
+2026-08-25 20:28:15,281 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-25 20:28:16,084 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-25 20:28:16,084 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-25 20:28:16,893 | find_viral_topics | INFO | Fetched 75 topics from Nature Journal.
+2026-08-25 20:28:16,894 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-25 20:28:18,502 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-25 20:28:18,502 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-25 20:28:19,201 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-25 20:28:19,202 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-25 20:28:20,894 | find_viral_topics | INFO | Fetched 585 topics from arXiv AI.
+2026-08-25 20:28:20,896 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-25 20:28:21,882 | find_viral_topics | INFO | Fetched 180 topics from arXiv Astro.
+2026-08-25 20:28:21,883 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-25 20:28:23,063 | find_viral_topics | INFO | Fetched 101 topics from OpenAI.
+2026-08-25 20:28:23,063 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-25 20:28:24,385 | find_viral_topics | INFO | Fetched 100 topics from Anthropic.
+2026-08-25 20:28:24,387 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-25 20:28:25,715 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-25 20:28:25,715 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-25 20:28:26,787 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-25 20:28:26,787 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-25 20:28:27,931 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-25 20:28:27,932 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1617
+2026-08-25 20:28:27,943 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-25 20:28:28,477 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:28:28,478 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-25 20:28:29,027 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-25 20:28:29,028 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-25 20:28:29,031 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-25 20:28:29,212 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-25 20:28:36,341 | find_viral_topics | ERROR | Error calling Groq for topic selection: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:28:36,346 | find_viral_topics | INFO | Selected topic saved to E:\ai_gen\AI-VIDEO-V2\data\viral_topics.json
+2026-08-25 20:28:36,347 | orchestrator | INFO | Step 1 Complete. Selected topic: 'Wikipedia Trend: Main Page' (33.41s)
+2026-08-25 20:28:36,347 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-25 20:28:36,347 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-25 20:28:36,347 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-25 20:28:36,521 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-25 20:28:43,224 | generate_content | ERROR | Failed to generate optimized hooks on attempt 1: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:28:43,225 | generate_content | INFO | Generating optimized hooks (attempt 2/3)...
+2026-08-25 20:28:49,884 | generate_content | ERROR | Failed to generate optimized hooks on attempt 2: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:28:49,885 | generate_content | INFO | Generating optimized hooks (attempt 3/3)...
+2026-08-25 20:28:51,543 | generate_content | INFO | Optimized hook accepted on attempt 3: 'EXPOSED: Wikipedia's Main Page is secretly manipulating what you learn!' (Score: 92.0)
+2026-08-25 20:28:51,544 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-25 20:29:19,919 | generate_content | ERROR | Error on attempt 1: Expecting value: line 1 column 1 (char 0)
+2026-08-25 20:29:49,784 | generate_content | INFO | Generated script (Attempt 2/5). Word count: 114
+2026-08-25 20:29:49,785 | generate_content | WARNING | Script verification failed (word count: 114, ends with '?': False). Retrying...
+2026-08-25 20:30:16,950 | generate_content | INFO | Generated script (Attempt 3/5). Word count: 121
+2026-08-25 20:30:16,951 | generate_content | WARNING | Script verification failed (word count: 121, ends with '?': False). Retrying...
+2026-08-25 20:30:54,048 | generate_content | INFO | Generated script (Attempt 4/5). Word count: 137
+2026-08-25 20:30:54,049 | generate_content | WARNING | Script verification failed (word count: 137, ends with '?': False). Retrying...
+2026-08-25 20:31:34,651 | generate_content | ERROR | Error on attempt 5: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199697, Requested 4386. Please try again in 29m23.856s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'compound', 'code': 'rate_limit_exceeded'}}
+2026-08-25 20:31:34,652 | orchestrator | CRITICAL | Pipeline crashed during execution! Error: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199697, Requested 4386. Please try again in 29m23.856s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'compound', 'code': 'rate_limit_exceeded'}}
+Traceback (most recent call last):
+  File "E:\ai_gen\AI-VIDEO-V2\python\main.py", line 105, in run_pipeline
+    content, metadata = generate_content.run(topic)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 362, in run
+    content = generate_narration(topic_data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\python\generate_content.py", line 197, in generate_narration
+    chat_completion = call_groq_with_fallback(
+                      ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\ai_gen\AI-VIDEO-V2\utils\config.py", line 141, in call_groq_with_fallback
+    raise last_error
+  File "E:\ai_gen\AI-VIDEO-V2\utils\config.py", line 119, in call_groq_with_fallback
+    return client.chat.completions.create(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\site-packages\groq\resources\chat\completions.py", line 462, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\site-packages\groq\_base_client.py", line 1284, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\pasam\AppData\Local\Programs\Python\Python312\Lib\site-packages\groq\_base_client.py", line 1071, in request
+    raise self._make_status_error_from_response(err.response) from None
+groq.RateLimitError: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199697, Requested 4386. Please try again in 29m23.856s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'compound', 'code': 'rate_limit_exceeded'}}

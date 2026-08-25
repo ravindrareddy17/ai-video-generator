@@ -81,15 +81,60 @@ def call_gemini_fallback(messages):
         prompt += f"[{role.upper()}]:\n{content}\n\n"
         
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    resp = requests.post(url, json=payload, timeout=30)
+    resp = requests.post(url, json=payload, timeout=60)
     if resp.status_code == 200:
         text = resp.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
         return GeminiCompletionWrapper(text)
     else:
         raise RuntimeError(f"Gemini API fallback failed with HTTP {resp.status_code}: {resp.text}")
 
+
+def call_aws_bedrock_llm_fallback(messages):
+    """Fallback LLM invocation using AWS Bedrock Nova Lite / Nova Pro models."""
+    log.info("Calling AWS Bedrock LLM fallback (amazon.nova-lite-v1:0)...")
+    import boto3
+    aws_key = get_aws_access_key_id()
+    aws_secret = get_aws_secret_access_key()
+    aws_region = get_aws_region()
+    
+    session = boto3.Session(
+        aws_access_key_id=aws_key,
+        aws_secret_access_key=aws_secret,
+        region_name=aws_region
+    )
+    bedrock = session.client('bedrock-runtime')
+    
+    # Format messages for Nova models
+    formatted_msgs = []
+    sys_prompt = ""
+    for m in messages:
+        role = m.get("role", "user")
+        content = m.get("content", "")
+        if role == "system":
+            sys_prompt += f"{content}\n"
+        else:
+            formatted_msgs.append({"role": role, "content": [{"text": content}]})
+            
+    if not formatted_msgs:
+        formatted_msgs.append({"role": "user", "content": [{"text": sys_prompt or "Generate response"}]})
+
+    payload = {"messages": formatted_msgs}
+    if sys_prompt:
+        payload["system"] = [{"text": sys_prompt}]
+
+    resp = bedrock.invoke_model(
+        modelId="amazon.nova-lite-v1:0",
+        body=json.dumps(payload),
+        accept="application/json",
+        contentType="application/json"
+    )
+    resp_body = json.loads(resp.get('body').read())
+    text = resp_body.get("output", {}).get("message", {}).get("content", [{}])[0].get("text", "")
+    return GeminiCompletionWrapper(text)
+
+
 def call_groq_with_fallback(client=None, messages=None, initial_model=None, **kwargs):
-    """Executes Groq chat completion with automatic model fallback and Gemini API backup on RateLimitError (HTTP 429)."""
+    """Executes LLM completion with automatic Groq -> Gemini -> AWS Bedrock model fallbacks."""
     if isinstance(client, str) and isinstance(messages, str):
         sys_p = client
         usr_p = messages
@@ -136,10 +181,14 @@ def call_groq_with_fallback(client=None, messages=None, initial_model=None, **kw
     try:
         return call_gemini_fallback(messages)
     except Exception as gem_err:
-        log.error(f"Gemini fallback also failed: {gem_err}")
-        if last_error:
-            raise last_error
-        raise gem_err
+        log.warning(f"Gemini fallback failed ({gem_err}). Activating AWS Bedrock LLM fallback...")
+        try:
+            return call_aws_bedrock_llm_fallback(messages)
+        except Exception as aws_err:
+            log.error(f"AWS Bedrock LLM fallback failed: {aws_err}")
+            if last_error:
+                raise last_error
+            raise aws_err
 
 @lru_cache(maxsize=1)
 def load_settings() -> dict[str, Any]:
