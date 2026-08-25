@@ -1,8 +1,8 @@
 """
-generate_aws_videos.py — Step 6 AI Video Generator using AWS Bedrock (Amazon Nova Reel / Titan).
+generate_aws_videos.py — Step 6 AI Video Generator using Amazon Bedrock Nova Reel (amazon.nova-reel-v1:0).
 
 Generates photorealistic 9:16 vertical AI video clips for each scene in data/search_queries.json
-using AWS Bedrock as FIRST PREFERENCE.
+using Amazon Bedrock Nova Reel Video Generation API.
 
 Inputs:
     data/search_queries.json
@@ -19,6 +19,7 @@ import time
 import urllib.parse
 import subprocess
 import requests
+import base64
 
 # Bootstrap project imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -37,99 +38,61 @@ from utils.helpers import clean_directory
 logger = get_logger("generate_aws_videos")
 
 
-def create_ken_burns_motion_video(image_path: Path, output_file: Path, duration: float) -> Path:
-    """Converts a high-res AI image to a fluid vertical video clip with Ken Burns motion pan/zoom."""
-    cmd = [
-        "ffmpeg", "-y",
-        "-loop", "1",
-        "-i", str(image_path),
-        "-vf", "zoompan=z='min(zoom+0.0015,1.15)':d=750:s=1080x1920:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)',framerate=30",
-        "-c:v", "libx264",
-        "-t", str(duration + 0.5),
-        "-pix_fmt", "yuv420p",
-        str(output_file)
-    ]
-    subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    return output_file
-
-
-def generate_video_with_bedrock(prompt: str, output_file: Path, duration: float = 6.0) -> Path | None:
-    """Calls AWS Bedrock (Amazon Nova Reel / Titan Video) to generate a video clip."""
-    bedrock_key = get_aws_bedrock_api_key()
+def generate_video_with_bedrock_nova_reel(prompt: str, output_file: Path, duration: float = 6.0) -> Path | None:
+    """Calls Amazon Bedrock Nova Reel API (amazon.nova-reel-v1:0) to generate AI video scenes."""
     aws_key = get_aws_access_key_id()
     aws_secret = get_aws_secret_access_key()
     aws_region = get_aws_region()
+    model_id = get_setting('aws_bedrock', 'video_model', 'amazon.nova-reel-v1:0')
 
-    # Attempt 1: Boto3 Bedrock Runtime
-    if aws_key and aws_secret and aws_key.startswith("AKIA"):
-        try:
-            import boto3
-            session = boto3.Session(
-                aws_access_key_id=aws_key,
-                aws_secret_access_key=aws_secret,
-                region_name=aws_region
-            )
-            bedrock = session.client(service_name='bedrock-runtime')
-            model_id = get_setting('aws_bedrock', 'video_model', 'amazon.nova-reel-v1:0')
+    logger.info(f"Submitting AI Video Prompt to Amazon Bedrock Nova Reel API ({model_id}): '{prompt}'...")
 
-            logger.info(f"Submitting AI Video prompt to AWS Bedrock ({model_id}): '{prompt}'...")
+    # Attempt 1: Boto3 AWS Bedrock Async / Model Invocation
+    try:
+        import boto3
+        session = boto3.Session(
+            aws_access_key_id=aws_key,
+            aws_secret_access_key=aws_secret,
+            region_name=aws_region
+        )
+        bedrock = session.client(service_name='bedrock-runtime')
 
-            body = json.dumps({
-                "taskType": "TEXT_TO_VIDEO",
-                "textToVideoParams": {
-                    "text": f"Cinematic 4k vertical space documentary scene, {prompt}"
-                },
-                "videoGenerationConfig": {
-                    "durationSeconds": max(5, int(duration)),
-                    "fps": 30,
-                    "dimension": "1080x1920"
-                }
-            })
+        payload = {
+            "taskType": "TEXT_TO_VIDEO",
+            "textToVideoParams": {
+                "text": f"Cinematic 4k vertical space documentary scene, {prompt}"
+            },
+            "videoGenerationConfig": {
+                "durationSeconds": max(5, int(duration)),
+                "fps": 24,
+                "dimension": "1280x720"
+            }
+        }
 
-            response = bedrock.invoke_model(
-                modelId=model_id,
-                body=body,
-                accept="application/json",
-                contentType="application/json"
-            )
-            
-            resp_body = json.loads(response.get('body').read())
-            video_bytes_b64 = resp_body.get('videoBytes')
-            if video_bytes_b64:
-                import base64
-                output_file.write_bytes(base64.b64decode(video_bytes_b64))
-                logger.info(f"Successfully generated AWS Bedrock video clip at {output_file}")
-                return output_file
-        except Exception as exc:
-            logger.warning(f"AWS Bedrock direct invoke error: {exc}. Trying AI Motion FX fallback...")
+        # Call Bedrock model
+        response = bedrock.invoke_model(
+            modelId=model_id,
+            body=json.dumps(payload),
+            accept="application/json",
+            contentType="application/json"
+        )
+        
+        resp_body = json.loads(response.get('body').read())
+        video_bytes_b64 = resp_body.get('videoBytes') or resp_body.get('output', {}).get('videoBytes')
+        if video_bytes_b64:
+            output_file.write_bytes(base64.b64decode(video_bytes_b64))
+            logger.info(f"Successfully generated Amazon Bedrock Nova Reel AI video clip: {output_file.name}")
+            return output_file
 
-    # Attempt 2: High-Res Photorealistic AI Motion FX Generator
-    logger.info(f"Generating photorealistic AI video scene for: '{prompt}'...")
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            safe_prompt = urllib.parse.quote(f"cinematic 4k vertical space documentary scene, {prompt}, hyperrealistic")
-            img_url = f"https://image.pollinations.ai/prompt/{safe_prompt}?width=1080&height=1920&nologo=true"
-            temp_img = output_file.with_suffix(".jpg")
-            
-            resp = requests.get(img_url, timeout=35)
-            if resp.status_code == 200:
-                temp_img.write_bytes(resp.content)
-                res_path = create_ken_burns_motion_video(temp_img, output_file, duration)
-                if temp_img.exists():
-                    temp_img.unlink()
-                logger.info(f"Successfully generated 9:16 AI video scene: {output_file.name}")
-                return res_path
-        except Exception as img_err:
-            logger.warning(f"AI Motion FX attempt {attempt+1} failed: {img_err}")
-            time.sleep(2)
-            
+    except Exception as exc:
+        logger.warning(f"Amazon Bedrock Nova Reel direct invocation notice: {exc}")
+
     return None
 
 
 def run() -> list[Path]:
-    """Orchestrates Step 6 of the pipeline using AWS Bedrock AI Video Generation as FIRST PREFERENCE."""
-    logger.info("=== STEP 6: GENERATE AI VIDEOS (AWS BEDROCK FIRST PREFERENCE) ===")
+    """Orchestrates Step 6 using Amazon Bedrock Nova Reel AI Video Generation API."""
+    logger.info("=== STEP 6: GENERATE AI VIDEOS (AMAZON BEDROCK NOVA REEL API) ===")
     
     if not SEARCH_QUERIES_FILE.exists():
         raise FileNotFoundError(f"Search queries file not found at {SEARCH_QUERIES_FILE}. Run Step 5 first.")
@@ -149,20 +112,20 @@ def run() -> list[Path]:
         duration = item.get("duration_s", 6.0)
         
         output_file = DOWNLOADS_VIDEOS_DIR / f"scene_{index}.mp4"
-        logger.info(f"Scene {i + 1}/{len(queries_data)} — AWS AI Prompt: '{prompt}' ({duration}s)")
+        logger.info(f"Scene {i + 1}/{len(queries_data)} — Amazon Nova Reel Prompt: '{prompt}' ({duration}s)")
         
-        res = generate_video_with_bedrock(prompt, output_file, duration)
+        res = generate_video_with_bedrock_nova_reel(prompt, output_file, duration)
         if res and res.exists():
             generated_paths.append(res)
             
-    logger.info(f"Completed AWS Bedrock video generation cycle. Generated: {len(generated_paths)} clips.")
+    logger.info(f"Completed Amazon Bedrock Nova Reel generation cycle. Generated: {len(generated_paths)} clips.")
     return generated_paths
 
 
 if __name__ == "__main__":
     try:
         results = run()
-        print(f"Generated {len(results)} video clips via AWS Bedrock.")
+        print(f"Generated {len(results)} video clips via Amazon Bedrock Nova Reel API.")
     except Exception as err:
         logger.exception("generate_aws_videos module failed")
         sys.exit(1)
