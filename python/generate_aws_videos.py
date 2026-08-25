@@ -44,10 +44,11 @@ def generate_video_with_bedrock_nova_reel(prompt: str, output_file: Path, durati
     aws_secret = get_aws_secret_access_key()
     aws_region = get_aws_region()
     model_id = get_setting('aws_bedrock', 'video_model', 'amazon.nova-reel-v1:0')
+    s3_bucket = get_setting('aws', 's3_output_bucket_name', 'the-shortest-orbit-nova-reel')
+    role_arn = get_setting('aws', 'role_arn', 'arn:aws:iam::719312763637:role/BedrockNovaReelExecutionRole')
 
     logger.info(f"Submitting AI Video Prompt to Amazon Bedrock Nova Reel API ({model_id}): '{prompt}'...")
 
-    # Attempt 1: Boto3 AWS Bedrock Async / Model Invocation
     try:
         import boto3
         session = boto3.Session(
@@ -56,6 +57,7 @@ def generate_video_with_bedrock_nova_reel(prompt: str, output_file: Path, durati
             region_name=aws_region
         )
         bedrock = session.client(service_name='bedrock-runtime')
+        s3 = session.client(service_name='s3')
 
         payload = {
             "taskType": "TEXT_TO_VIDEO",
@@ -69,23 +71,50 @@ def generate_video_with_bedrock_nova_reel(prompt: str, output_file: Path, durati
             }
         }
 
-        # Call Bedrock model
-        response = bedrock.invoke_model(
+        # Step 1: Start Async Invoke (Amazon Nova Reel requirement)
+        async_resp = bedrock.start_async_invoke(
             modelId=model_id,
-            body=json.dumps(payload),
-            accept="application/json",
-            contentType="application/json"
+            modelInput=payload,
+            outputDataConfig={
+                's3OutputDataConfig': {
+                    's3Uri': f's3://{s3_bucket}/nova-reel-outputs/'
+                }
+            }
         )
-        
-        resp_body = json.loads(response.get('body').read())
-        video_bytes_b64 = resp_body.get('videoBytes') or resp_body.get('output', {}).get('videoBytes')
-        if video_bytes_b64:
-            output_file.write_bytes(base64.b64decode(video_bytes_b64))
-            logger.info(f"Successfully generated Amazon Bedrock Nova Reel AI video clip: {output_file.name}")
-            return output_file
+        invocation_arn = async_resp.get('invocationArn')
+        logger.info(f"Amazon Nova Reel Async Job started: {invocation_arn}")
+
+        # Step 2: Poll status until completion (Max 5 minutes)
+        poll_start = time.time()
+        while time.time() - poll_start < 300:
+            status_resp = bedrock.get_async_invoke(invocationArn=invocation_arn)
+            status = status_resp.get('status')
+            logger.info(f"Amazon Nova Reel Job Status: {status}")
+
+            if status == 'Completed':
+                output_s3_uri = status_resp.get('outputDataConfig', {}).get('s3OutputDataConfig', {}).get('s3Uri', '')
+                logger.info(f"Amazon Nova Reel Video ready at S3: {output_s3_uri}")
+                
+                # Parse bucket and key from s3Uri
+                if output_s3_uri.startswith('s3://'):
+                    parts = output_s3_uri.replace('s3://', '').split('/', 1)
+                    b_name, b_key = parts[0], parts[1] if len(parts) > 1 else ''
+                    if b_key.endswith('/'):
+                        b_key += 'output.mp4'
+                    s3.download_file(b_name, b_key, str(output_file))
+                    logger.info(f"Successfully downloaded Amazon Nova Reel AI video: {output_file.name}")
+                    return output_file
+                break
+
+            elif status in ['Failed', 'CompletedWithErrors']:
+                failure_msg = status_resp.get('failureMessage', 'Unknown error')
+                logger.error(f"Amazon Nova Reel Job failed: {failure_msg}")
+                break
+
+            time.sleep(10)
 
     except Exception as exc:
-        logger.warning(f"Amazon Bedrock Nova Reel direct invocation notice: {exc}")
+        logger.warning(f"Amazon Bedrock Nova Reel invocation notice: {exc}")
 
     return None
 
