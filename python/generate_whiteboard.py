@@ -132,69 +132,81 @@ def render_whiteboard_animation_clip(
     return output_video_path
 
 
-def generate_whiteboard_sketch_image(prompt: str, output_path: Path) -> Path:
+def generate_whiteboard_sketch_image(prompt: str, output_path: Path, scene_index: int = 1) -> Path:
     """Generate a clean, high-contrast doodle line-art diagram on pure white background."""
-    logger.info(f"Synthesizing Whiteboard Diagram: '{prompt}'...")
+    logger.info(f"Synthesizing Whiteboard Diagram for Scene {scene_index}: '{prompt}'...")
     
     # Create high-resolution 1080x1920 clean white image with black & accent sketches
     img = Image.new("RGB", (1080, 1920), (255, 255, 255))
     draw = ImageDraw.Draw(img)
 
-    # 1. Header Banner / Title
     try:
         font_large = ImageFont.truetype("arial.ttf", 60)
-        font_med = ImageFont.truetype("arial.ttf", 42)
-        font_small = ImageFont.truetype("arial.ttf", 32)
+        font_med = ImageFont.truetype("arial.ttf", 44)
+        font_small = ImageFont.truetype("arial.ttf", 34)
     except Exception:
         font_large = font_med = font_small = ImageFont.load_default()
 
-    # Draw Title in vibrant orange marker style
+    # 1. Header Banner / Title in vibrant orange marker style
     title_words = prompt.upper().split()[:6]
     title_text = " ".join(title_words)
-    draw.text((80, 150), title_text, fill=(230, 90, 20), font=font_large, stroke_width=2, stroke_fill=(200, 70, 10))
+    draw.text((80, 140), title_text, fill=(230, 90, 20), font=font_large, stroke_width=2, stroke_fill=(200, 70, 10))
+    draw.line([(80, 220), (1000, 220)], fill=(230, 90, 20), width=6)
 
-    # Draw Decorative underline
-    draw.line([(80, 230), (1000, 230)], fill=(230, 90, 20), width=6)
-    
-    # Draw Left Section: Concept Input Box
-    draw.rectangle([100, 350, 480, 700], outline=(20, 20, 20), width=6)
-    draw.text((130, 380), "INITIAL STATE", fill=(20, 20, 20), font=font_med)
-    draw.ellipse([180, 470, 400, 650], outline=(0, 150, 220), width=8) # Blue core
-    draw.text((220, 540), "SURFACE", fill=(0, 150, 220), font=font_small)
+    if scene_index == 1:
+        # SCENE 1: THE HOOK & CORE MYSTERY
+        draw.rounded_rectangle([100, 320, 980, 720], radius=16, outline=(20, 20, 20), width=6)
+        draw.text((150, 360), "THE EVENT HORIZON", fill=(0, 150, 220), font=font_med)
+        draw.ellipse([340, 440, 740, 680], fill=(20, 20, 20), outline=(230, 90, 20), width=10)
+        draw.text((430, 540), "POINT OF NO RETURN", fill=(255, 255, 255), font=font_small)
 
-    # Draw Connecting Arrow
-    draw.line([(490, 525), (600, 525)], fill=(20, 20, 20), width=8)
-    draw.polygon([(600, 500), (640, 525), (600, 550)], fill=(20, 20, 20))
+        # Arrow down
+        draw.line([(540, 740), (540, 860)], fill=(20, 20, 20), width=8)
+        draw.polygon([(515, 860), (540, 900), (565, 860)], fill=(20, 20, 20))
 
-    # Draw Right Section: Central Brain / Mechanism
-    draw.rectangle([650, 350, 980, 700], outline=(20, 20, 20), width=6)
-    draw.text((680, 380), "GRAVITY COLLAPSE", fill=(220, 40, 40), font=font_med)
-    draw.ellipse([720, 470, 910, 650], fill=(15, 15, 15), outline=(220, 40, 40), width=8)
-    draw.text((750, 540), "SINGULARITY", fill=(255, 255, 255), font=font_small)
+        # Big Fact Card
+        draw.rounded_rectangle([100, 940, 980, 1500], radius=20, outline=(20, 20, 20), width=6)
+        draw.text((150, 980), "WHAT HAPPENS HERE?", fill=(220, 40, 40), font=font_med)
+        draw.text((150, 1080), "- External Time Freezes", fill=(20, 20, 20), font=font_med)
+        draw.text((150, 1200), "- Light Cannot Escape", fill=(20, 20, 20), font=font_med)
+        draw.text((150, 1320), "- Escape Velocity > Speed of Light", fill=(20, 20, 20), font=font_med)
 
-    # Downward Flow Arrow
-    draw.line([(540, 720), (540, 840)], fill=(20, 20, 20), width=8)
-    draw.polygon([(515, 840), (540, 880), (565, 840)], fill=(20, 20, 20))
+    elif scene_index == 2:
+        # SCENE 2: THE PHYSICS MECHANISM (Spaghettification & Singularity)
+        draw.rectangle([100, 320, 480, 720], outline=(20, 20, 20), width=6)
+        draw.text((130, 350), "HEAD GRAVITY", fill=(220, 40, 40), font=font_med)
+        draw.text((150, 480), "10,000 Gs", fill=(20, 20, 20), font=font_large)
 
-    # Draw Bottom Feature: Main Comparison Box
-    draw.rounded_rectangle([100, 920, 980, 1450], radius=20, outline=(20, 20, 20), width=6)
-    draw.text((150, 960), "EVENT HORIZON DYNAMICS", fill=(0, 160, 80), font=font_med)
-    
-    # Feature 1: Time Dilation
-    draw.line([(150, 1080), (200, 1080)], fill=(0, 160, 80), width=6)
-    draw.text((220, 1055), "1. Time Freezes at the Horizon", fill=(20, 20, 20), font=font_med)
+        draw.rectangle([600, 320, 980, 720], outline=(20, 20, 20), width=6)
+        draw.text((630, 350), "FEET GRAVITY", fill=(220, 40, 40), font=font_med)
+        draw.text((640, 480), "1,000,000 Gs", fill=(20, 20, 20), font=font_large)
 
-    # Feature 2: Spaghettification
-    draw.line([(150, 1200), (200, 1200)], fill=(0, 160, 80), width=6)
-    draw.text((220, 1175), "2. Tidal Forces Stretch Matter", fill=(20, 20, 20), font=font_med)
+        # Arrow down
+        draw.line([(540, 740), (540, 860)], fill=(20, 20, 20), width=8)
+        draw.polygon([(515, 860), (540, 900), (565, 860)], fill=(20, 20, 20))
 
-    # Feature 3: Light Trapped
-    draw.line([(150, 1320), (200, 1320)], fill=(0, 160, 80), width=6)
-    draw.text((220, 1295), "3. Escape Velocity > Speed of Light", fill=(20, 20, 20), font=font_med)
+        # Result box
+        draw.rounded_rectangle([100, 940, 980, 1500], radius=20, outline=(20, 20, 20), width=6)
+        draw.text((150, 980), "TIDAL STRETCHING (SPAGHETTI)", fill=(0, 160, 80), font=font_med)
+        draw.text((150, 1080), "- Matter stretched into a single atom line", fill=(20, 20, 20), font=font_med)
+        draw.text((150, 1200), "- Pulled toward infinite density singularity", fill=(20, 20, 20), font=font_med)
+        draw.text((150, 1320), "- All known laws of physics break down", fill=(20, 20, 20), font=font_med)
 
-    # Bottom Question Callout Box
-    draw.rectangle([100, 1550, 980, 1750], fill=(255, 245, 220), outline=(230, 90, 20), width=6)
-    draw.text((180, 1620), "WOULD YOU SURVIVE?", fill=(230, 70, 10), font=font_large)
+    else:
+        # SCENE 3: THE FINAL QUESTION & COMMUNITY DEBATE
+        draw.rounded_rectangle([100, 320, 980, 850], radius=20, outline=(20, 20, 20), width=6)
+        draw.text((150, 370), "CAN WE EVER HARVEST THIS?", fill=(0, 150, 220), font=font_med)
+        draw.text((150, 490), "1. Penrose Energy Extraction", fill=(20, 20, 20), font=font_med)
+        draw.text((150, 610), "2. Hawking Radiation Recovery", fill=(20, 20, 20), font=font_med)
+        draw.text((150, 730), "3. Artificial AI Probes into Horizon", fill=(20, 20, 20), font=font_med)
+
+        # Callout Question Box
+        draw.rectangle([100, 960, 980, 1500], fill=(255, 245, 220), outline=(230, 90, 20), width=8)
+        draw.text((180, 1050), "WOULD YOU GO INSIDE?", fill=(230, 70, 10), font=font_large)
+        draw.text((220, 1200), "COMMENT YOUR ANSWER", fill=(20, 20, 20), font=font_med)
+
+    # Bottom branding badge
+    draw.text((250, 1780), "THE SHORTEST ORBIT", fill=(150, 150, 150), font=font_small)
 
     img.save(output_path, "PNG")
     return output_path
@@ -204,20 +216,23 @@ def run() -> list[Path]:
     """Generates whiteboard sketch video clips for all scenes in data/search_queries.json."""
     logger.info("=== STEP 6 (WHITEBOARD): GENERATING HAND-DRAWN SKETCH VIDEOS ===")
     
-    queries_data = load_json(SEARCH_QUERIES_FILE)
-    queries = queries_data.get("queries", [])
+    queries_raw = load_json(SEARCH_QUERIES_FILE)
+    if isinstance(queries_raw, list):
+        queries = queries_raw
+    else:
+        queries = queries_raw.get("queries", [])
     
     DOWNLOADS_VIDEOS_DIR.mkdir(parents=True, exist_ok=True)
     generated_clips = []
 
     for i, q in enumerate(queries, start=1):
         prompt = q.get("query", f"Scene {i}")
-        duration = float(q.get("duration", 4.0))
+        duration = float(q.get("duration_s", q.get("duration", 4.0)))
         
         sketch_img_path = TEMP_DIR / f"whiteboard_sketch_{i}.png"
         video_out_path = DOWNLOADS_VIDEOS_DIR / f"scene_{i}.mp4"
         
-        generate_whiteboard_sketch_image(prompt, sketch_img_path)
+        generate_whiteboard_sketch_image(prompt, sketch_img_path, scene_index=i)
         render_whiteboard_animation_clip(sketch_img_path, video_out_path, duration=duration)
         generated_clips.append(video_out_path)
 
