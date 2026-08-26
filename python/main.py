@@ -163,25 +163,12 @@ def run_pipeline() -> bool:
         queries = generate_search_queries.run()
         logger.info(f"Step 5 Complete. Generated {len(queries)} scene search prompts. ({time.time() - step_start:.2f}s)")
         
-        # ── Step 6: Video Scene Generation (Whiteboard Doodle / Nova Reel / Stock) ──
+        # ── Step 6: Tri-Modal Visual Scene Generation (Doodle + Cinematic + 3D Maps) ──
         step_start = time.time()
-        visual_mode = get_setting('video', 'visual_mode', 'cinematic_video')
-        logger.info(f">>> Step 6: Generating Video Scenes (Visual Mode: {visual_mode})...")
-        
-        if visual_mode == "whiteboard":
-            import generate_whiteboard
-            clips = generate_whiteboard.run()
-        else:
-            try:
-                clips = generate_aws_videos.run()
-                if not clips or len(clips) == 0:
-                    logger.warning("Amazon Bedrock Nova Reel API returned 0 clips. Falling back to stock video downloader...")
-                    clips = download_videos.run()
-            except Exception as aws_err:
-                logger.warning(f"Amazon Bedrock Nova Reel API error: {aws_err}. Falling back to stock video downloader...")
-                clips = download_videos.run()
-            
-        logger.info(f"Step 6 Complete. Generated {len(clips)} scene clips. ({time.time() - step_start:.2f}s)")
+        logger.info(">>> Step 6: Generating Tri-Modal Video Scenes (Doodle + Cinematic + 3D Map Graphics)...")
+        import multi_style_generator
+        clips = multi_style_generator.run()
+        logger.info(f"Step 6 Complete. Generated {len(clips)} dynamic multi-style scene clips. ({time.time() - step_start:.2f}s)")
         
         # ── Step 7: Create Silent Video ──────────────────────────────
         step_start = time.time()

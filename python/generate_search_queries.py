@@ -90,23 +90,31 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         })
         
     system_prompt = (
-        "You are a master Visual Director for high-retention cinematic documentary Shorts.\n"
-        "Your job is to extract highly accurate, specific PHYSICAL VISUAL SUBJECTS for each narration sentence.\n\n"
+        "You are an Elite Visual Director for viral educational explainer Shorts.\n"
+        "Your task is to analyze each narration sentence and determine the OPTIMAL VISUAL STYLE to communicate the concept clearly and dynamically.\n\n"
+        "THREE VISUAL STYLES AVAILABLE:\n"
+        "1. 'doodle' (Authentic Hand-Drawn Doodle Art):\n"
+        "   Use for: Simple concepts, analogies, definitions, human brain/behavior, internal biological/physical mechanisms, or abstract ideas.\n"
+        "2. 'cinematic' (Ultra-Realistic 4K Cinematic AI / Motion Footage):\n"
+        "   Use for: Real physical environments, deep ocean, cosmos/space, rockets, megaprojects, heavy machines, cities, weather phenomena.\n"
+        "3. 'map_motion' (3D Maps & Motion Explainer Graphics):\n"
+        "   Use for: Geography, countries, borders, routes, trade chokepoints, statistics, timelines, networks, or multi-nation comparisons.\n\n"
         "RULES:\n"
-        "1. Combine the OVERALL TOPIC CONTEXT with the sentence's physical subject.\n"
-        "   Example Topic: 'SpaceX Starship Secret AI Test'\n"
-        "   Sentence: 'Engineers launched a new satellite.'\n"
-        "   GOOD Query: 'spacex rocket launch'\n"
-        "   BAD Query: 'engineers'\n"
-        "2. Stock video search engines (Pexels/Pixabay) index 1-3 simple concrete nouns best (e.g., 'rocket launch', 'satellite orbit', 'planet earth space', 'computer server', 'astronaut space', 'sun flare').\n"
-        "3. Provide 3 concrete fallbacks in 'fallback_queries' (e.g. ['rocket', 'spacecraft', 'space launch']).\n"
-        "4. Output strictly valid JSON matching this schema:\n"
+        "- Choose the visual style intelligently per sentence based on the subject.\n"
+        "- Provide a targeted physical search query (1-3 words) in 'query'.\n"
+        "- Provide a descriptive prompt for AI image/map generation in 'prompt'.\n"
+        "- Select a camera motion in 'camera_motion' ('zoom_in', 'pan_up', 'aerial_track', 'sketch_reveal', 'route_travel').\n"
+        "- Output strictly valid JSON matching this schema:\n"
         "{\n"
         "  \"queries\": [\n"
         "    {\n"
         "       \"index\": 1,\n"
-        "       \"query\": \"spacex starship launch\",\n"
-        "       \"fallback_queries\": [\"rocket launch\", \"spacecraft space\", \"rocket\"]\n"
+        "       \"visual_style\": \"cinematic\",\n"
+        "       \"query\": \"black hole accretion disc\",\n"
+        "       \"prompt\": \"Cinematic 4K cosmic black hole with swirling accretion disc\",\n"
+        "       \"fallback_queries\": [\"black hole\", \"accretion disc\", \"deep space\"],\n"
+        "       \"camera_motion\": \"zoom_in\",\n"
+        "       \"accent_color\": \"orange\"\n"
         "    }\n"
         "  ]\n"
         "}"
@@ -118,7 +126,7 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         f"NARRATION SENTENCES:\n{json.dumps(input_items, indent=2)}"
     )
     
-    logger.info("Calling resilient LLM handler to generate visual search queries...")
+    logger.info("Calling Visual Decision Director to classify and formulate visual scenes...")
     raw_response = call_groq_with_fallback(system_prompt, user_prompt, temperature=0.3)
     
     if hasattr(raw_response, "choices") and raw_response.choices:
@@ -136,15 +144,29 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         result_json = extract_json_from_llm(response_text)
         queries_list = result_json.get("queries", [])
         
-        query_map = {item.get("index"): item.get("query", "space motion") for item in queries_list}
-        fallback_map = {item.get("index"): item.get("fallback_queries", []) for item in queries_list}
+        item_map = {item.get("index"): item for item in queries_list}
         
         output_queries = []
         for sub in subtitles:
-            q = query_map.get(sub["index"], "space motion")
-            fb = fallback_map.get(sub["index"], [])
+            item = item_map.get(sub["index"], {})
+            v_style = item.get("visual_style", "cinematic")
+            if v_style not in ["doodle", "cinematic", "map_motion"]:
+                # Auto-infer style from sentence content
+                text_lower = sub["text"].lower()
+                if any(w in text_lower for w in ["country", "nation", "map", "china", "u.s.", "eu", "border", "route", "percent"]):
+                    v_style = "map_motion"
+                elif any(w in text_lower for w in ["brain", "think", "concept", "imagine", "mean", "freeze", "what if"]):
+                    v_style = "doodle"
+                else:
+                    v_style = "cinematic"
+
+            q = item.get("query", "space motion")
+            fb = item.get("fallback_queries", [])
+            prompt_desc = item.get("prompt", sub["text"])
+            camera_motion = item.get("camera_motion", "zoom_in")
+            accent_color = item.get("accent_color", "orange")
             
-            # Sanitize query (remove punctuation, normalize spaces)
+            # Sanitize query
             q_clean = re.sub(r'[^\w\s]', '', q).strip().lower()
             if not q_clean:
                 q_clean = "space motion"
@@ -158,10 +180,14 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
             output_queries.append({
                 "subtitle_index": sub["index"],
                 "text": sub["text"],
+                "visual_style": v_style,
                 "type": "video",
                 "query": q_clean,
+                "prompt": prompt_desc,
                 "fallback_queries": clean_fallbacks,
-                "image_prompt": "",
+                "camera_motion": camera_motion,
+                "accent_color": accent_color,
+                "image_prompt": prompt_desc,
                 "start": sub["start"],
                 "end": sub["end"],
                 "start_ms": sub["start_ms"],
@@ -169,10 +195,11 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
                 "duration_s": sub["duration_s"]
             })
             
+        logger.info(f"Visual Decision Director assigned styles: {[q['visual_style'] for q in output_queries]}")
         return output_queries
         
     except Exception as e:
-        logger.error(f"Error parsing LLM response for search queries: {e}")
+        logger.error(f"Error parsing LLM response for visual director: {e}")
         # Rule fallback based on sentence keywords
         output_queries = []
         for sub in subtitles:
