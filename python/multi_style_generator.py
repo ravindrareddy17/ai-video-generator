@@ -56,22 +56,30 @@ def generate_all_scenes() -> list[Path]:
             elif v_style == "map_motion":
                 generate_map_graphics.generate_single_scene(prompt, output_clip, duration=duration, scene_index=i)
             else:
-                # Cinematic stock / AI footage
-                logger.info(f"Searching 4K Cinematic footage for: '{query}'...")
-                # Search single video via Pexels/Pixabay
-                used_ids = download_videos.get_recent_used_visual_ids()
-                dl_url, asset_id, src = download_videos.search_dual_sources(query, used_ids)
-                if not dl_url and item.get("fallback_queries"):
-                    for fb_q in item["fallback_queries"]:
-                        dl_url, asset_id, src = download_videos.search_dual_sources(fb_q, used_ids)
-                        if dl_url:
-                            break
-                            
-                if dl_url:
-                    download_videos.download_file(dl_url, output_clip)
-                else:
-                    logger.warning(f"Stock video not found for '{query}'. Generating AI cinematic visual...")
-                    generate_map_graphics.generate_single_scene(prompt, output_clip, duration=duration, scene_index=i)
+                # Cinematic AI Video Generation (Fal.ai Minimax/Kling 1st, then Stock Footage)
+                generated = False
+                try:
+                    import generate_fal_videos
+                    generate_fal_videos.generate_single_scene(prompt, output_clip, duration=duration, scene_index=i)
+                    generated = True
+                except Exception as fal_err:
+                    logger.warning(f"Fal.ai video generator notice: {fal_err}. Falling back to 4K cinematic footage...")
+                    
+                if not generated:
+                    logger.info(f"Searching 4K Cinematic footage for: '{query}'...")
+                    used_ids = download_videos.get_recent_used_visual_ids()
+                    dl_url, asset_id, src = download_videos.search_dual_sources(query, used_ids)
+                    if not dl_url and item.get("fallback_queries"):
+                        for fb_q in item["fallback_queries"]:
+                            dl_url, asset_id, src = download_videos.search_dual_sources(fb_q, used_ids)
+                            if dl_url:
+                                break
+                                
+                    if dl_url:
+                        download_videos.download_file(dl_url, output_clip)
+                    else:
+                        logger.warning(f"Stock video not found for '{query}'. Generating 3D cinematic visual...")
+                        generate_map_graphics.generate_single_scene(prompt, output_clip, duration=duration, scene_index=i)
                     
             if output_clip.exists() and output_clip.stat().st_size > 1000:
                 generated_clips.append(output_clip)
