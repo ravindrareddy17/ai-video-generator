@@ -29,6 +29,11 @@ logger = get_logger(__name__)
 
 # Reliable viral and trending music profiles with direct MP3 streams
 MUSIC_URLS: dict[str, list[str]] = {
+    "viral-nature-cinematic": [
+        "https://cdn.pixabay.com/audio/2024/09/10/audio_6e4cc4b319.mp3",
+        "https://cdn.pixabay.com/audio/2024/02/07/audio_98ed045aee.mp3",
+        "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Life%20of%20Riley.mp3",
+    ],
     "viral-phonk-ai": [
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Neon%20Laser%20Horizon.mp3",
         "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Voxel%20Revolution.mp3",
