@@ -1124,3 +1124,976 @@ NameError: name 'get_setting' is not defined
 2026-08-26 11:27:35,492 | __main__ | INFO | Facebook Reels stats synced for video ID 539: Views: 0 | Likes: 0 | Comments: 0
 2026-08-26 11:27:35,492 | __main__ | INFO | Harvesting Instagram Reels analytics...
 2026-08-26 11:28:06,069 | __main__ | INFO | Successfully harvested and saved channel stats.
+2026-08-26 16:13:47,270 | utils.database | INFO | Initializing SQLite database at: /home/runner/work/ai-video-generator/ai-video-generator/data/shortest_orbit_v3.db
+2026-08-26 16:13:47,272 | utils.database | INFO | Database schema initialized successfully.
+2026-08-26 16:13:47,914 | orchestrator | INFO | ==================================================
+2026-08-26 16:13:47,914 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-26 16:13:47,914 | orchestrator | INFO | ==================================================
+2026-08-26 16:13:48,293 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers
+2026-08-26 16:13:48,338 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers
+2026-08-26 16:13:48,354 | database.connection | INFO | Added missing column 'competition_score' to table 'topics'.
+2026-08-26 16:13:48,355 | database.connection | INFO | Added missing column 'audience_interest' to table 'topics'.
+2026-08-26 16:13:48,356 | database.connection | INFO | Added missing column 'evergreen_score' to table 'topics'.
+2026-08-26 16:13:48,356 | database.connection | INFO | Added missing column 'virality_score' to table 'topics'.
+2026-08-26 16:13:48,357 | database.connection | INFO | Added missing column 'education_score' to table 'topics'.
+2026-08-26 16:13:48,358 | database.connection | INFO | Added missing column 'ctr_prediction' to table 'topics'.
+2026-08-26 16:13:48,358 | database.connection | INFO | Added missing column 'retention_prediction' to table 'topics'.
+2026-08-26 16:13:48,359 | database.connection | INFO | Added missing column 'overall_growth_score' to table 'topics'.
+2026-08-26 16:13:48,364 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-26 16:13:48,364 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-26 16:13:48,364 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-26 16:13:48,364 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-26 16:13:48,504 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-26 16:13:48,504 | find_viral_topics | INFO | Fetching hot topics from r/natureismetal...
+2026-08-26 16:13:48,570 | find_viral_topics | WARNING | Reddit r/natureismetal returned status code 403
+2026-08-26 16:13:48,571 | find_viral_topics | INFO | Fetching hot topics from r/EarthPorn...
+2026-08-26 16:13:48,625 | find_viral_topics | WARNING | Reddit r/EarthPorn returned status code 403
+2026-08-26 16:13:48,626 | find_viral_topics | INFO | Fetching hot topics from r/interestingasfuck...
+2026-08-26 16:13:48,668 | find_viral_topics | WARNING | Reddit r/interestingasfuck returned status code 403
+2026-08-26 16:13:48,669 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-26 16:13:48,715 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-26 16:13:48,715 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-26 16:13:48,760 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-26 16:13:48,760 | find_viral_topics | INFO | Fetching hot topics from r/ocean...
+2026-08-26 16:13:48,814 | find_viral_topics | WARNING | Reddit r/ocean returned status code 403
+2026-08-26 16:13:48,814 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-26 16:13:48,860 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-26 16:13:48,860 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-26 16:13:48,903 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-26 16:13:48,903 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-26 16:13:48,946 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-26 16:13:48,947 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-26 16:13:48,947 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-26 16:13:49,612 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-26 16:13:49,612 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-26 16:13:49,812 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-26 16:13:49,812 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-26 16:13:50,730 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-26 16:13:50,730 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-26 16:13:51,337 | find_viral_topics | INFO | Fetched 103 topics from SpaceX.
+2026-08-26 16:13:51,337 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-26 16:13:51,545 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-26 16:13:51,546 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-26 16:13:51,686 | find_viral_topics | INFO | Fetched 75 topics from Nature Journal.
+2026-08-26 16:13:51,687 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-26 16:13:52,190 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-26 16:13:52,190 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-26 16:13:52,424 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-26 16:13:52,424 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-26 16:13:52,760 | find_viral_topics | INFO | Fetched 352 topics from arXiv AI.
+2026-08-26 16:13:52,761 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-26 16:13:52,921 | find_viral_topics | INFO | Fetched 177 topics from arXiv Astro.
+2026-08-26 16:13:52,921 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-26 16:13:53,467 | find_viral_topics | INFO | Fetched 100 topics from OpenAI.
+2026-08-26 16:13:53,468 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-26 16:13:53,960 | find_viral_topics | INFO | Fetched 98 topics from Anthropic.
+2026-08-26 16:13:53,960 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-26 16:13:54,537 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-26 16:13:54,537 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-26 16:13:55,190 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-26 16:13:55,191 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-26 16:13:55,320 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-26 16:13:55,322 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1393
+2026-08-26 16:13:55,323 | python.upload_youtube | INFO | Refreshing expired YouTube access token...
+2026-08-26 16:13:55,456 | python.upload_youtube | INFO | Cached authenticated credentials to /home/runner/work/ai-video-generator/ai-video-generator/token.pickle
+2026-08-26 16:13:55,461 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-26 16:13:55,582 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:13:55,583 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-26 16:13:55,794 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:13:55,795 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-26 16:13:55,795 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-26 16:13:55,832 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-26 16:13:58,634 | find_viral_topics | INFO | Groq selected and scored topic. Growth Score: 100.00 | Hook: 'Uncovered: The US is about to put an AI super‑computer in space—​a secret weapon that could out‑smart China’s whole launch fleet!'
+2026-08-26 16:13:58,636 | find_viral_topics | INFO | Selected topic saved to /home/runner/work/ai-video-generator/ai-video-generator/data/viral_topics.json
+2026-08-26 16:13:58,636 | orchestrator | INFO | Step 1 Complete. Selected topic: 'Uncovered: The US is about to put an AI super‑computer in space—​a secret weapon that could out‑smart China’s whole launch fleet! SpaceX is teaming up with Nvidia to launch the first AI‑powered supercomputer in orbit, giving the United States a real‑time data edge that China can’t match.' (10.27s)
+2026-08-26 16:13:58,637 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-26 16:13:58,637 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-26 16:13:58,637 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-26 16:13:58,654 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-26 16:14:00,213 | generate_content | INFO | Optimized hook accepted on attempt 1: 'EXPOSED: US AI super‑computer in orbit DESTROYS China’s fleet' (Score: 85.0)
+2026-08-26 16:14:00,214 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-26 16:14:02,690 | generate_content | INFO | Generated script (Attempt 1/3). Word count: 92
+2026-08-26 16:14:02,690 | generate_content | INFO | Successfully generated script with optimal retention length: US Orbital AI Supercomputer vs China
+2026-08-26 16:14:02,691 | generate_content | INFO | Content saved to /home/runner/work/ai-video-generator/ai-video-generator/data/content.json
+2026-08-26 16:14:02,708 | generate_content | INFO | Calling Groq to generate YouTube metadata...
+2026-08-26 16:14:19,310 | generate_content | INFO | YouTube metadata saved to /home/runner/work/ai-video-generator/ai-video-generator/data/metadata.json
+2026-08-26 16:14:19,314 | generate_content | INFO | Video logged to central shortest_orbit_v3.db as ID: 545
+2026-08-26 16:14:19,316 | generate_content | INFO | Video logged to youtube.db as ID: 1
+2026-08-26 16:14:19,318 | generate_content | INFO | Video logged to instagram.db
+2026-08-26 16:14:19,319 | generate_content | INFO | Video logged to facebook.db
+2026-08-26 16:14:19,320 | generate_content | INFO | Video hooks logged to automation.db
+2026-08-26 16:14:19,321 | orchestrator | INFO | Step 2 Complete. Title: 'US Orbital AI Supercomputer vs China' (20.68s)
+2026-08-26 16:14:19,321 | orchestrator | INFO | >>> Step 2.5: Running AI fact checking on script narration...
+2026-08-26 16:14:19,321 | verify_facts | INFO | === STEP 2.5: VERIFY FACTS ===
+2026-08-26 16:14:19,339 | verify_facts | INFO | Calling Groq to verify script facts...
+2026-08-26 16:14:34,721 | verify_facts | INFO | Verified Claim: 'SpaceX and Nvidia have just deployed the first orb...' | Accuracy: 20.0%
+2026-08-26 16:14:34,722 | verify_facts | INFO | Verified Claim: 'The US AI supercomputer in orbit provides unpreced...' | Accuracy: 15.0%
+2026-08-26 16:14:34,722 | verify_facts | INFO | Verified Claim: 'China’s current fleet lacks these capabilities....' | Accuracy: 10.0%
+2026-08-26 16:14:34,722 | verify_facts | INFO | Verified Claim: 'The US AI super‑computer in orbit destroys China’s...' | Accuracy: 0.0%
+2026-08-26 16:14:34,722 | verify_facts | WARNING | Fact checking failed! 4 claims were flagged as highly uncertain or incorrect.
+2026-08-26 16:14:34,722 | orchestrator | WARNING | Fact checking flagged critical claims! Attempting script regeneration...
+2026-08-26 16:14:34,727 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-26 16:14:34,745 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-26 16:14:36,785 | generate_content | INFO | Optimized hook accepted on attempt 1: 'EXPOSED: Space AI weapon that could DESTROY China’s launch fleet' (Score: 94.0)
+2026-08-26 16:14:36,785 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-26 16:15:04,909 | generate_content | INFO | Generated script (Attempt 1/3). Word count: 79
+2026-08-26 16:15:04,909 | generate_content | INFO | Successfully generated script with optimal retention length: AI Space Weapon Threatening China
+2026-08-26 16:15:04,909 | generate_content | INFO | Content saved to /home/runner/work/ai-video-generator/ai-video-generator/data/content.json
+2026-08-26 16:15:04,928 | generate_content | INFO | Calling Groq to generate YouTube metadata...
+2026-08-26 16:15:30,096 | generate_content | INFO | YouTube metadata saved to /home/runner/work/ai-video-generator/ai-video-generator/data/metadata.json
+2026-08-26 16:15:30,098 | generate_content | INFO | Video logged to central shortest_orbit_v3.db as ID: 546
+2026-08-26 16:15:30,100 | generate_content | INFO | Video logged to youtube.db as ID: 2
+2026-08-26 16:15:30,101 | generate_content | INFO | Video logged to instagram.db
+2026-08-26 16:15:30,102 | generate_content | INFO | Video logged to facebook.db
+2026-08-26 16:15:30,104 | generate_content | INFO | Video hooks logged to automation.db
+2026-08-26 16:15:30,104 | verify_facts | INFO | === STEP 2.5: VERIFY FACTS ===
+2026-08-26 16:15:30,122 | verify_facts | INFO | Calling Groq to verify script facts...
+2026-08-26 16:15:32,118 | verify_facts | INFO | Verified Claim: 'SpaceX has partnered with Nvidia to deploy an orbi...' | Accuracy: 78.0%
+2026-08-26 16:15:32,118 | verify_facts | INFO | Verified Claim: 'China’s satellite network currently lacks this cap...' | Accuracy: 62.0%
+2026-08-26 16:15:32,118 | verify_facts | INFO | Verified Claim: 'The system could become a weaponized surveillance ...' | Accuracy: 55.0%
+2026-08-26 16:15:32,118 | verify_facts | INFO | Verified Claim: 'Space AI weapon that could DESTROY China’s launch ...' | Accuracy: 30.0%
+2026-08-26 16:15:32,118 | verify_facts | WARNING | Fact checking failed! 3 claims were flagged as highly uncertain or incorrect.
+2026-08-26 16:15:32,119 | orchestrator | CRITICAL | Regenerated script failed fact checking again. Aborting run for safety.
+2026-08-26 16:15:32,120 | python.v4_contract_engine | INFO | Saved V4 Contract manifest to /home/runner/work/ai-video-generator/ai-video-generator/data/v4_contracts/orbit_v4_1787760838.json and /home/runner/work/ai-video-generator/ai-video-generator/output/v4_contract.json
+2026-08-26 16:16:02,124 | orchestrator | INFO | ==================================================
+2026-08-26 16:16:02,124 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-26 16:16:02,124 | orchestrator | INFO | ==================================================
+2026-08-26 16:16:02,169 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers
+2026-08-26 16:16:02,214 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers
+2026-08-26 16:16:02,217 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-26 16:16:02,217 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-26 16:16:02,217 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-26 16:16:02,217 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-26 16:16:02,356 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-26 16:16:02,356 | find_viral_topics | INFO | Fetching hot topics from r/natureismetal...
+2026-08-26 16:16:02,401 | find_viral_topics | WARNING | Reddit r/natureismetal returned status code 403
+2026-08-26 16:16:02,401 | find_viral_topics | INFO | Fetching hot topics from r/EarthPorn...
+2026-08-26 16:16:02,458 | find_viral_topics | WARNING | Reddit r/EarthPorn returned status code 403
+2026-08-26 16:16:02,459 | find_viral_topics | INFO | Fetching hot topics from r/interestingasfuck...
+2026-08-26 16:16:02,515 | find_viral_topics | WARNING | Reddit r/interestingasfuck returned status code 403
+2026-08-26 16:16:02,515 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-26 16:16:02,564 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-26 16:16:02,564 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-26 16:16:02,609 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-26 16:16:02,610 | find_viral_topics | INFO | Fetching hot topics from r/ocean...
+2026-08-26 16:16:02,655 | find_viral_topics | WARNING | Reddit r/ocean returned status code 403
+2026-08-26 16:16:02,656 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-26 16:16:02,701 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-26 16:16:02,701 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-26 16:16:02,751 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-26 16:16:02,751 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-26 16:16:02,796 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-26 16:16:02,796 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-26 16:16:02,797 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-26 16:16:03,301 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-26 16:16:03,301 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-26 16:16:03,472 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-26 16:16:03,472 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-26 16:16:03,840 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-26 16:16:03,840 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-26 16:16:04,373 | find_viral_topics | INFO | Fetched 103 topics from SpaceX.
+2026-08-26 16:16:04,374 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-26 16:16:04,565 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-26 16:16:04,565 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-26 16:16:04,672 | find_viral_topics | INFO | Fetched 75 topics from Nature Journal.
+2026-08-26 16:16:04,672 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-26 16:16:05,120 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-26 16:16:05,120 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-26 16:16:05,462 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-26 16:16:05,462 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-26 16:16:05,802 | find_viral_topics | INFO | Fetched 352 topics from arXiv AI.
+2026-08-26 16:16:05,803 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-26 16:16:06,013 | find_viral_topics | INFO | Fetched 177 topics from arXiv Astro.
+2026-08-26 16:16:06,013 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-26 16:16:06,573 | find_viral_topics | INFO | Fetched 100 topics from OpenAI.
+2026-08-26 16:16:06,573 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-26 16:16:07,119 | find_viral_topics | INFO | Fetched 98 topics from Anthropic.
+2026-08-26 16:16:07,119 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-26 16:16:07,648 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-26 16:16:07,648 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-26 16:16:08,245 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-26 16:16:08,246 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-26 16:16:08,338 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-26 16:16:08,340 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1393
+2026-08-26 16:16:08,366 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-26 16:16:08,474 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:16:08,475 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-26 16:16:08,738 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:16:08,739 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-26 16:16:08,739 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-26 16:16:08,758 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-26 16:16:12,272 | find_viral_topics | INFO | Groq selected and scored topic. Growth Score: 100.00 | Hook: 'Uncovered: SpaceX is building the first AI supercomputer in space—could this give America an edge over Europe's AI satellite plans?'
+2026-08-26 16:16:12,274 | find_viral_topics | INFO | Selected topic saved to /home/runner/work/ai-video-generator/ai-video-generator/data/viral_topics.json
+2026-08-26 16:16:12,274 | orchestrator | INFO | Step 1 Complete. Selected topic: 'Uncovered: SpaceX is building the first AI supercomputer in space—could this give America an edge over Europe's AI satellite plans? SpaceX will put powerful AI supercomputers into orbit, letting the U.S. crunch satellite data in space before anyone else.' (10.06s)
+2026-08-26 16:16:12,274 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-26 16:16:12,274 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-26 16:16:12,275 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-26 16:16:12,292 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-26 16:16:13,587 | generate_content | INFO | Optimized hook accepted on attempt 1: 'EXPOSED: SpaceX's orbital AI could DESTROY Europe's satellite race' (Score: 93.0)
+2026-08-26 16:16:13,587 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-26 16:16:25,096 | generate_content | INFO | Generated script (Attempt 1/3). Word count: 91
+2026-08-26 16:16:25,096 | generate_content | INFO | Successfully generated script with optimal retention length: SpaceX's Orbital AI Threatens Europe's Satellite Lead
+2026-08-26 16:16:25,096 | generate_content | INFO | Content saved to /home/runner/work/ai-video-generator/ai-video-generator/data/content.json
+2026-08-26 16:16:25,114 | generate_content | INFO | Calling Groq to generate YouTube metadata...
+2026-08-26 16:16:35,389 | generate_content | ERROR | Error generating SEO metadata: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Used 6232, Requested 2925. Please try again in 8.6775s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-08-26 16:16:35,390 | generate_content | INFO | YouTube metadata saved to /home/runner/work/ai-video-generator/ai-video-generator/data/metadata.json
+2026-08-26 16:16:35,392 | generate_content | INFO | Video logged to central shortest_orbit_v3.db as ID: 547
+2026-08-26 16:16:35,394 | generate_content | INFO | Video logged to youtube.db as ID: 3
+2026-08-26 16:16:35,395 | generate_content | INFO | Video logged to instagram.db
+2026-08-26 16:16:35,397 | generate_content | INFO | Video logged to facebook.db
+2026-08-26 16:16:35,398 | generate_content | INFO | Video hooks logged to automation.db
+2026-08-26 16:16:35,398 | orchestrator | INFO | Step 2 Complete. Title: 'SpaceX's Orbital AI Threatens Europe's Satellite Lead' (23.12s)
+2026-08-26 16:16:35,399 | orchestrator | INFO | >>> Step 2.5: Running AI fact checking on script narration...
+2026-08-26 16:16:35,399 | verify_facts | INFO | === STEP 2.5: VERIFY FACTS ===
+2026-08-26 16:16:35,416 | verify_facts | INFO | Calling Groq to verify script facts...
+2026-08-26 16:16:37,561 | verify_facts | INFO | Verified Claim: 'SpaceX announced plans to launch a fleet of AI‑pow...' | Accuracy: 30.0%
+2026-08-26 16:16:37,561 | verify_facts | INFO | Verified Claim: 'These AI‑powered supercomputers will enable real‑t...' | Accuracy: 45.0%
+2026-08-26 16:16:37,561 | verify_facts | INFO | Verified Claim: 'This could give the United States a decisive edge ...' | Accuracy: 40.0%
+2026-08-26 16:16:37,561 | verify_facts | INFO | Verified Claim: 'European agencies warn this orbital advantage thre...' | Accuracy: 50.0%
+2026-08-26 16:16:37,561 | verify_facts | INFO | Verified Claim: 'Some industry experts argue the technology could a...' | Accuracy: 70.0%
+2026-08-26 16:16:37,561 | verify_facts | INFO | Verified Claim: 'Europe's satellite race could be destroyed or doom...' | Accuracy: 20.0%
+2026-08-26 16:16:37,561 | verify_facts | WARNING | Fact checking failed! 6 claims were flagged as highly uncertain or incorrect.
+2026-08-26 16:16:37,562 | orchestrator | WARNING | Fact checking flagged critical claims! Attempting script regeneration...
+2026-08-26 16:16:37,566 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-26 16:16:37,583 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-26 16:16:55,200 | generate_content | INFO | Optimized hook accepted on attempt 1: 'EXPOSED: SpaceX's orbiting AI will DESTROY Europe's satellite plans' (Score: 88.0)
+2026-08-26 16:16:55,200 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-26 16:17:09,476 | generate_content | INFO | Generated script (Attempt 1/3). Word count: 92
+2026-08-26 16:17:09,476 | generate_content | INFO | Successfully generated script with optimal retention length: SpaceX's AI Threat to Europe's Satellites
+2026-08-26 16:17:09,477 | generate_content | INFO | Content saved to /home/runner/work/ai-video-generator/ai-video-generator/data/content.json
+2026-08-26 16:17:09,494 | generate_content | INFO | Calling Groq to generate YouTube metadata...
+2026-08-26 16:17:20,823 | generate_content | INFO | YouTube metadata saved to /home/runner/work/ai-video-generator/ai-video-generator/data/metadata.json
+2026-08-26 16:17:20,825 | generate_content | INFO | Video logged to central shortest_orbit_v3.db as ID: 548
+2026-08-26 16:17:20,826 | generate_content | INFO | Video logged to youtube.db as ID: 4
+2026-08-26 16:17:20,828 | generate_content | INFO | Video logged to instagram.db
+2026-08-26 16:17:20,829 | generate_content | INFO | Video logged to facebook.db
+2026-08-26 16:17:20,831 | generate_content | INFO | Video hooks logged to automation.db
+2026-08-26 16:17:20,831 | verify_facts | INFO | === STEP 2.5: VERIFY FACTS ===
+2026-08-26 16:17:20,849 | verify_facts | INFO | Calling Groq to verify script facts...
+2026-08-26 16:17:20,937 | verify_facts | ERROR | Error during fact-checking: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199626, Requested 1689. Please try again in 9m28.08s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-08-26 16:17:20,937 | python.v4_contract_engine | INFO | Contract State Transition: RESEARCHED -> VERIFIED
+2026-08-26 16:17:20,937 | orchestrator | INFO | Step 2.5 Complete. Script narration fact-verified. (45.54s)
+2026-08-26 16:17:20,938 | orchestrator | INFO | >>> Step 2.6: Running script quality control...
+2026-08-26 16:17:20,938 | quality_checker | INFO | === STEP 2.6: RUN QUALITY CHECKER ===
+2026-08-26 16:17:20,956 | quality_checker | INFO | Calling Groq for quality review...
+2026-08-26 16:17:21,059 | quality_checker | ERROR | Quality checker LLM execution failed: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199626, Requested 2579. Please try again in 15m52.56s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}. Defaulting to true.
+2026-08-26 16:17:21,059 | python.v4_contract_engine | INFO | Contract State Transition: VERIFIED -> SCORED
+2026-08-26 16:17:21,059 | orchestrator | INFO | Step 2.6 Complete. Script quality & accuracy gate verified. (0.12s)
+2026-08-26 16:17:21,059 | orchestrator | INFO | >>> Step 3: Generating voice narration...
+2026-08-26 16:17:21,059 | generate_voice | INFO | === STEP 3: GENERATE VOICE ===
+2026-08-26 16:17:22,433 | generate_voice | INFO | Selected voice profile: en-US-ChristopherNeural at +8% rate
+2026-08-26 16:17:22,433 | generate_voice | INFO | Starting speech generation...
+2026-08-26 16:17:22,434 | generate_voice | INFO | Using Edge-TTS with voice='en-US-ChristopherNeural', rate='+8%', pitch='+0Hz'
+2026-08-26 16:17:22,438 | generate_voice | INFO | Streaming audio from edge-tts to raw file: /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3
+2026-08-26 16:17:29,802 | generate_voice | INFO | Raw voice narration saved. Captured 3 sentence boundaries.
+2026-08-26 16:17:29,803 | generate_voice | INFO | Word timings saved to /home/runner/work/ai-video-generator/ai-video-generator/audio/word_timings.json
+2026-08-26 16:17:29,803 | generate_voice | INFO | Normalizing audio volume of /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3...
+2026-08-26 16:17:29,803 | utils.ffmpeg | INFO | Normalizing audio for voice_raw.mp3 (two-pass loudnorm)
+2026-08-26 16:17:29,804 | utils.ffmpeg | DEBUG | FFmpeg command: ffmpeg -hide_banner -y -i /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3 -af loudnorm=print_format=json -f null -
+2026-08-26 16:17:30,428 | utils.ffmpeg | DEBUG | Loudnorm analysis: I=-20.57, TP=-2.39, LRA=3.10, thresh=-30.80, offset=0.40
+2026-08-26 16:17:30,429 | utils.ffmpeg | DEBUG | FFmpeg command: ffmpeg -hide_banner -y -i /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3 -af loudnorm=I=-16:TP=-1.5:LRA=11:measured_I=-20.57:measured_TP=-2.39:measured_LRA=3.10:measured_thresh=-30.80:offset=0.40:linear=true:print_format=summary -c:a libmp3lame -q:a 2 /home/runner/work/ai-video-generator/ai-video-generator/audio/voice.mp3
+2026-08-26 16:17:31,291 | utils.ffmpeg | INFO | Audio normalized (two-pass) -> voice.mp3
+2026-08-26 16:17:31,291 | generate_voice | INFO | Normalized audio saved to final path: /home/runner/work/ai-video-generator/ai-video-generator/audio/voice.mp3
+2026-08-26 16:17:31,291 | generate_voice | DEBUG | Removed temporary raw audio file /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3
+2026-08-26 16:17:31,291 | orchestrator | INFO | Step 3 Complete. Narration voice file generated at: voice.mp3 (10.23s)
+2026-08-26 16:17:31,291 | orchestrator | INFO | >>> Step 4: Aligning word timings and generating subtitles...
+2026-08-26 16:17:31,291 | create_subtitles | INFO | == Step 4: Create Karaoke Subtitles =========================
+2026-08-26 16:17:31,292 | create_subtitles | INFO | Karaoke SRT written to /home/runner/work/ai-video-generator/ai-video-generator/captions/voice.srt
+2026-08-26 16:17:31,292 | orchestrator | INFO | Step 4 Complete. Subtitles generated at: voice.srt (0.00s)
+2026-08-26 16:17:31,292 | orchestrator | INFO | >>> Step 5: Generating visual search queries...
+2026-08-26 16:17:31,293 | generate_search_queries | INFO | === STEP 5: GENERATE SEARCH QUERIES ===
+2026-08-26 16:17:31,293 | generate_search_queries | INFO | Parsing sentence timings file: /home/runner/work/ai-video-generator/ai-video-generator/audio/word_timings.json
+2026-08-26 16:17:31,293 | generate_search_queries | INFO | Loaded 3 sentence entries from timings.
+2026-08-26 16:17:31,293 | generate_search_queries | INFO | Calling Visual Decision Director to classify and formulate visual scenes...
+2026-08-26 16:17:32,863 | generate_search_queries | INFO | RAW LLM RESPONSE RECV: '```json\n{\n  "queries": [\n    {\n      "index": 1,\n      "visual_style": "cinematic",\n      "query": "SpaceX AI satellite",\n      "prompt": "Cinematic 4K view of a sleek SpaceX AI supercomputer 
+2026-08-26 16:17:32,863 | generate_search_queries | INFO | Visual Decision Director assigned styles: ['cinematic', 'cinematic', 'doodle']
+2026-08-26 16:17:32,864 | generate_search_queries | INFO | Search queries saved to /home/runner/work/ai-video-generator/ai-video-generator/data/search_queries.json
+2026-08-26 16:17:32,864 | orchestrator | INFO | Step 5 Complete. Generated 3 scene search prompts. (1.57s)
+2026-08-26 16:17:32,864 | orchestrator | INFO | >>> Step 6: Generating Tri-Modal Video Scenes (Doodle + Cinematic + 3D Map Graphics)...
+2026-08-26 16:17:32,868 | orchestrator | CRITICAL | Pipeline crashed during execution! Error: No module named 'numpy'
+Traceback (most recent call last):
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/main.py", line 169, in run_pipeline
+    import multi_style_generator
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/multi_style_generator.py", line 23, in <module>
+    import generate_whiteboard
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/generate_whiteboard.py", line 18, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+2026-08-26 16:18:02,873 | orchestrator | INFO | ==================================================
+2026-08-26 16:18:02,874 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-26 16:18:02,874 | orchestrator | INFO | ==================================================
+2026-08-26 16:18:02,922 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers
+2026-08-26 16:18:02,969 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers
+2026-08-26 16:18:02,971 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-26 16:18:02,971 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-26 16:18:02,971 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-26 16:18:02,972 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-26 16:18:03,095 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-26 16:18:03,095 | find_viral_topics | INFO | Fetching hot topics from r/natureismetal...
+2026-08-26 16:18:03,172 | find_viral_topics | WARNING | Reddit r/natureismetal returned status code 403
+2026-08-26 16:18:03,173 | find_viral_topics | INFO | Fetching hot topics from r/EarthPorn...
+2026-08-26 16:18:03,246 | find_viral_topics | WARNING | Reddit r/EarthPorn returned status code 403
+2026-08-26 16:18:03,246 | find_viral_topics | INFO | Fetching hot topics from r/interestingasfuck...
+2026-08-26 16:18:03,319 | find_viral_topics | WARNING | Reddit r/interestingasfuck returned status code 403
+2026-08-26 16:18:03,320 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-26 16:18:03,396 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-26 16:18:03,396 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-26 16:18:03,474 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-26 16:18:03,474 | find_viral_topics | INFO | Fetching hot topics from r/ocean...
+2026-08-26 16:18:03,548 | find_viral_topics | WARNING | Reddit r/ocean returned status code 403
+2026-08-26 16:18:03,548 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-26 16:18:03,622 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-26 16:18:03,622 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-26 16:18:03,697 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-26 16:18:03,698 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-26 16:18:03,773 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-26 16:18:03,773 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-26 16:18:03,774 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-26 16:18:04,291 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-26 16:18:04,292 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-26 16:18:04,465 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-26 16:18:04,466 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-26 16:18:05,138 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-26 16:18:05,138 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-26 16:18:05,845 | find_viral_topics | INFO | Fetched 104 topics from SpaceX.
+2026-08-26 16:18:05,845 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-26 16:18:06,038 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-26 16:18:06,038 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-26 16:18:06,183 | find_viral_topics | INFO | Fetched 75 topics from Nature Journal.
+2026-08-26 16:18:06,184 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-26 16:18:06,642 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-26 16:18:06,642 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-26 16:18:06,894 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-26 16:18:06,895 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-26 16:18:07,291 | find_viral_topics | INFO | Fetched 352 topics from arXiv AI.
+2026-08-26 16:18:07,292 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-26 16:18:07,509 | find_viral_topics | INFO | Fetched 177 topics from arXiv Astro.
+2026-08-26 16:18:07,510 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-26 16:18:08,014 | find_viral_topics | INFO | Fetched 100 topics from OpenAI.
+2026-08-26 16:18:08,015 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-26 16:18:08,549 | find_viral_topics | INFO | Fetched 98 topics from Anthropic.
+2026-08-26 16:18:08,549 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-26 16:18:09,017 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-26 16:18:09,018 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-26 16:18:09,629 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-26 16:18:09,629 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-26 16:18:09,752 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-26 16:18:09,754 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1393
+2026-08-26 16:18:09,759 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-26 16:18:09,861 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:18:09,862 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-26 16:18:10,097 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:18:10,097 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-26 16:18:10,098 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-26 16:18:10,116 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-26 16:18:12,862 | find_viral_topics | ERROR | Error calling Groq for topic selection: Empty response from LLM
+2026-08-26 16:18:12,864 | find_viral_topics | INFO | Selected topic saved to /home/runner/work/ai-video-generator/ai-video-generator/data/viral_topics.json
+2026-08-26 16:18:12,864 | orchestrator | INFO | Step 1 Complete. Selected topic: 'Wikipedia Trend: Main Page' (9.89s)
+2026-08-26 16:18:12,864 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-26 16:18:12,864 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-26 16:18:12,864 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-26 16:18:12,883 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-26 16:18:14,051 | generate_content | INFO | Optimized hook accepted on attempt 1: 'EXPOSED: Wikipedia's Main Page hides a TERRIFYING secret' (Score: 88.0)
+2026-08-26 16:18:14,051 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-26 16:18:15,653 | generate_content | ERROR | Error on attempt 1: Expecting value: line 1 column 1 (char 0)
+2026-08-26 16:18:26,765 | generate_content | ERROR | Error on attempt 2: Expecting value: line 1 column 1 (char 0)
+2026-08-26 16:18:53,534 | generate_content | ERROR | Error on attempt 3: Expecting value: line 1 column 1 (char 0)
+2026-08-26 16:18:53,534 | orchestrator | CRITICAL | Pipeline crashed during execution! Error: Expecting value: line 1 column 1 (char 0)
+Traceback (most recent call last):
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/main.py", line 105, in run_pipeline
+    content, metadata = generate_content.run(topic)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/generate_content.py", line 362, in run
+    content = generate_narration(topic_data)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/generate_content.py", line 210, in generate_narration
+    content = extract_json_from_llm(response_text)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/ai-video-generator/ai-video-generator/utils/helpers.py", line 74, in extract_json_from_llm
+    return json.loads(clean)
+           ^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.16/x64/lib/python3.11/json/decoder.py", line 355, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+2026-08-26 16:19:23,560 | orchestrator | INFO | ==================================================
+2026-08-26 16:19:23,560 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-26 16:19:23,560 | orchestrator | INFO | ==================================================
+2026-08-26 16:19:23,607 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers
+2026-08-26 16:19:23,653 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers
+2026-08-26 16:19:23,655 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-26 16:19:23,656 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-26 16:19:23,656 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-26 16:19:23,656 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-26 16:19:23,878 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-26 16:19:23,878 | find_viral_topics | INFO | Fetching hot topics from r/natureismetal...
+2026-08-26 16:19:23,955 | find_viral_topics | WARNING | Reddit r/natureismetal returned status code 403
+2026-08-26 16:19:23,955 | find_viral_topics | INFO | Fetching hot topics from r/EarthPorn...
+2026-08-26 16:19:24,037 | find_viral_topics | WARNING | Reddit r/EarthPorn returned status code 403
+2026-08-26 16:19:24,037 | find_viral_topics | INFO | Fetching hot topics from r/interestingasfuck...
+2026-08-26 16:19:24,111 | find_viral_topics | WARNING | Reddit r/interestingasfuck returned status code 403
+2026-08-26 16:19:24,111 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-26 16:19:24,185 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-26 16:19:24,185 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-26 16:19:24,261 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-26 16:19:24,261 | find_viral_topics | INFO | Fetching hot topics from r/ocean...
+2026-08-26 16:19:24,337 | find_viral_topics | WARNING | Reddit r/ocean returned status code 403
+2026-08-26 16:19:24,338 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-26 16:19:24,412 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-26 16:19:24,412 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-26 16:19:24,483 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-26 16:19:24,484 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-26 16:19:24,557 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-26 16:19:24,557 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-26 16:19:24,558 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-26 16:19:25,150 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-26 16:19:25,150 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-26 16:19:25,345 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-26 16:19:25,345 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-26 16:19:26,003 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-26 16:19:26,004 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-26 16:19:26,619 | find_viral_topics | INFO | Fetched 104 topics from SpaceX.
+2026-08-26 16:19:26,620 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-26 16:19:26,809 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-26 16:19:26,810 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-26 16:19:26,889 | find_viral_topics | INFO | Fetched 0 topics from Nature Journal.
+2026-08-26 16:19:26,889 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-26 16:19:27,128 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-26 16:19:27,129 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-26 16:19:27,353 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-26 16:19:27,353 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-26 16:19:27,633 | find_viral_topics | INFO | Fetched 352 topics from arXiv AI.
+2026-08-26 16:19:27,634 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-26 16:19:27,802 | find_viral_topics | INFO | Fetched 177 topics from arXiv Astro.
+2026-08-26 16:19:27,803 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-26 16:19:28,296 | find_viral_topics | INFO | Fetched 100 topics from OpenAI.
+2026-08-26 16:19:28,296 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-26 16:19:28,930 | find_viral_topics | INFO | Fetched 98 topics from Anthropic.
+2026-08-26 16:19:28,931 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-26 16:19:29,454 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-26 16:19:29,455 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-26 16:19:30,197 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-26 16:19:30,197 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-26 16:19:30,290 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-26 16:19:30,291 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1317
+2026-08-26 16:19:30,296 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-26 16:19:30,402 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:19:30,403 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-26 16:19:30,673 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:19:30,673 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-26 16:19:30,674 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-26 16:19:30,691 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-26 16:19:32,860 | find_viral_topics | INFO | Groq selected and scored topic. Growth Score: 79.40 | Hook: 'Did you know SpaceX is building a $100B spaceport on the Gulf Coast that could launch rockets straight from the ocean into orbit?'
+2026-08-26 16:19:32,862 | find_viral_topics | INFO | Selected topic saved to /home/runner/work/ai-video-generator/ai-video-generator/data/viral_topics.json
+2026-08-26 16:19:32,862 | orchestrator | INFO | Step 1 Complete. Selected topic: 'Did you know SpaceX is building a $100B spaceport on the Gulf Coast that could launch rockets straight from the ocean into orbit? SpaceX is building a gigantic spaceport on Louisiana’s Gulf Coast that could launch rockets directly from the ocean into space.' (9.21s)
+2026-08-26 16:19:32,862 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-26 16:19:32,862 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-26 16:19:32,862 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-26 16:19:32,881 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-26 16:19:33,645 | generate_content | INFO | Optimized hook accepted on attempt 1: 'SpaceX's $100B ocean launch will DESTROY everything.' (Score: 90.5)
+2026-08-26 16:19:33,645 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-26 16:19:46,116 | generate_content | INFO | Generated script (Attempt 1/3). Word count: 89
+2026-08-26 16:19:46,116 | generate_content | INFO | Successfully generated script with optimal retention length: SpaceX's Ocean Launch: A Game-Changing Gamble
+2026-08-26 16:19:46,117 | generate_content | INFO | Content saved to /home/runner/work/ai-video-generator/ai-video-generator/data/content.json
+2026-08-26 16:19:46,134 | generate_content | INFO | Calling Groq to generate YouTube metadata...
+2026-08-26 16:19:46,227 | generate_content | ERROR | Error generating SEO metadata: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199449, Requested 824. Please try again in 1m57.936s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-08-26 16:19:46,227 | generate_content | INFO | YouTube metadata saved to /home/runner/work/ai-video-generator/ai-video-generator/data/metadata.json
+2026-08-26 16:19:46,229 | generate_content | INFO | Video logged to central shortest_orbit_v3.db as ID: 549
+2026-08-26 16:19:46,231 | generate_content | INFO | Video logged to youtube.db as ID: 5
+2026-08-26 16:19:46,232 | generate_content | INFO | Video logged to instagram.db
+2026-08-26 16:19:46,234 | generate_content | INFO | Video logged to facebook.db
+2026-08-26 16:19:46,235 | generate_content | INFO | Video hooks logged to automation.db
+2026-08-26 16:19:46,236 | orchestrator | INFO | Step 2 Complete. Title: 'SpaceX's Ocean Launch: A Game-Changing Gamble' (13.37s)
+2026-08-26 16:19:46,236 | orchestrator | INFO | >>> Step 2.5: Running AI fact checking on script narration...
+2026-08-26 16:19:46,236 | verify_facts | INFO | === STEP 2.5: VERIFY FACTS ===
+2026-08-26 16:19:46,254 | verify_facts | INFO | Calling Groq to verify script facts...
+2026-08-26 16:19:46,342 | verify_facts | ERROR | Error during fact-checking: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199449, Requested 2992. Please try again in 17m34.512s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-08-26 16:19:46,342 | python.v4_contract_engine | INFO | Contract State Transition: RESEARCHED -> VERIFIED
+2026-08-26 16:19:46,342 | orchestrator | INFO | Step 2.5 Complete. Script narration fact-verified. (0.11s)
+2026-08-26 16:19:46,343 | orchestrator | INFO | >>> Step 2.6: Running script quality control...
+2026-08-26 16:19:46,343 | quality_checker | INFO | === STEP 2.6: RUN QUALITY CHECKER ===
+2026-08-26 16:19:46,343 | quality_checker | WARNING | Repetitive word warning: 'launch' occurs 4 times in narration.
+2026-08-26 16:19:46,361 | quality_checker | INFO | Calling Groq for quality review...
+2026-08-26 16:19:46,451 | quality_checker | ERROR | Quality checker LLM execution failed: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199449, Requested 2580. Please try again in 14m36.527999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}. Defaulting to true.
+2026-08-26 16:19:46,452 | python.v4_contract_engine | INFO | Contract State Transition: VERIFIED -> SCORED
+2026-08-26 16:19:46,452 | orchestrator | INFO | Step 2.6 Complete. Script quality & accuracy gate verified. (0.11s)
+2026-08-26 16:19:46,452 | orchestrator | INFO | >>> Step 3: Generating voice narration...
+2026-08-26 16:19:46,452 | generate_voice | INFO | === STEP 3: GENERATE VOICE ===
+2026-08-26 16:19:46,719 | generate_voice | INFO | Selected voice profile: en-US-ChristopherNeural at +8% rate
+2026-08-26 16:19:46,719 | generate_voice | INFO | Starting speech generation...
+2026-08-26 16:19:46,719 | generate_voice | INFO | Using Edge-TTS with voice='en-US-ChristopherNeural', rate='+8%', pitch='+0Hz'
+2026-08-26 16:19:46,719 | generate_voice | INFO | Streaming audio from edge-tts to raw file: /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3
+2026-08-26 16:19:49,457 | generate_voice | INFO | Raw voice narration saved. Captured 5 sentence boundaries.
+2026-08-26 16:19:49,457 | generate_voice | INFO | Word timings saved to /home/runner/work/ai-video-generator/ai-video-generator/audio/word_timings.json
+2026-08-26 16:19:49,458 | generate_voice | INFO | Normalizing audio volume of /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3...
+2026-08-26 16:19:49,458 | utils.ffmpeg | INFO | Normalizing audio for voice_raw.mp3 (two-pass loudnorm)
+2026-08-26 16:19:49,458 | utils.ffmpeg | DEBUG | FFmpeg command: ffmpeg -hide_banner -y -i /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3 -af loudnorm=print_format=json -f null -
+2026-08-26 16:19:50,131 | utils.ffmpeg | DEBUG | Loudnorm analysis: I=-20.29, TP=-2.44, LRA=2.50, thresh=-30.55, offset=0.36
+2026-08-26 16:19:50,132 | utils.ffmpeg | DEBUG | FFmpeg command: ffmpeg -hide_banner -y -i /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3 -af loudnorm=I=-16:TP=-1.5:LRA=11:measured_I=-20.29:measured_TP=-2.44:measured_LRA=2.50:measured_thresh=-30.55:offset=0.36:linear=true:print_format=summary -c:a libmp3lame -q:a 2 /home/runner/work/ai-video-generator/ai-video-generator/audio/voice.mp3
+2026-08-26 16:19:51,061 | utils.ffmpeg | INFO | Audio normalized (two-pass) -> voice.mp3
+2026-08-26 16:19:51,062 | generate_voice | INFO | Normalized audio saved to final path: /home/runner/work/ai-video-generator/ai-video-generator/audio/voice.mp3
+2026-08-26 16:19:51,062 | generate_voice | DEBUG | Removed temporary raw audio file /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3
+2026-08-26 16:19:51,062 | orchestrator | INFO | Step 3 Complete. Narration voice file generated at: voice.mp3 (4.61s)
+2026-08-26 16:19:51,062 | orchestrator | INFO | >>> Step 4: Aligning word timings and generating subtitles...
+2026-08-26 16:19:51,062 | create_subtitles | INFO | == Step 4: Create Karaoke Subtitles =========================
+2026-08-26 16:19:51,063 | create_subtitles | INFO | Karaoke SRT written to /home/runner/work/ai-video-generator/ai-video-generator/captions/voice.srt
+2026-08-26 16:19:51,063 | orchestrator | INFO | Step 4 Complete. Subtitles generated at: voice.srt (0.00s)
+2026-08-26 16:19:51,063 | orchestrator | INFO | >>> Step 5: Generating visual search queries...
+2026-08-26 16:19:51,063 | generate_search_queries | INFO | === STEP 5: GENERATE SEARCH QUERIES ===
+2026-08-26 16:19:51,063 | generate_search_queries | INFO | Parsing sentence timings file: /home/runner/work/ai-video-generator/ai-video-generator/audio/word_timings.json
+2026-08-26 16:19:51,064 | generate_search_queries | INFO | Loaded 5 sentence entries from timings.
+2026-08-26 16:19:51,064 | generate_search_queries | INFO | Calling Visual Decision Director to classify and formulate visual scenes...
+2026-08-26 16:19:54,946 | generate_search_queries | INFO | RAW LLM RESPONSE RECV: '```json\n{\n  "queries": [\n    {\n      "index": 1,\n      "visual_style": "cinematic",\n      "query": "ocean launch",\n      "prompt": "Cinematic 4K shot of SpaceX\'s colossal floating launch plat
+2026-08-26 16:19:54,947 | generate_search_queries | INFO | Visual Decision Director assigned styles: ['cinematic', 'cinematic', 'doodle', 'map_motion', 'cinematic']
+2026-08-26 16:19:54,947 | generate_search_queries | INFO | Search queries saved to /home/runner/work/ai-video-generator/ai-video-generator/data/search_queries.json
+2026-08-26 16:19:54,947 | orchestrator | INFO | Step 5 Complete. Generated 5 scene search prompts. (3.88s)
+2026-08-26 16:19:54,947 | orchestrator | INFO | >>> Step 6: Generating Tri-Modal Video Scenes (Doodle + Cinematic + 3D Map Graphics)...
+2026-08-26 16:19:54,949 | orchestrator | CRITICAL | Pipeline crashed during execution! Error: No module named 'numpy'
+Traceback (most recent call last):
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/main.py", line 169, in run_pipeline
+    import multi_style_generator
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/multi_style_generator.py", line 23, in <module>
+    import generate_whiteboard
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/generate_whiteboard.py", line 18, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+2026-08-26 16:20:24,954 | orchestrator | INFO | ==================================================
+2026-08-26 16:20:24,954 | orchestrator | INFO |    STARTING AI VIDEO GENERATOR V2 PIPELINE        
+2026-08-26 16:20:24,954 | orchestrator | INFO | ==================================================
+2026-08-26 16:20:25,001 | utils.ffmpeg | INFO | ffmpeg found: ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers
+2026-08-26 16:20:25,046 | utils.ffmpeg | INFO | ffprobe found: ffprobe version 6.1.1-3ubuntu5 Copyright (c) 2007-2023 the FFmpeg developers
+2026-08-26 16:20:25,049 | orchestrator | INFO | Platform isolated databases initialized successfully.
+2026-08-26 16:20:25,049 | orchestrator | INFO | >>> Step 1: Searching for viral space/science/AI topics...
+2026-08-26 16:20:25,049 | find_viral_topics | INFO | === STEP 1: FIND VIRAL TOPICS ===
+2026-08-26 16:20:25,049 | find_viral_topics | INFO | Fetching Google Trends for geo=US...
+2026-08-26 16:20:25,254 | find_viral_topics | INFO | Fetched 10 topics from Google Trends.
+2026-08-26 16:20:25,254 | find_viral_topics | INFO | Fetching hot topics from r/natureismetal...
+2026-08-26 16:20:25,337 | find_viral_topics | WARNING | Reddit r/natureismetal returned status code 403
+2026-08-26 16:20:25,337 | find_viral_topics | INFO | Fetching hot topics from r/EarthPorn...
+2026-08-26 16:20:25,415 | find_viral_topics | WARNING | Reddit r/EarthPorn returned status code 403
+2026-08-26 16:20:25,415 | find_viral_topics | INFO | Fetching hot topics from r/interestingasfuck...
+2026-08-26 16:20:25,497 | find_viral_topics | WARNING | Reddit r/interestingasfuck returned status code 403
+2026-08-26 16:20:25,497 | find_viral_topics | INFO | Fetching hot topics from r/space...
+2026-08-26 16:20:25,575 | find_viral_topics | WARNING | Reddit r/space returned status code 403
+2026-08-26 16:20:25,575 | find_viral_topics | INFO | Fetching hot topics from r/science...
+2026-08-26 16:20:25,660 | find_viral_topics | WARNING | Reddit r/science returned status code 403
+2026-08-26 16:20:25,660 | find_viral_topics | INFO | Fetching hot topics from r/ocean...
+2026-08-26 16:20:25,742 | find_viral_topics | WARNING | Reddit r/ocean returned status code 403
+2026-08-26 16:20:25,743 | find_viral_topics | INFO | Fetching hot topics from r/Futurology...
+2026-08-26 16:20:25,826 | find_viral_topics | WARNING | Reddit r/Futurology returned status code 403
+2026-08-26 16:20:25,826 | find_viral_topics | INFO | Fetching hot topics from r/astrophysics...
+2026-08-26 16:20:25,899 | find_viral_topics | WARNING | Reddit r/astrophysics returned status code 403
+2026-08-26 16:20:25,899 | find_viral_topics | INFO | Fetching hot topics from r/technology...
+2026-08-26 16:20:25,982 | find_viral_topics | WARNING | Reddit r/technology returned status code 403
+2026-08-26 16:20:25,982 | find_viral_topics | INFO | Fetched 0 topics from Reddit.
+2026-08-26 16:20:25,983 | find_viral_topics | INFO | Fetching Google News headlines...
+2026-08-26 16:20:26,119 | find_viral_topics | INFO | Fetched 100 topics from Google News.
+2026-08-26 16:20:26,119 | find_viral_topics | INFO | Fetching RSS feed from NASA News...
+2026-08-26 16:20:26,289 | find_viral_topics | INFO | Fetched 10 topics from NASA News.
+2026-08-26 16:20:26,290 | find_viral_topics | INFO | Fetching RSS feed from ESA Space Science...
+2026-08-26 16:20:26,825 | find_viral_topics | INFO | Fetched 15 topics from ESA Space Science.
+2026-08-26 16:20:26,826 | find_viral_topics | INFO | Fetching RSS feed from SpaceX...
+2026-08-26 16:20:26,961 | find_viral_topics | INFO | Fetched 104 topics from SpaceX.
+2026-08-26 16:20:26,961 | find_viral_topics | INFO | Fetching RSS feed from MIT News...
+2026-08-26 16:20:27,200 | find_viral_topics | INFO | Fetched 50 topics from MIT News.
+2026-08-26 16:20:27,201 | find_viral_topics | INFO | Fetching RSS feed from Nature Journal...
+2026-08-26 16:20:27,340 | find_viral_topics | INFO | Fetched 75 topics from Nature Journal.
+2026-08-26 16:20:27,340 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily Space...
+2026-08-26 16:20:27,654 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily Space.
+2026-08-26 16:20:27,654 | find_viral_topics | INFO | Fetching RSS feed from ScienceDaily AI...
+2026-08-26 16:20:28,076 | find_viral_topics | INFO | Fetched 60 topics from ScienceDaily AI.
+2026-08-26 16:20:28,076 | find_viral_topics | INFO | Fetching RSS feed from arXiv AI...
+2026-08-26 16:20:28,358 | find_viral_topics | INFO | Fetched 352 topics from arXiv AI.
+2026-08-26 16:20:28,359 | find_viral_topics | INFO | Fetching RSS feed from arXiv Astro...
+2026-08-26 16:20:28,526 | find_viral_topics | INFO | Fetched 177 topics from arXiv Astro.
+2026-08-26 16:20:28,526 | find_viral_topics | INFO | Fetching RSS feed from OpenAI...
+2026-08-26 16:20:28,661 | find_viral_topics | INFO | Fetched 100 topics from OpenAI.
+2026-08-26 16:20:28,661 | find_viral_topics | INFO | Fetching RSS feed from Anthropic...
+2026-08-26 16:20:28,805 | find_viral_topics | INFO | Fetched 98 topics from Anthropic.
+2026-08-26 16:20:28,805 | find_viral_topics | INFO | Fetching RSS feed from DeepMind...
+2026-08-26 16:20:28,953 | find_viral_topics | INFO | Fetched 100 topics from DeepMind.
+2026-08-26 16:20:28,953 | find_viral_topics | INFO | Fetching RSS feed from Microsoft AI...
+2026-08-26 16:20:29,089 | find_viral_topics | INFO | Fetched 100 topics from Microsoft AI.
+2026-08-26 16:20:29,089 | find_viral_topics | INFO | Fetching Wikipedia Trending pages...
+2026-08-26 16:20:29,182 | find_viral_topics | INFO | Fetched 5 topics from Wikipedia.
+2026-08-26 16:20:29,184 | find_viral_topics | INFO | Total unique topics collected across 15 sources: 1392
+2026-08-26 16:20:29,188 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails&alt=json
+2026-08-26 16:20:29,292 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:20:29,293 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=15&alt=json
+2026-08-26 16:20:29,533 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:20:29,533 | find_viral_topics | INFO | Fetched 15 recent uploaded titles from channel.
+2026-08-26 16:20:29,534 | find_viral_topics | INFO | Fetched 20 recent titles from central database to prevent duplicates/retries.
+2026-08-26 16:20:29,552 | find_viral_topics | INFO | Calling Groq LLM to scan and score viral topics...
+2026-08-26 16:20:31,458 | find_viral_topics | INFO | Groq selected and scored topic. Growth Score: 83.64 | Hook: 'Did you know SpaceX is launching a supercomputer into orbit that could outpace Earth's fastest AI systems?'
+2026-08-26 16:20:31,460 | find_viral_topics | INFO | Selected topic saved to /home/runner/work/ai-video-generator/ai-video-generator/data/viral_topics.json
+2026-08-26 16:20:31,460 | orchestrator | INFO | Step 1 Complete. Selected topic: 'Did you know SpaceX is launching a supercomputer into orbit that could outpace Earth's fastest AI systems? SpaceX is building a giant computer in orbit that could crunch data faster than any Earth‑based supercomputer, all while trying to make a profit.' (6.41s)
+2026-08-26 16:20:31,460 | python.v4_contract_engine | INFO | Contract State Transition: DRAFT -> RESEARCHED
+2026-08-26 16:20:31,460 | orchestrator | INFO | >>> Step 2: Generating narration script and metadata...
+2026-08-26 16:20:31,460 | generate_content | INFO | === STEP 2: GENERATE CONTENT ===
+2026-08-26 16:20:31,479 | generate_content | INFO | Generating optimized hooks (attempt 1/3)...
+2026-08-26 16:20:32,566 | generate_content | INFO | Optimized hook accepted on attempt 1: 'SpaceX is secretly profiting from a super AI monopoly' (Score: 91.0)
+2026-08-26 16:20:32,566 | generate_content | INFO | Calling Groq to generate Shortest Orbit script...
+2026-08-26 16:20:55,356 | generate_content | INFO | Generated script (Attempt 1/3). Word count: 91
+2026-08-26 16:20:55,356 | generate_content | INFO | Successfully generated script with optimal retention length: SpaceX's Secret AI Data Monopoly
+2026-08-26 16:20:55,356 | generate_content | INFO | Content saved to /home/runner/work/ai-video-generator/ai-video-generator/data/content.json
+2026-08-26 16:20:55,374 | generate_content | INFO | Calling Groq to generate YouTube metadata...
+2026-08-26 16:20:55,458 | generate_content | ERROR | Error generating SEO metadata: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199450, Requested 819. Please try again in 1m56.208s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-08-26 16:20:55,459 | generate_content | INFO | YouTube metadata saved to /home/runner/work/ai-video-generator/ai-video-generator/data/metadata.json
+2026-08-26 16:20:55,461 | generate_content | INFO | Video logged to central shortest_orbit_v3.db as ID: 550
+2026-08-26 16:20:55,462 | generate_content | INFO | Video logged to youtube.db as ID: 6
+2026-08-26 16:20:55,464 | generate_content | INFO | Video logged to instagram.db
+2026-08-26 16:20:55,466 | generate_content | INFO | Video logged to facebook.db
+2026-08-26 16:20:55,468 | generate_content | INFO | Video hooks logged to automation.db
+2026-08-26 16:20:55,468 | orchestrator | INFO | Step 2 Complete. Title: 'SpaceX's Secret AI Data Monopoly' (24.01s)
+2026-08-26 16:20:55,468 | orchestrator | INFO | >>> Step 2.5: Running AI fact checking on script narration...
+2026-08-26 16:20:55,468 | verify_facts | INFO | === STEP 2.5: VERIFY FACTS ===
+2026-08-26 16:20:55,486 | verify_facts | INFO | Calling Groq to verify script facts...
+2026-08-26 16:20:55,575 | verify_facts | ERROR | Error during fact-checking: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199450, Requested 2987. Please try again in 17m32.783999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}
+2026-08-26 16:20:55,575 | python.v4_contract_engine | INFO | Contract State Transition: RESEARCHED -> VERIFIED
+2026-08-26 16:20:55,575 | orchestrator | INFO | Step 2.5 Complete. Script narration fact-verified. (0.11s)
+2026-08-26 16:20:55,575 | orchestrator | INFO | >>> Step 2.6: Running script quality control...
+2026-08-26 16:20:55,575 | quality_checker | INFO | === STEP 2.6: RUN QUALITY CHECKER ===
+2026-08-26 16:20:55,593 | quality_checker | INFO | Calling Groq for quality review...
+2026-08-26 16:20:55,679 | quality_checker | ERROR | Quality checker LLM execution failed: Error code: 429 - {'error': {'message': 'Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kn91z0c0fjsbvhzqdxd3yxrp` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199450, Requested 2774. Please try again in 16m0.767999999s. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing', 'type': 'tokens', 'code': 'rate_limit_exceeded'}}. Defaulting to true.
+2026-08-26 16:20:55,679 | python.v4_contract_engine | INFO | Contract State Transition: VERIFIED -> SCORED
+2026-08-26 16:20:55,679 | orchestrator | INFO | Step 2.6 Complete. Script quality & accuracy gate verified. (0.10s)
+2026-08-26 16:20:55,680 | orchestrator | INFO | >>> Step 3: Generating voice narration...
+2026-08-26 16:20:55,680 | generate_voice | INFO | === STEP 3: GENERATE VOICE ===
+2026-08-26 16:20:56,002 | generate_voice | INFO | Selected voice profile: en-US-ChristopherNeural at +8% rate
+2026-08-26 16:20:56,002 | generate_voice | INFO | Starting speech generation...
+2026-08-26 16:20:56,002 | generate_voice | INFO | Using Edge-TTS with voice='en-US-ChristopherNeural', rate='+8%', pitch='+0Hz'
+2026-08-26 16:20:56,003 | generate_voice | INFO | Streaming audio from edge-tts to raw file: /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3
+2026-08-26 16:21:02,467 | generate_voice | INFO | Raw voice narration saved. Captured 3 sentence boundaries.
+2026-08-26 16:21:02,468 | generate_voice | INFO | Word timings saved to /home/runner/work/ai-video-generator/ai-video-generator/audio/word_timings.json
+2026-08-26 16:21:02,468 | generate_voice | INFO | Normalizing audio volume of /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3...
+2026-08-26 16:21:02,468 | utils.ffmpeg | INFO | Normalizing audio for voice_raw.mp3 (two-pass loudnorm)
+2026-08-26 16:21:02,469 | utils.ffmpeg | DEBUG | FFmpeg command: ffmpeg -hide_banner -y -i /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3 -af loudnorm=print_format=json -f null -
+2026-08-26 16:21:03,076 | utils.ffmpeg | DEBUG | Loudnorm analysis: I=-20.94, TP=-2.46, LRA=2.90, thresh=-31.13, offset=0.59
+2026-08-26 16:21:03,077 | utils.ffmpeg | DEBUG | FFmpeg command: ffmpeg -hide_banner -y -i /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3 -af loudnorm=I=-16:TP=-1.5:LRA=11:measured_I=-20.94:measured_TP=-2.46:measured_LRA=2.90:measured_thresh=-31.13:offset=0.59:linear=true:print_format=summary -c:a libmp3lame -q:a 2 /home/runner/work/ai-video-generator/ai-video-generator/audio/voice.mp3
+2026-08-26 16:21:03,936 | utils.ffmpeg | INFO | Audio normalized (two-pass) -> voice.mp3
+2026-08-26 16:21:03,936 | generate_voice | INFO | Normalized audio saved to final path: /home/runner/work/ai-video-generator/ai-video-generator/audio/voice.mp3
+2026-08-26 16:21:03,937 | generate_voice | DEBUG | Removed temporary raw audio file /home/runner/work/ai-video-generator/ai-video-generator/audio/voice_raw.mp3
+2026-08-26 16:21:03,937 | orchestrator | INFO | Step 3 Complete. Narration voice file generated at: voice.mp3 (8.26s)
+2026-08-26 16:21:03,937 | orchestrator | INFO | >>> Step 4: Aligning word timings and generating subtitles...
+2026-08-26 16:21:03,937 | create_subtitles | INFO | == Step 4: Create Karaoke Subtitles =========================
+2026-08-26 16:21:03,938 | create_subtitles | INFO | Karaoke SRT written to /home/runner/work/ai-video-generator/ai-video-generator/captions/voice.srt
+2026-08-26 16:21:03,938 | orchestrator | INFO | Step 4 Complete. Subtitles generated at: voice.srt (0.00s)
+2026-08-26 16:21:03,938 | orchestrator | INFO | >>> Step 5: Generating visual search queries...
+2026-08-26 16:21:03,938 | generate_search_queries | INFO | === STEP 5: GENERATE SEARCH QUERIES ===
+2026-08-26 16:21:03,938 | generate_search_queries | INFO | Parsing sentence timings file: /home/runner/work/ai-video-generator/ai-video-generator/audio/word_timings.json
+2026-08-26 16:21:03,938 | generate_search_queries | INFO | Loaded 3 sentence entries from timings.
+2026-08-26 16:21:03,938 | generate_search_queries | INFO | Calling Visual Decision Director to classify and formulate visual scenes...
+2026-08-26 16:21:12,152 | generate_search_queries | INFO | RAW LLM RESPONSE RECV: '{\n  "queries": [\n    {\n      "index": 1,\n      "visual_style": "doodle",\n      "query": "AI monopoly",\n      "prompt": "Hand‑drawn doodle of a rocket crowned with glowing AI chips, illustrating
+2026-08-26 16:21:12,152 | generate_search_queries | INFO | Visual Decision Director assigned styles: ['doodle', 'cinematic', 'doodle']
+2026-08-26 16:21:12,153 | generate_search_queries | INFO | Search queries saved to /home/runner/work/ai-video-generator/ai-video-generator/data/search_queries.json
+2026-08-26 16:21:12,153 | orchestrator | INFO | Step 5 Complete. Generated 3 scene search prompts. (8.21s)
+2026-08-26 16:21:12,153 | orchestrator | INFO | >>> Step 6: Generating Tri-Modal Video Scenes (Doodle + Cinematic + 3D Map Graphics)...
+2026-08-26 16:21:12,155 | orchestrator | CRITICAL | Pipeline crashed during execution! Error: No module named 'numpy'
+Traceback (most recent call last):
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/main.py", line 169, in run_pipeline
+    import multi_style_generator
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/multi_style_generator.py", line 23, in <module>
+    import generate_whiteboard
+  File "/home/runner/work/ai-video-generator/ai-video-generator/python/generate_whiteboard.py", line 18, in <module>
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'
+2026-08-26 16:21:12,502 | utils.database | INFO | Initializing SQLite database at: /home/runner/work/ai-video-generator/ai-video-generator/data/shortest_orbit_v3.db
+2026-08-26 16:21:12,503 | utils.database | INFO | Database schema initialized successfully.
+2026-08-26 16:21:12,503 | __main__ | INFO | === STEP 11.5: HARVEST YOUTUBE ANALYTICS ===
+2026-08-26 16:21:12,504 | __main__ | INFO | Starting YouTube analytics harvesting...
+2026-08-26 16:21:12,509 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/channels?mine=true&part=contentDetails%2Cstatistics&alt=json
+2026-08-26 16:21:12,620 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:12,620 | __main__ | INFO | Saved channel subscribers: 82, views: 44189
+2026-08-26 16:21:12,621 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/playlistItems?playlistId=UU5iVRFafoTN9NI_YbG-fIGA&part=snippet&maxResults=50&alt=json
+2026-08-26 16:21:12,986 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:12,993 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/videos?id=U5mPZGgPqtw%2C9fj-o8WUbSY%2CKYvSfJXFPyw%2CTZJ7D7o0W8w%2CoYguBw4h4hU%2CG2LDuokbG4A%2C_FvGgSBConM%2COt7-hcErt78%2Cf9tTn4YJz7E%2Cise9SIbKeOA%2C9bFwPpFUHmo%2CRvdikGiqmIQ%2C8DncuueUGJY%2CgMxOAh8gOrY%2CJFEAFY64ewg%2CHcCwS3zlBLw%2CQaXSRka2lEg%2CeHBK_KlTKRc%2CeZreTHxaepk%2CO74KUEcV24k%2CDVgF12Jcy68%2CsM3u9AKRJKA%2ClepcpN2eoXY%2CL9kKFB4n0hA%2C-gaOMoTW93Y%2CnAJlYrkmr8o%2C64HRtaiD3S0%2CktJrKmy79W8%2CaBbHXBVhi6E%2CnK6C2cJXP7M%2CuJvgQuDd4C0%2CzUA4bpxbu0w%2CoThc7_Acz6k%2CuN6SuV0Z3p4%2CtYZrpHjaanc%2CslAnaWpcxQ4%2CxAtPbFG6-bE%2C0t30kJSKY-4%2CrygHhLdMNcI%2C1Ii0DlvMh4w%2C0TjHCIYg-WU%2CvUyuZ4Ksr44%2CtFj3BICv4Io%2C88U1DtYCMhc%2Cp3TTqSGfWio%2CimCIyesTCok%2C6V_OfAy1HbU%2CInb0Z1fzcJg%2CqfvRnR-gHnc%2Ci3NLPTKKpaU&part=statistics&alt=json
+2026-08-26 16:21:13,110 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:13,111 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=U5mPZGgPqtw&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:13,284 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:13,285 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=9fj-o8WUbSY&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:13,504 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:13,504 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=KYvSfJXFPyw&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:13,686 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:13,686 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=TZJ7D7o0W8w&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:13,811 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:13,811 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=oYguBw4h4hU&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:13,976 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:13,976 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=_FvGgSBConM&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:14,089 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:14,089 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=Ot7-hcErt78&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:14,208 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:14,208 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=ise9SIbKeOA&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:14,335 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:14,335 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=RvdikGiqmIQ&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:14,458 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:14,459 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=8DncuueUGJY&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:14,587 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:14,588 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=gMxOAh8gOrY&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:14,719 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:14,720 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=JFEAFY64ewg&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:14,827 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:14,828 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=HcCwS3zlBLw&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:14,992 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:14,993 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=QaXSRka2lEg&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:15,103 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:15,103 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=eHBK_KlTKRc&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:15,214 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:15,215 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=eZreTHxaepk&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:15,341 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:15,342 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=O74KUEcV24k&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:15,475 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:15,476 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=DVgF12Jcy68&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:15,581 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:15,581 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=sM3u9AKRJKA&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:15,682 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:15,683 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=lepcpN2eoXY&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:15,797 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:15,797 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=L9kKFB4n0hA&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:15,896 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:15,896 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=-gaOMoTW93Y&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:16,049 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:16,049 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=nAJlYrkmr8o&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:16,186 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:16,187 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=64HRtaiD3S0&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:16,278 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:16,279 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=ktJrKmy79W8&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:16,381 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:16,382 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=aBbHXBVhi6E&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:16,469 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:16,469 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=nK6C2cJXP7M&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:16,565 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:16,566 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=uJvgQuDd4C0&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:16,694 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:16,695 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=zUA4bpxbu0w&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:16,820 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:16,820 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=oThc7_Acz6k&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:16,940 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:16,940 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=uN6SuV0Z3p4&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:17,046 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:17,046 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=tYZrpHjaanc&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:17,153 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:17,154 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=slAnaWpcxQ4&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:17,254 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:17,255 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=xAtPbFG6-bE&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:17,352 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:17,353 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=0t30kJSKY-4&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:17,585 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:17,586 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=rygHhLdMNcI&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:17,691 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:17,692 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=1Ii0DlvMh4w&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:17,800 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:17,801 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=0TjHCIYg-WU&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:17,944 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:17,945 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=vUyuZ4Ksr44&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:18,049 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:18,049 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=tFj3BICv4Io&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:18,147 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:18,147 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=88U1DtYCMhc&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:18,307 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:18,308 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=p3TTqSGfWio&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:18,405 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:18,406 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=imCIyesTCok&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:18,511 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:18,512 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=6V_OfAy1HbU&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:18,622 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:18,623 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=Inb0Z1fzcJg&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:18,745 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:18,746 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=qfvRnR-gHnc&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:18,854 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:18,854 | python.upload_youtube | DEBUG | [API Request] GET https://youtube.googleapis.com/youtube/v3/commentThreads?videoId=i3NLPTKKpaU&part=snippet&maxResults=5&textFormat=plainText&alt=json
+2026-08-26 16:21:18,949 | python.upload_youtube | DEBUG | [API Response] Status: 200
+2026-08-26 16:21:18,950 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN Truth About Falling Into A Bl...': Views: 2 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,950 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN Truth About Falling Into A Bl...': Views: 0 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,951 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN Truth About Falling Into A Bl...': Views: 13 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,951 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN Truth About Falling Into A Bl...': Views: 1 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,951 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN $100B AI SPACEPORT That WILL ...': Views: 3 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,952 | __main__ | INFO | Synced stats and comments for video 'China's AI asteroid play: Who owns space...': Views: 1 | Likes: 0 | Comments: 0
+2026-08-26 16:21:18,952 | __main__ | INFO | Synced stats and comments for video 'Why AI Rules the Space Race Now? #Shorts...': Views: 5 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,952 | __main__ | INFO | Synced stats and comments for video 'Orbital AI: Who Controls the Future? #Sh...': Views: 1 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,952 | __main__ | INFO | Synced stats and comments for video '#music #space #spacesuccess #nature #spa...': Views: 956 | Likes: 10 | Comments: 0
+2026-08-26 16:21:18,953 | __main__ | INFO | Synced stats and comments for video '#music #newmusic #space #nature #science...': Views: 1048 | Likes: 20 | Comments: 2
+2026-08-26 16:21:18,953 | __main__ | INFO | Synced stats and comments for video '#music #newmusic #space #spacesuccess #s...': Views: 120 | Likes: 3 | Comments: 0
+2026-08-26 16:21:18,953 | __main__ | INFO | Synced stats and comments for video 'Wikipedia: The Silent Space War? #Shorts...': Views: 7 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,954 | __main__ | INFO | Synced stats and comments for video 'AI Space Arms Race: China's Lunar Laser ...': Views: 3 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,954 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN Truth About AI Rewriting the ...': Views: 3 | Likes: 2 | Comments: 1
+2026-08-26 16:21:18,954 | __main__ | INFO | Synced stats and comments for video 'Space Race's New AI Battlefield #Shorts...': Views: 30 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,955 | __main__ | INFO | Synced stats and comments for video 'Why China’s LUNAR AI is TERRIFYING the S...': Views: 2 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,955 | __main__ | INFO | Synced stats and comments for video 'Wikipedia's Secret Front Page Censorship...': Views: 6 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,955 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN AI LUNAR RACE Between India &...': Views: 4 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,956 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN Truth About AI Algorithm Cont...': Views: 0 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,956 | __main__ | INFO | Synced stats and comments for video 'AI's Lunar Battleground #Shorts...': Views: 27 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,956 | __main__ | INFO | Synced stats and comments for video 'China's Space Surge: Elon's Dream Failin...': Views: 79 | Likes: 2 | Comments: 1
+2026-08-26 16:21:18,957 | __main__ | INFO | Synced stats and comments for video 'SpaceX's AI Tower Glove vs Global Rivals...': Views: 54 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,957 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN Truth About China's LUNAR AI ...': Views: 4 | Likes: 2 | Comments: 1
+2026-08-26 16:21:18,957 | __main__ | INFO | Synced stats and comments for video 'Why IGNORING Space AI WILL DESTROY Your ...': Views: 45 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,957 | __main__ | INFO | Synced stats and comments for video 'The HIDDEN Truth About AI: THE ULTIMATE ...': Views: 2 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,958 | __main__ | INFO | Synced stats and comments for video 'India's AI: The Moon's New Gold Rush? #S...': Views: 16 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,958 | __main__ | INFO | Synced stats and comments for video 'China's AI Moon Race: New Global Superpo...': Views: 33 | Likes: 2 | Comments: 1
+2026-08-26 16:21:18,958 | __main__ | INFO | Synced stats and comments for video 'China's AI Space Leap: SpaceX's Challeng...': Views: 68 | Likes: 4 | Comments: 1
+2026-08-26 16:21:18,959 | __main__ | INFO | Synced stats and comments for video 'China's AI Moon Base Threat? #Shorts...': Views: 2 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,959 | __main__ | INFO | Synced stats and comments for video 'SpaceX's AI Bid: The New Space Race #Sho...': Views: 15 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,959 | __main__ | INFO | Synced stats and comments for video 'Is China Winning the AI Space Race? #Sho...': Views: 37 | Likes: 4 | Comments: 1
+2026-08-26 16:21:18,960 | __main__ | INFO | Synced stats and comments for video 'Space AI: The Secret in Your Food? #Shor...': Views: 3 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,960 | __main__ | INFO | Synced stats and comments for video 'China's Lunar AI: The New Space Race? #S...': Views: 29 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,960 | __main__ | INFO | Synced stats and comments for video 'India's AI Moon Base Threatens Space Bal...': Views: 3 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,961 | __main__ | INFO | Synced stats and comments for video 'Why India's AI LUNAR HACK is TERRIFYING ...': Views: 2 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,961 | __main__ | INFO | Synced stats and comments for video 'Moon Wars: China's AI Dominance? #Shorts...': Views: 22 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,961 | __main__ | INFO | Synced stats and comments for video 'China's AI: Rewriting Space Rules? #Shor...': Views: 27 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,961 | __main__ | INFO | Synced stats and comments for video 'Lunar AI: Who Controls Space? #Shorts...': Views: 23 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,962 | __main__ | INFO | Synced stats and comments for video 'SPACEX EXPOSES FRANCE'S TERRIFYING AEROS...': Views: 4 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,962 | __main__ | INFO | Synced stats and comments for video 'VIETNAM JUST LANDED A DEAL WITH SPACEX -...': Views: 4 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,962 | __main__ | INFO | Synced stats and comments for video 'SOUTH KOREA'S SHOCKING LUNAR MISSION EXP...': Views: 3 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,963 | __main__ | INFO | Synced stats and comments for video 'CHINA'S LUNAR PLAN LEAVES NASA BEHIND! 🚀...': Views: 33 | Likes: 3 | Comments: 1
+2026-08-26 16:21:18,963 | __main__ | INFO | Synced stats and comments for video 'SPACE-X's LUNAR CRASH: A WARNING SIGN FO...': Views: 159 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,963 | __main__ | INFO | Synced stats and comments for video 'SCIENTISTS PANIC: HIDDEN Pores in Nuclea...': Views: 4 | Likes: 1 | Comments: 1
+2026-08-26 16:21:18,964 | __main__ | INFO | Synced stats and comments for video 'SPACEX vs AMAZON in the NEW SPACE FORCE ...': Views: 766 | Likes: 7 | Comments: 2
+2026-08-26 16:21:18,964 | __main__ | INFO | Synced stats and comments for video 'SPACEX EXPOSES LOUISIANA PLAN TO DOMINAT...': Views: 108 | Likes: 4 | Comments: 1
+2026-08-26 16:21:18,964 | __main__ | INFO | Synced stats and comments for video 'AI UNCOVERS 50-YEAR SECRET: SOLAR FLARE ...': Views: 3 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,965 | __main__ | INFO | Synced stats and comments for video 'CHINA'S LUNAR DOMINANCE: 7 Crewed Missio...': Views: 231 | Likes: 8 | Comments: 1
+2026-08-26 16:21:18,965 | __main__ | INFO | Synced stats and comments for video 'NASA just got EXPOSED: A 50-year-old Moo...': Views: 1 | Likes: 0 | Comments: 1
+2026-08-26 16:21:18,965 | __main__ | INFO | Synced stats and comments for video 'WHY IS NORWAY INVESTING BILLIONS IN SPAC...': Views: 87 | Likes: 3 | Comments: 1
+2026-08-26 16:21:18,965 | __main__ | INFO | Updated daily monetization snapshot for 2026-08-26 (Readiness: 24%)
+2026-08-26 16:21:18,966 | python.meta_auth | INFO | Meta credentials loaded successfully.
+2026-08-26 16:21:18,966 | python.meta_auth | INFO | Meta credentials loaded successfully.
+2026-08-26 16:21:18,967 | python.meta_auth | INFO | Validating access token via debug_token endpoint …
+2026-08-26 16:21:19,299 | python.meta_auth | INFO | Token info — type: USER | scopes: manage_fundraisers, read_insights, publish_video, catalog_management, pages_show_list, ads_management, ads_read, business_management, pages_messaging, instagram_basic, instagram_manage_comments, instagram_manage_insights, instagram_content_publish, leads_retrieval, instagram_manage_messages, pages_read_engagement, pages_manage_metadata, pages_read_user_content, pages_manage_ads, pages_manage_posts, pages_manage_engagement, instagram_branded_content_brand, instagram_branded_content_creator, instagram_branded_content_ads_brand, instagram_manage_upcoming_events, instagram_creator_marketplace_discovery, instagram_manage_contents, instagram_manage_engagement, public_profile | expires: never
+2026-08-26 16:21:19,299 | python.meta_auth | INFO | Access token is valid.
+2026-08-26 16:21:19,300 | __main__ | INFO | Harvesting Facebook Reels analytics...
+2026-08-26 16:21:19,795 | __main__ | INFO | Facebook Reels stats synced for video ID 75: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:20,671 | __main__ | INFO | Facebook Reels stats synced for video ID 76: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:21,612 | __main__ | INFO | Facebook Reels stats synced for video ID 82: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:22,099 | __main__ | INFO | Facebook Reels stats synced for video ID 83: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:22,926 | __main__ | INFO | Facebook Reels stats synced for video ID 88: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:23,536 | __main__ | INFO | Facebook Reels stats synced for video ID 93: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:24,006 | __main__ | INFO | Facebook Reels stats synced for video ID 94: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:24,763 | __main__ | INFO | Facebook Reels stats synced for video ID 95: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:25,294 | __main__ | INFO | Facebook Reels stats synced for video ID 96: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:26,462 | __main__ | INFO | Facebook Reels stats synced for video ID 100: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:27,205 | __main__ | INFO | Facebook Reels stats synced for video ID 102: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:27,971 | __main__ | INFO | Facebook Reels stats synced for video ID 103: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:28,497 | __main__ | INFO | Facebook Reels stats synced for video ID 105: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:29,102 | __main__ | INFO | Facebook Reels stats synced for video ID 108: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:29,939 | __main__ | INFO | Facebook Reels stats synced for video ID 111: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:31,036 | __main__ | INFO | Facebook Reels stats synced for video ID 112: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:31,986 | __main__ | INFO | Facebook Reels stats synced for video ID 113: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:32,565 | __main__ | INFO | Facebook Reels stats synced for video ID 114: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:33,137 | __main__ | INFO | Facebook Reels stats synced for video ID 118: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:33,678 | __main__ | INFO | Facebook Reels stats synced for video ID 119: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:34,206 | __main__ | INFO | Facebook Reels stats synced for video ID 120: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:34,871 | __main__ | INFO | Facebook Reels stats synced for video ID 121: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:35,527 | __main__ | INFO | Facebook Reels stats synced for video ID 122: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:36,393 | __main__ | INFO | Facebook Reels stats synced for video ID 133: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:36,942 | __main__ | INFO | Facebook Reels stats synced for video ID 136: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:37,417 | __main__ | INFO | Facebook Reels stats synced for video ID 137: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:38,222 | __main__ | INFO | Facebook Reels stats synced for video ID 146: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:38,801 | __main__ | INFO | Facebook Reels stats synced for video ID 147: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:39,275 | __main__ | INFO | Facebook Reels stats synced for video ID 151: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:40,091 | __main__ | INFO | Facebook Reels stats synced for video ID 152: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:40,651 | __main__ | INFO | Facebook Reels stats synced for video ID 154: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:41,239 | __main__ | INFO | Facebook Reels stats synced for video ID 155: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:41,926 | __main__ | INFO | Facebook Reels stats synced for video ID 156: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:42,472 | __main__ | INFO | Facebook Reels stats synced for video ID 159: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:42,893 | __main__ | INFO | Facebook Reels stats synced for video ID 162: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:43,386 | __main__ | INFO | Facebook Reels stats synced for video ID 163: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:44,118 | __main__ | INFO | Facebook Reels stats synced for video ID 164: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:44,626 | __main__ | INFO | Facebook Reels stats synced for video ID 169: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:45,184 | __main__ | INFO | Facebook Reels stats synced for video ID 170: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:45,743 | __main__ | INFO | Facebook Reels stats synced for video ID 171: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:46,337 | __main__ | INFO | Facebook Reels stats synced for video ID 172: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:47,009 | __main__ | INFO | Facebook Reels stats synced for video ID 175: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:47,522 | __main__ | INFO | Facebook Reels stats synced for video ID 176: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:48,261 | __main__ | INFO | Facebook Reels stats synced for video ID 180: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:48,802 | __main__ | INFO | Facebook Reels stats synced for video ID 181: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:49,494 | __main__ | INFO | Facebook Reels stats synced for video ID 182: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:49,978 | __main__ | INFO | Facebook Reels stats synced for video ID 183: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:50,655 | __main__ | INFO | Facebook Reels stats synced for video ID 190: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:51,158 | __main__ | INFO | Facebook Reels stats synced for video ID 195: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:51,897 | __main__ | INFO | Facebook Reels stats synced for video ID 196: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:52,530 | __main__ | INFO | Facebook Reels stats synced for video ID 198: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:53,233 | __main__ | INFO | Facebook Reels stats synced for video ID 202: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:53,950 | __main__ | INFO | Facebook Reels stats synced for video ID 205: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:54,596 | __main__ | INFO | Facebook Reels stats synced for video ID 206: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:55,132 | __main__ | INFO | Facebook Reels stats synced for video ID 217: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:55,664 | __main__ | INFO | Facebook Reels stats synced for video ID 220: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:56,353 | __main__ | INFO | Facebook Reels stats synced for video ID 221: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:56,916 | __main__ | INFO | Facebook Reels stats synced for video ID 223: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:57,739 | __main__ | INFO | Facebook Reels stats synced for video ID 224: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:58,457 | __main__ | INFO | Facebook Reels stats synced for video ID 225: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:58,971 | __main__ | INFO | Facebook Reels stats synced for video ID 226: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:21:59,489 | __main__ | INFO | Facebook Reels stats synced for video ID 227: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:00,163 | __main__ | INFO | Facebook Reels stats synced for video ID 228: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:00,670 | __main__ | INFO | Facebook Reels stats synced for video ID 231: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:01,592 | __main__ | INFO | Facebook Reels stats synced for video ID 232: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:02,092 | __main__ | INFO | Facebook Reels stats synced for video ID 235: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:02,686 | __main__ | INFO | Facebook Reels stats synced for video ID 240: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:03,224 | __main__ | INFO | Facebook Reels stats synced for video ID 246: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:03,943 | __main__ | INFO | Facebook Reels stats synced for video ID 249: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:04,571 | __main__ | INFO | Facebook Reels stats synced for video ID 256: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:05,074 | __main__ | INFO | Facebook Reels stats synced for video ID 257: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:05,709 | __main__ | INFO | Facebook Reels stats synced for video ID 263: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:06,201 | __main__ | INFO | Facebook Reels stats synced for video ID 267: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:07,346 | __main__ | INFO | Facebook Reels stats synced for video ID 268: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:07,868 | __main__ | INFO | Facebook Reels stats synced for video ID 271: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:08,714 | __main__ | INFO | Facebook Reels stats synced for video ID 274: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:09,403 | __main__ | INFO | Facebook Reels stats synced for video ID 275: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:10,010 | __main__ | INFO | Facebook Reels stats synced for video ID 277: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:10,659 | __main__ | INFO | Facebook Reels stats synced for video ID 281: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:11,251 | __main__ | INFO | Facebook Reels stats synced for video ID 285: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:11,929 | __main__ | INFO | Facebook Reels stats synced for video ID 286: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:12,468 | __main__ | INFO | Facebook Reels stats synced for video ID 296: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:13,093 | __main__ | INFO | Facebook Reels stats synced for video ID 299: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:13,684 | __main__ | INFO | Facebook Reels stats synced for video ID 300: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:14,169 | __main__ | INFO | Facebook Reels stats synced for video ID 303: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:14,820 | __main__ | INFO | Facebook Reels stats synced for video ID 304: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:15,681 | __main__ | INFO | Facebook Reels stats synced for video ID 309: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:16,377 | __main__ | INFO | Facebook Reels stats synced for video ID 310: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:16,988 | __main__ | INFO | Facebook Reels stats synced for video ID 311: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:17,508 | __main__ | INFO | Facebook Reels stats synced for video ID 312: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:18,028 | __main__ | INFO | Facebook Reels stats synced for video ID 323: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:18,719 | __main__ | INFO | Facebook Reels stats synced for video ID 343: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:19,442 | __main__ | INFO | Facebook Reels stats synced for video ID 346: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:20,594 | __main__ | INFO | Facebook Reels stats synced for video ID 353: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:21,359 | __main__ | INFO | Facebook Reels stats synced for video ID 354: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:21,897 | __main__ | INFO | Facebook Reels stats synced for video ID 360: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:22,499 | __main__ | INFO | Facebook Reels stats synced for video ID 361: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:23,303 | __main__ | INFO | Facebook Reels stats synced for video ID 388: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:23,959 | __main__ | INFO | Facebook Reels stats synced for video ID 390: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:24,561 | __main__ | INFO | Facebook Reels stats synced for video ID 398: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:25,454 | __main__ | INFO | Facebook Reels stats synced for video ID 404: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:26,180 | __main__ | INFO | Facebook Reels stats synced for video ID 405: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:26,647 | __main__ | INFO | Facebook Reels stats synced for video ID 445: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:27,121 | __main__ | INFO | Facebook Reels stats synced for video ID 449: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:27,781 | __main__ | INFO | Facebook Reels stats synced for video ID 450: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:28,439 | __main__ | INFO | Facebook Reels stats synced for video ID 453: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:28,974 | __main__ | INFO | Facebook Reels stats synced for video ID 456: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:29,534 | __main__ | INFO | Facebook Reels stats synced for video ID 468: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:30,245 | __main__ | INFO | Facebook Reels stats synced for video ID 470: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:30,960 | __main__ | INFO | Facebook Reels stats synced for video ID 474: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:31,707 | __main__ | INFO | Facebook Reels stats synced for video ID 477: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:32,355 | __main__ | INFO | Facebook Reels stats synced for video ID 478: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:32,855 | __main__ | INFO | Facebook Reels stats synced for video ID 479: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:33,411 | __main__ | INFO | Facebook Reels stats synced for video ID 481: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:34,212 | __main__ | INFO | Facebook Reels stats synced for video ID 490: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:34,812 | __main__ | INFO | Facebook Reels stats synced for video ID 492: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:35,554 | __main__ | INFO | Facebook Reels stats synced for video ID 494: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:36,090 | __main__ | INFO | Facebook Reels stats synced for video ID 498: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:36,708 | __main__ | INFO | Facebook Reels stats synced for video ID 499: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:37,245 | __main__ | INFO | Facebook Reels stats synced for video ID 501: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:37,876 | __main__ | INFO | Facebook Reels stats synced for video ID 505: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:38,726 | __main__ | INFO | Facebook Reels stats synced for video ID 509: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:39,249 | __main__ | INFO | Facebook Reels stats synced for video ID 510: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:39,842 | __main__ | INFO | Facebook Reels stats synced for video ID 511: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:40,332 | __main__ | INFO | Facebook Reels stats synced for video ID 515: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:40,793 | __main__ | INFO | Facebook Reels stats synced for video ID 520: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:41,547 | __main__ | INFO | Facebook Reels stats synced for video ID 525: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:42,298 | __main__ | INFO | Facebook Reels stats synced for video ID 526: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:42,863 | __main__ | INFO | Facebook Reels stats synced for video ID 533: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:43,275 | __main__ | INFO | Facebook Reels stats synced for video ID 537: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:44,007 | __main__ | INFO | Facebook Reels stats synced for video ID 539: Views: 0 | Likes: 0 | Comments: 0
+2026-08-26 16:22:44,007 | __main__ | INFO | Harvesting Instagram Reels analytics...
+2026-08-26 16:23:16,469 | __main__ | INFO | Successfully harvested and saved channel stats.
