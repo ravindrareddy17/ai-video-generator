@@ -200,8 +200,7 @@ def generate_narration(topic_data: dict) -> dict:
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_prompt}
                 ],
-                initial_model="qwen/qwen3.6-27b",
-                response_format={"type": "json_object"},
+                initial_model="openai/gpt-oss-120b",
                 temperature=0.7,
                 max_tokens=2048
             )

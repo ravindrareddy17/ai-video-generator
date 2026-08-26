@@ -48,9 +48,10 @@ except ImportError:
 # ---------------------------------------------------------------------------
 
 GROQ_MODELS = [
-    "qwen/qwen3.6-27b",
+    "openai/gpt-oss-120b",
+    "openai/gpt-oss-20b",
     "groq/compound-mini",
-    "openai/gpt-oss-120b"
+    "qwen/qwen3.6-27b"
 ]
 
 class GeminiMessageWrapper:
@@ -168,16 +169,11 @@ def call_groq_with_fallback(client=None, messages=None, initial_model=None, **kw
             )
         except Exception as e:
             err_str = str(e)
-            if "429" in err_str or "rate_limit_exceeded" in err_str or "Rate limit" in err_str:
-                log.warning(f"Rate limit hit for model {model}. Pausing 2s for token reset before fallback...")
-                import time
-                time.sleep(2)
-                last_error = e
-                continue
-            else:
-                raise e
+            log.warning(f"Model {model} failed ({err_str}). Trying next fallback model...")
+            last_error = e
+            continue
 
-    log.warning("All Groq models rate-limited. Activating Gemini 2.5 Flash fallback...")
+    log.warning("All Groq models failed. Activating Gemini 2.5 Flash fallback...")
     try:
         return call_gemini_fallback(messages)
     except Exception as gem_err:

@@ -22,6 +22,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from utils.paths import LOGS_DIR  # noqa: E402
 
+# ── ensure UTF-8 output on Windows ──────────────────────────────────────────
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 # ── colorama init ────────────────────────────────────────────────────────────
 try:
     from colorama import Fore, Style, init as colorama_init

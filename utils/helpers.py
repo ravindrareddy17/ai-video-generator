@@ -49,13 +49,11 @@ def extract_json_from_llm(raw_text: str) -> dict | list:
         raise ValueError("Empty response from LLM")
         
     clean = re.sub(r'<think>.*?</think>', '', str(raw_text), flags=re.DOTALL)
+    if '<think>' in clean and '</think>' not in clean:
+        # Think block was truncated before closing
+        clean = ""
     clean = re.sub(r'```json\s*', '', clean, flags=re.IGNORECASE)
     clean = re.sub(r'```\s*', '', clean).strip()
-
-    try:
-        return json.loads(clean)
-    except Exception:
-        pass
 
     first_curly = clean.find('{')
     last_curly = clean.rfind('}')
