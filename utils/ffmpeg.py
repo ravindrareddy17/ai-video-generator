@@ -334,6 +334,7 @@ def scale_and_crop(
         "-preset", "medium",
         "-crf", "23",
         "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
         "-an",
         str(output_path),
     ])
@@ -388,6 +389,7 @@ def concat_videos(
             "-preset", "medium",
             "-crf", "23",
             "-pix_fmt", "yuv420p",
+            "-movflags", "+faststart",
             "-c:a", "aac",
             "-b:a", "192k",
             str(output_path),
@@ -461,6 +463,7 @@ def mix_audio(
         "-c:v", "copy",
         "-c:a", "aac",
         "-b:a", "192k",
+        "-movflags", "+faststart",
         "-shortest",
         str(output_path),
     ])
@@ -543,6 +546,7 @@ def burn_subtitles(
         "-preset", "medium",
         "-crf", "23",
         "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
         "-c:a", "copy",
         str(output_path),
     ])

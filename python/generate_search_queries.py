@@ -77,21 +77,82 @@ def load_sentence_timings(timings_path: Path) -> list[dict]:
     return subtitles
 
 
+def split_into_visual_beats(subtitles: list[dict], max_beat_duration: float = 2.8) -> list[dict]:
+    """Splits long sentence entries into fast 1.8s-2.8s visual beats for maximum retention."""
+    def format_timestamp(ms: float) -> str:
+        if ms < 0:
+            ms = 0.0
+        total_ms = int(round(ms))
+        hours, remainder = divmod(total_ms, 3600000)
+        minutes, remainder = divmod(remainder, 60000)
+        seconds, millis = divmod(remainder, 1000)
+        return f"{hours:02d}:{minutes:02d}:{seconds:02d},{millis:03d}"
+
+    beats = []
+    beat_index = 1
+
+    for sub in subtitles:
+        dur = sub["duration_s"]
+        if dur <= max_beat_duration:
+            entry = dict(sub)
+            entry["index"] = beat_index
+            beats.append(entry)
+            beat_index += 1
+        else:
+            # Calculate number of sub-beats (target 2.2s - 2.8s per beat)
+            num_beats = max(2, int(round(dur / 2.5)))
+            beat_dur_s = dur / num_beats
+            beat_dur_ms = (sub["end_ms"] - sub["start_ms"]) / num_beats
+
+            # Split text words into chunks
+            words = sub["text"].split()
+            words_per_beat = max(1, int(round(len(words) / num_beats)))
+
+            for b in range(num_beats):
+                b_start_ms = sub["start_ms"] + (b * beat_dur_ms)
+                b_end_ms = sub["start_ms"] + ((b + 1) * beat_dur_ms) if b < num_beats - 1 else sub["end_ms"]
+                b_dur_s = (b_end_ms - b_start_ms) / 1000.0
+
+                w_start = b * words_per_beat
+                w_end = (b + 1) * words_per_beat if b < num_beats - 1 else len(words)
+                b_text = " ".join(words[w_start:w_end]) if w_start < len(words) else sub["text"]
+
+                beats.append({
+                    "index": beat_index,
+                    "sentence_index": sub["index"],
+                    "start": format_timestamp(b_start_ms),
+                    "end": format_timestamp(b_end_ms),
+                    "start_ms": b_start_ms,
+                    "end_ms": b_end_ms,
+                    "duration_s": b_dur_s,
+                    "text": b_text
+                })
+                beat_index += 1
+
+    avg_dur = sum(b['duration_s'] for b in beats) / len(beats) if beats else 0.0
+    logger.info(f"Split {len(subtitles)} sentences into {len(beats)} fast visual beats (avg {avg_dur:.2f}s per beat).")
+    return beats
+
+
 def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
     """Call LLM with topic context to generate accurate visual search queries for stock videos."""
     topic_title = topic_info.get("topic", topic_info.get("title", "Space & Future Tech"))
     content_pillar = topic_info.get("content_pillar", "Space Race")
     
+    # Pre-process subtitles into fast 2.0s - 2.8s visual beats
+    sub_beats = split_into_visual_beats(subtitles, max_beat_duration=3.0)
+
     input_items = []
-    for sub in subtitles:
+    for sub in sub_beats:
         input_items.append({
             "index": sub["index"],
-            "sentence": sub["text"]
+            "phrase": sub["text"],
+            "duration_s": round(sub["duration_s"], 2)
         })
         
     system_prompt = (
         "You are an Elite Visual Director for viral educational explainer Shorts.\n"
-        "Your task is to analyze each narration sentence and determine the OPTIMAL VISUAL STYLE to communicate the concept clearly and dynamically.\n\n"
+        "Your task is to analyze each fast visual beat and determine the OPTIMAL VISUAL STYLE to communicate the concept clearly and dynamically.\n\n"
         "THREE VISUAL STYLES AVAILABLE:\n"
         "1. 'doodle' (Authentic Hand-Drawn Doodle Art):\n"
         "   Use for: Simple concepts, analogies, definitions, human brain/behavior, internal biological/physical mechanisms, or abstract ideas.\n"
@@ -100,7 +161,7 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         "3. 'map_motion' (3D Maps & Motion Explainer Graphics):\n"
         "   Use for: Geography, countries, borders, routes, trade chokepoints, statistics, timelines, networks, or multi-nation comparisons.\n\n"
         "RULES:\n"
-        "- Choose the visual style intelligently per sentence based on the subject.\n"
+        "- Choose the visual style intelligently per beat based on the subject.\n"
         "- Provide a targeted physical search query (1-3 words) in 'query'.\n"
         "- Provide a descriptive prompt for AI image/map generation in 'prompt'.\n"
         "- Select a camera motion in 'camera_motion' ('zoom_in', 'pan_up', 'aerial_track', 'sketch_reveal', 'route_travel').\n"
@@ -147,7 +208,7 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         item_map = {item.get("index"): item for item in queries_list}
         
         output_queries = []
-        for sub in subtitles:
+        for sub in sub_beats:
             item = item_map.get(sub["index"], {})
             v_style = item.get("visual_style", "cinematic")
             if v_style not in ["doodle", "cinematic", "map_motion"]:
@@ -195,14 +256,14 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
                 "duration_s": sub["duration_s"]
             })
             
-        logger.info(f"Visual Decision Director assigned styles: {[q['visual_style'] for q in output_queries]}")
+        logger.info(f"Visual Decision Director assigned styles to {len(output_queries)} beats: {[q['visual_style'] for q in output_queries]}")
         return output_queries
         
     except Exception as e:
         logger.error(f"Error parsing LLM response for visual director: {e}")
         # Rule fallback based on sentence keywords
         output_queries = []
-        for sub in subtitles:
+        for sub in sub_beats:
             words = [w.strip().lower() for w in sub["text"].split() if len(w.strip()) > 3][:2]
             q = (" ".join(words) + " space") if words else "space motion"
             output_queries.append({

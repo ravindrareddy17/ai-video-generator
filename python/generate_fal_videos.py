@@ -28,11 +28,18 @@ from dotenv import load_dotenv
 load_dotenv(ENV_FILE)
 logger = get_logger(__name__)
 
+_FAL_DISABLED = False
+
 
 def generate_fal_ai_video_clip(prompt: str, output_path: Path, duration: float = 5.0, scene_index: int = 1) -> Path:
     """Calls Fal.ai Minimax / Kling text-to-video to generate a full cinematic AI video."""
+    global _FAL_DISABLED
+    if _FAL_DISABLED:
+        raise RuntimeError("Fal.ai is currently disabled due to insufficient balance/credentials.")
+
     fal_key = os.getenv("FAL_KEY") or os.getenv("FAL_API_KEY")
     if not fal_key:
+        _FAL_DISABLED = True
         raise ValueError("FAL_KEY is missing from environment variables.")
 
     import fal_client
@@ -76,6 +83,8 @@ def generate_fal_ai_video_clip(prompt: str, output_path: Path, duration: float =
                     return output_path
         except Exception as me:
             logger.warning(f"Model '{model_id}' generation failed: {me}. Trying next model...")
+            if "Exhausted balance" in str(me) or "invalid key" in str(me) or "locked" in str(me):
+                _FAL_DISABLED = True
 
     raise RuntimeError(f"All Fal.ai video generation models failed for Scene {scene_index}.")
 
