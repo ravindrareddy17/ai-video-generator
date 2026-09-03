@@ -2,13 +2,11 @@ name: AI Video Generator - The Shortest Orbit
 
 on:
   schedule:
-    # Optimized for global prime-time hours (US EST, UK/Europe BST, and Asia IST):
-    - cron: "0 11 * * *"   # Runs at 7:00 AM EST  / 12:00 PM BST / 4:30 PM IST  (Morning commute peak)
-    - cron: "0 15 * * *"   # Runs at 11:00 AM EST / 4:00 PM BST  / 8:30 PM IST  (US lunch & European afternoon)
-    - cron: "30 18 * * *"  # Runs at 2:30 PM EST  / 7:30 PM BST  / 12:00 AM IST (US afternoon & European prime-time)
-    - cron: "0 22 * * *"   # Runs at 6:00 PM EST  / 11:00 PM BST / 3:30 AM IST  (US evening peak)
-    - cron: "30 1 * * *"   # Runs at 9:30 PM EST  / 2:30 AM BST  / 7:00 AM IST  (US late night & Asian morning)
-  workflow_dispatch: # Allows you to run this manually from the Actions tab
+    # 3 Peak Daily Upload Slots (US EST, Europe BST, India IST):
+    - cron: "30 11 * * *"  # Slot 1: 5:00 PM IST  / 7:30 AM EST  / 12:30 PM BST (US morning commute / EU lunch)
+    - cron: "0 16 * * *"   # Slot 2: 9:30 PM IST  / 12:00 PM EST / 5:00 PM BST  (US lunch / EU evening peak)
+    - cron: "30 22 * * *"  # Slot 3: 4:00 AM IST  / 6:30 PM EST  / 11:30 PM BST (US evening prime-time peak)
+  workflow_dispatch: # Allows manual trigger from Actions tab
 
 jobs:
   generate-and-upload:
