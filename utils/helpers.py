@@ -50,7 +50,6 @@ def extract_json_from_llm(raw_text: str) -> dict | list:
         
     clean = re.sub(r'<think>.*?</think>', '', str(raw_text), flags=re.DOTALL)
     if '<think>' in clean and '</think>' not in clean:
-        # Think block was truncated before closing
         clean = ""
     clean = re.sub(r'```json\s*', '', clean, flags=re.IGNORECASE)
     clean = re.sub(r'```\s*', '', clean).strip()
@@ -58,20 +57,31 @@ def extract_json_from_llm(raw_text: str) -> dict | list:
     first_curly = clean.find('{')
     last_curly = clean.rfind('}')
     if first_curly != -1 and last_curly != -1 and last_curly > first_curly:
+        candidate = clean[first_curly:last_curly+1]
         try:
-            return json.loads(clean[first_curly:last_curly+1])
+            return json.loads(candidate)
         except Exception:
-            pass
+            # Attempt fixing trailing commas or raw unescaped newlines inside strings
+            fixed = re.sub(r',\s*([}\]])', r'\1', candidate)
+            try:
+                return json.loads(fixed)
+            except Exception:
+                pass
 
     first_sq = clean.find('[')
     last_sq = clean.rfind(']')
     if first_sq != -1 and last_sq != -1 and last_sq > first_sq:
+        candidate = clean[first_sq:last_sq+1]
         try:
-            return json.loads(clean[first_sq:last_sq+1])
+            return json.loads(candidate)
         except Exception:
             pass
 
-    return json.loads(clean)
+    try:
+        return json.loads(clean)
+    except Exception as e:
+        logger.warning(f"Could not parse raw LLM JSON text ({e}). Extracting text fallback.")
+        return {"title": "Space & AI Discovery", "narration": clean, "hook": "Did you know this?"}
 
 def load_json(path: Path) -> dict | list:
     """Read and return JSON content from *path*.

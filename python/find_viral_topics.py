@@ -55,42 +55,31 @@ def fetch_google_trends(geo: str = 'US') -> list[dict]:
 
 @retry(max_attempts=3, delay=2.0, backoff=2.0)
 def fetch_reddit_topics(subreddits: list[str]) -> list[dict]:
-    """Fetch hot topics from specified subreddits."""
+    """Fetch hot topics from specified subreddits via RSS feed."""
     topics = []
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
     }
     
     for sub in subreddits:
         logger.info(f"Fetching hot topics from r/{sub}...")
-        url = f"https://www.reddit.com/r/{sub}/hot.json?limit=10"
-        
+        url = f"https://www.reddit.com/r/{sub}/hot/.rss"
         try:
-            response = requests.get(url, headers=headers, timeout=10)
-            if response.status_code == 200:
-                data = response.json()
-                posts = data.get("data", {}).get("children", [])
-                for post in posts:
-                    post_data = post.get("data", {})
-                    if post_data.get("stickied"):
-                        continue  # Skip stickied posts
-                    
-                    title = post_data.get("title", "")
-                    upvotes = post_data.get("ups", 0)
-                    
-                    # Exclude very short titles
+            feed = feedparser.parse(url, request_headers=headers)
+            if hasattr(feed, 'entries') and feed.entries:
+                for entry in feed.entries[:10]:
+                    title = entry.title
                     if len(title.split()) > 3:
                         topics.append({
                             "title": title.strip(),
                             "source": f"Reddit r/{sub}",
-                            "score_signal": min(upvotes // 10, 100)  # scale upvotes to a signal score
+                            "score_signal": 60
                         })
-            else:
-                logger.warning(f"Reddit r/{sub} returned status code {response.status_code}")
+                logger.info(f"Fetched {len(topics)} topics from r/{sub}.")
         except Exception as e:
-            logger.error(f"Error fetching Reddit r/{sub}: {e}")
+            logger.warning(f"Error fetching Reddit r/{sub}: {e}")
             
-    logger.info(f"Fetched {len(topics)} topics from Reddit.")
+    logger.info(f"Fetched {len(topics)} topics total from Reddit RSS.")
     return topics
 
 
