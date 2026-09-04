@@ -477,8 +477,18 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             c["ctr_prediction"] = float(c.get("ctr_prediction", 85.0))
             c["retention_prediction"] = float(c.get("retention_prediction", 85.0))
             c["overall_growth_score"] = overall_growth_score
-            c["selected_topic"] = f"{c.get('hook_line')} {c.get('viral_angle')}"
-            c["source_headline"] = c.get("source_headline", best_fallback["title"] if 'best_fallback' in locals() else "Unknown Source")
+            hook = str(c.get("hook_line") or "").strip()
+            angle = str(c.get("viral_angle") or "").strip()
+            fallback_title = top_candidates[0]["title"] if top_candidates else "Space & AI Frontier Discovery"
+            if not hook or hook.lower() in ["none", "null", ""]:
+                hook = f"Did you know about {fallback_title}?"
+            if not angle or angle.lower() in ["none", "null", ""]:
+                angle = fallback_title
+
+            c["hook_line"] = hook
+            c["viral_angle"] = angle
+            c["selected_topic"] = f"{hook} - {angle}"
+            c["source_headline"] = str(c.get("source_headline") or fallback_title)
             c["source"] = c["source_headline"]
             
             db_candidates.append(c)
