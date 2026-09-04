@@ -407,7 +407,8 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
                 {"role": "user", "content": user_prompt}
             ],
             initial_model=model,
-            temperature=0.7
+            temperature=0.7,
+            response_format={"type": "json_object"}
         )
         
         response_text = completion.choices[0].message.content

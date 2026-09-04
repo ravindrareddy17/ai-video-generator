@@ -76,7 +76,8 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
                     {"role": "user", "content": user_prompt if attempt == 0 else f"{user_prompt}\n\nCRITICAL: Make sure the hooks are highly engaging and score at least 85.0!"}
                 ],
                 initial_model=model,
-                temperature=0.7 + (attempt * 0.1)
+                temperature=0.7 + (attempt * 0.1),
+                response_format={"type": "json_object"}
             )
             from utils.helpers import extract_json_from_llm
             data = extract_json_from_llm(completion.choices[0].message.content)
@@ -202,7 +203,8 @@ def generate_narration(topic_data: dict) -> dict:
                 ],
                 initial_model="openai/gpt-oss-120b",
                 temperature=0.7,
-                max_tokens=2048
+                max_tokens=2048,
+                response_format={"type": "json_object"}
             )
             
             response_text = chat_completion.choices[0].message.content
