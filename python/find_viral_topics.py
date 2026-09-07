@@ -243,12 +243,16 @@ def collect_all_topics() -> list[dict]:
         logger.error(f"Failed to fetch Wikipedia Trending: {e}")
         logger.error(f"Failed to fetch Wikipedia Trending: {e}")
         
-    # Deduplicate based on title similarity/exact match
+    junk_keywords = ["rule #", "in regards to rule", "megathread", "weekly discussion", "submission rules", "moderator", "daily thread", "subreddit rules", "read before posting"]
+    
+    # Deduplicate based on title similarity/exact match & filter junk
     seen_titles = set()
     unique_topics = []
     
     for t in all_topics:
         norm_title = t["title"].strip().lower()
+        if any(junk in norm_title for junk in junk_keywords):
+            continue
         if norm_title not in seen_titles:
             seen_titles.add(norm_title)
             unique_topics.append(t)
