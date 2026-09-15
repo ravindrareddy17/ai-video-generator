@@ -312,22 +312,25 @@ def generate_metadata(topic: str, title: str) -> dict:
     
     logger.info("Calling Groq to generate YouTube metadata...")
     try:
-        chat_completion = client.chat.completions.create(
+        from utils.config import call_groq_with_fallback
+        from utils.helpers import extract_json_from_llm
+        chat_completion = call_groq_with_fallback(
+            client=client,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            model=model,
+            initial_model=model,
             temperature=0.7,
             response_format={"type": "json_object"}
         )
         
         response_text = chat_completion.choices[0].message.content
-        metadata = json.loads(response_text)
+        metadata = extract_json_from_llm(response_text)
         
         # Ensure #Shorts is in the title
         if "#shorts" not in metadata.get("title", "").lower():
-            metadata["title"] = f"{metadata.get('title', 'Interesting Topic')} #Shorts"
+            metadata["title"] = f"{metadata.get('title', title)} #Shorts"
             
         # Ensure #Shorts is in localized titles as well
         localizations = metadata.get("localizations", {})
@@ -338,12 +341,14 @@ def generate_metadata(topic: str, title: str) -> dict:
         return metadata
     except Exception as e:
         logger.error(f"Error generating SEO metadata: {e}")
-        # Fallback metadata
+        # High quality fallback metadata
+        clean_title = re.sub(r'^[^\w]+', '', title).strip()
+        clean_topic = re.sub(r'^[^\w]+', '', topic).strip()
         return {
-            "title": f"{title} #Shorts",
-            "description": f"An educational look at {topic}. Discover the science behind this viral topic! #shorts #education #viral",
-            "hashtags": ["#Shorts", "#Education", "#Science", "#Viral"],
-            "keywords": [topic, "education", "science", "facts", "mystery"],
+            "title": f"{clean_title} #Shorts",
+            "description": f"The untold story and hidden science behind {clean_topic}. Will this change everything we know?\n\n🔥 Trending Audio: Interstellar Main Theme - Hans Zimmer",
+            "hashtags": ["#Shorts", "#SpaceExploration", "#FutureTech", "#ScienceFacts", "#UniverseMystery", "#Viral"],
+            "keywords": [clean_topic, "science", "future tech", "space", "discovery", "mystery", "documentary"],
             "category": "28",
             "localizations": {}
         }
