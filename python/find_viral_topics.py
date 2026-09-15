@@ -237,11 +237,7 @@ def collect_all_topics() -> list[dict]:
     # 15. DeepMind, Microsoft AI, and Wikipedia Trending
     safe_fetch_rss("https://news.google.com/rss/search?q=%22Google+DeepMind%22&hl=en-US&gl=US&ceid=US:en", "DeepMind", 60)
     safe_fetch_rss("https://news.google.com/rss/search?q=%22Microsoft+AI%22&hl=en-US&gl=US&ceid=US:en", "Microsoft AI", 55)
-    try:
-        all_topics.extend(fetch_wikipedia_trending())
-    except Exception as e:
-        logger.error(f"Failed to fetch Wikipedia Trending: {e}")
-        logger.error(f"Failed to fetch Wikipedia Trending: {e}")
+    # Wikipedia Trending disabled to prevent repetitive Wikipedia topics
         
     junk_keywords = ["rule #", "in regards to rule", "megathread", "weekly discussion", "submission rules", "moderator", "daily thread", "subreddit rules", "read before posting"]
     
@@ -425,8 +421,13 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         safe_concepts = []
         for c in concepts:
             risk = c.get("risk_flag", "")
-            if not risk or str(risk).lower() in ["none", "null", "false", "no", ""]:
-                safe_concepts.append(c)
+            if risk and str(risk).lower() not in ["none", "null", "false", "no", ""]:
+                continue
+            c_text = (str(c.get("source_headline", "")) + " " + str(c.get("viral_angle", "")) + " " + str(c.get("hook_line", ""))).lower()
+            if "wikipedia" in c_text:
+                logger.info(f"Filtered out Wikipedia topic to prevent repetition: {c.get('source_headline')}")
+                continue
+            safe_concepts.append(c)
                 
         if not safe_concepts:
             safe_concepts = concepts if concepts else [{}]

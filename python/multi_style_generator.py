@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from utils.paths import SEARCH_QUERIES_FILE, DOWNLOADS_VIDEOS_DIR, TEMP_DIR
 from utils.logger import get_logger
 from utils.helpers import load_json
+from utils.config import get_setting
 
 import generate_whiteboard
 import generate_map_graphics
@@ -29,7 +30,11 @@ logger = get_logger(__name__)
 
 def generate_all_scenes() -> list[Path]:
     """Generates all scene video clips using the Tri-Modal Visual Decision System."""
-    logger.info("=== STEP 6 (TRI-MODAL): GENERATING DYNAMIC MULTI-STYLE SCENES ===")
+    visual_mode = get_setting("video.visual_mode", "cinematic")
+    if visual_mode == "cinematic":
+        logger.info("=== STEP 6: GENERATING STYLE 2 — ULTRA-REALISTIC CINEMATIC FOOTAGE (Real-world environments) ===")
+    else:
+        logger.info("=== STEP 6 (TRI-MODAL): GENERATING DYNAMIC MULTI-STYLE SCENES ===")
     
     queries_raw = load_json(SEARCH_QUERIES_FILE)
     if isinstance(queries_raw, list):
@@ -41,7 +46,10 @@ def generate_all_scenes() -> list[Path]:
     generated_clips = []
     
     for i, item in enumerate(queries, start=1):
-        v_style = item.get("visual_style", "cinematic")
+        if visual_mode == "cinematic":
+            v_style = "cinematic"
+        else:
+            v_style = item.get("visual_style", "cinematic")
         prompt = item.get("prompt", item.get("text", "Scene"))
         query = item.get("query", "space motion")
         duration = float(item.get("duration_s", item.get("duration", 4.0)))
@@ -88,14 +96,44 @@ def generate_all_scenes() -> list[Path]:
                 raise RuntimeError(f"Scene {i} clip failed to create or is empty.")
                 
         except Exception as e:
-            logger.error(f"Error generating Scene {i} ({v_style}): {e}. Falling back to AI Doodle...")
-            try:
-                generate_whiteboard.generate_single_scene(prompt, output_clip, duration=duration, scene_index=i)
-                generated_clips.append(output_clip)
-            except Exception as fe:
-                logger.error(f"Critical fallback failure on Scene {i}: {fe}")
+            if visual_mode == "cinematic":
+                logger.error(f"Error generating Scene {i} (cinematic): {e}. Searching backup 4K cinematic footage...")
+                generic_cinematic_queries = [
+                    "cinematic 4k nature landscape",
+                    "dramatic atmospheric slow motion",
+                    "earth from space cinematic",
+                    "cinematic wildlife documentary",
+                    "cinematic technology futuristic 4k"
+                ]
+                backup_q = generic_cinematic_queries[(i - 1) % len(generic_cinematic_queries)]
+                used_ids = download_videos.get_recent_used_visual_ids()
+                dl_url, asset_id, src = download_videos.search_dual_sources(backup_q, used_ids)
+                backup_saved = False
+                if dl_url:
+                    try:
+                        download_videos.download_file(dl_url, output_clip)
+                        if output_clip.exists() and output_clip.stat().st_size > 1000:
+                            generated_clips.append(output_clip)
+                            backup_saved = True
+                            logger.info(f"Scene {i} recovered with backup 4K cinematic footage ({backup_q}).")
+                    except Exception as be:
+                        logger.warning(f"Backup cinematic download failed: {be}")
+                
+                if not backup_saved:
+                    try:
+                        generate_map_graphics.generate_single_scene(prompt, output_clip, duration=duration, scene_index=i)
+                        generated_clips.append(output_clip)
+                    except Exception as fe:
+                        logger.error(f"Critical fallback failure on Scene {i}: {fe}")
+            else:
+                logger.error(f"Error generating Scene {i} ({v_style}): {e}. Falling back to AI Doodle...")
+                try:
+                    generate_whiteboard.generate_single_scene(prompt, output_clip, duration=duration, scene_index=i)
+                    generated_clips.append(output_clip)
+                except Exception as fe:
+                    logger.error(f"Critical fallback failure on Scene {i}: {fe}")
 
-    logger.info(f"Tri-Modal Video Generation complete. Total clips: {len(generated_clips)}")
+    logger.info(f"Scene Generation complete. Total clips: {len(generated_clips)}")
     return generated_clips
 
 

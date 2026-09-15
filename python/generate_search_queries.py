@@ -24,7 +24,7 @@ import re
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from utils.paths import WORD_TIMINGS_FILE, CONTENT_FILE, SEARCH_QUERIES_FILE
-from utils.config import call_groq_with_fallback
+from utils.config import call_groq_with_fallback, get_setting
 from utils.logger import get_logger
 from utils.helpers import load_json, save_json, extract_json_from_llm
 
@@ -150,21 +150,34 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
             "duration_s": round(sub["duration_s"], 2)
         })
         
+    visual_mode = get_setting("video.visual_mode", "cinematic")
+    if visual_mode == "cinematic":
+        style_instructions = (
+            "MANDATORY VISUAL STYLE DIRECTIVE: STYLE 2 — ULTRA-REALISTIC CINEMATIC FOOTAGE (Real-world environments).\n"
+            "You MUST set \"visual_style\": \"cinematic\" for EVERY SINGLE BEAT.\n"
+            "Do NOT use doodle, whiteboard, sketch, or cartoon art.\n"
+            "Every beat must showcase ultra-realistic cinematic footage of real physical environments: 4K wildlife, deep oceans, extreme weather, cosmic phenomena, mega-machines, laboratory science, landscapes, or drone cinematography.\n"
+            "In 'query', provide high-intent physical search terms (1-3 words) that easily locate breathtaking real-world 4K vertical footage on Pexels or Pixabay.\n\n"
+        )
+    else:
+        style_instructions = (
+            "THREE VISUAL STYLES AVAILABLE:\n"
+            "1. 'doodle' (Authentic Hand-Drawn Doodle Art):\n"
+            "   Use for: Simple concepts, analogies, definitions, human brain/behavior, internal biological/physical mechanisms, or abstract ideas.\n"
+            "2. 'cinematic' (Ultra-Realistic 4K Cinematic AI / Motion Footage):\n"
+            "   Use for: Real physical environments, deep ocean, cosmos/space, rockets, megaprojects, heavy machines, cities, weather phenomena.\n"
+            "3. 'map_motion' (3D Maps & Motion Explainer Graphics):\n"
+            "   Use for: Geography, countries, borders, routes, trade chokepoints, statistics, timelines, networks, or multi-nation comparisons.\n\n"
+        )
+
     system_prompt = (
         "You are an Elite Visual Director for viral educational explainer Shorts.\n"
-        "Your task is to analyze each fast visual beat and determine the OPTIMAL VISUAL STYLE to communicate the concept clearly and dynamically.\n\n"
-        "THREE VISUAL STYLES AVAILABLE:\n"
-        "1. 'doodle' (Authentic Hand-Drawn Doodle Art):\n"
-        "   Use for: Simple concepts, analogies, definitions, human brain/behavior, internal biological/physical mechanisms, or abstract ideas.\n"
-        "2. 'cinematic' (Ultra-Realistic 4K Cinematic AI / Motion Footage):\n"
-        "   Use for: Real physical environments, deep ocean, cosmos/space, rockets, megaprojects, heavy machines, cities, weather phenomena.\n"
-        "3. 'map_motion' (3D Maps & Motion Explainer Graphics):\n"
-        "   Use for: Geography, countries, borders, routes, trade chokepoints, statistics, timelines, networks, or multi-nation comparisons.\n\n"
+        "Your task is to analyze each fast visual beat and formulate the OPTIMAL REALISTIC VISUALS to communicate the concept with maximum cinematic impact.\n\n"
+        f"{style_instructions}"
         "RULES:\n"
-        "- Choose the visual style intelligently per beat based on the subject.\n"
-        "- Provide a targeted physical search query (1-3 words) in 'query'.\n"
-        "- Provide a descriptive prompt for AI image/map generation in 'prompt'.\n"
-        "- Select a camera motion in 'camera_motion' ('zoom_in', 'pan_up', 'aerial_track', 'sketch_reveal', 'route_travel').\n"
+        "- Choose targeted real-world physical queries (1-3 words) in 'query'.\n"
+        "- Provide a descriptive prompt for 4K ultra-realistic cinematic scene in 'prompt'.\n"
+        "- Select a camera motion in 'camera_motion' ('zoom_in', 'pan_up', 'aerial_track', 'drone_orbit', 'macro_reveal').\n"
         "- Output strictly valid JSON matching this schema:\n"
         "{\n"
         "  \"queries\": [\n"
@@ -209,17 +222,19 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         
         output_queries = []
         for sub in sub_beats:
-            item = item_map.get(sub["index"], {})
-            v_style = item.get("visual_style", "cinematic")
-            if v_style not in ["doodle", "cinematic", "map_motion"]:
-                # Auto-infer style from sentence content
-                text_lower = sub["text"].lower()
-                if any(w in text_lower for w in ["country", "nation", "map", "china", "u.s.", "eu", "border", "route", "percent"]):
-                    v_style = "map_motion"
-                elif any(w in text_lower for w in ["brain", "think", "concept", "imagine", "mean", "freeze", "what if"]):
-                    v_style = "doodle"
-                else:
-                    v_style = "cinematic"
+            if visual_mode == "cinematic":
+                v_style = "cinematic"
+            else:
+                v_style = item.get("visual_style", "cinematic")
+                if v_style not in ["doodle", "cinematic", "map_motion"]:
+                    # Auto-infer style from sentence content
+                    text_lower = sub["text"].lower()
+                    if any(w in text_lower for w in ["country", "nation", "map", "china", "u.s.", "eu", "border", "route", "percent"]):
+                        v_style = "map_motion"
+                    elif any(w in text_lower for w in ["brain", "think", "concept", "imagine", "mean", "freeze", "what if"]):
+                        v_style = "doodle"
+                    else:
+                        v_style = "cinematic"
 
             q = item.get("query", "space motion")
             fb = item.get("fallback_queries", [])

@@ -214,23 +214,19 @@ def load_settings() -> dict[str, Any]:
     return settings
 
 
-def get_setting(section: str, key: str, default: Any = None) -> Any:
-    """Retrieve a nested value from settings.json.
-
-    Example::
-
-        model = get_setting("llm", "model")          # "llama-3.3-70b-versatile"
-        fps   = get_setting("video", "fps", 30)
-
-    Args:
-        section: Top-level key (e.g. ``"llm"``, ``"video"``).
-        key: Second-level key within *section*.
-        default: Fallback value if *section* or *key* is missing.
-
-    Returns:
-        The requested setting value, or *default*.
-    """
+def get_setting(section: str, key: Any = None, default: Any = None) -> Any:
+    """Retrieve a nested value from settings.json. Supports (section, key, default) or ("section.key", default)."""
     settings = load_settings()
+    if key is None or not isinstance(key, str):
+        if "." in section:
+            sec, k = section.split(".", 1)
+            def_val = key if default is None else default
+            try:
+                return settings[sec][k]
+            except (KeyError, TypeError):
+                return def_val
+        else:
+            return settings.get(section, key)
     try:
         return settings[section][key]
     except (KeyError, TypeError):
