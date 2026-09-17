@@ -334,6 +334,96 @@ def upload_thumbnail(youtube, video_id: str, thumbnail_path: Path):
         logger.error(f"Failed to upload thumbnail: {e}. The video will use a default auto-generated thumbnail.")
 
 
+def release_pending_unlisted_video(youtube=None) -> dict | None:
+    """Find the oldest unlisted video in the database and release it to public."""
+    if youtube is None:
+        try:
+            youtube = get_authenticated_service()
+        except Exception as e:
+            logger.error(f"[STAGED RELEASE] Failed to authenticate YouTube to release unlisted video: {e}")
+            return None
+
+    conn = get_connection()
+    unlisted_video = None
+    try:
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT id, title, youtube_id 
+            FROM videos 
+            WHERE status = 'uploaded_unlisted' AND youtube_id IS NOT NULL AND youtube_id != ''
+            ORDER BY id ASC LIMIT 1
+        """)
+        row = cursor.fetchone()
+        if row:
+            unlisted_video = {"db_id": row[0], "title": row[1], "youtube_id": row[2]}
+    finally:
+        conn.close()
+
+    if not unlisted_video:
+        logger.info("[STAGED RELEASE] No queued unlisted videos waiting to be released.")
+        return None
+
+    vid = unlisted_video["youtube_id"]
+    db_id = unlisted_video["db_id"]
+    title = unlisted_video["title"]
+    logger.info(f"[STAGED RELEASE] Releasing queued video to PUBLIC: ID #{db_id} - '{title}' ({vid})...")
+
+    try:
+        response = youtube.videos().update(
+            part="status",
+            body={
+                "id": vid,
+                "status": {
+                    "privacyStatus": "public",
+                    "selfDeclaredMadeForKids": False
+                }
+            }
+        ).execute()
+
+        new_status = response.get("status", {}).get("privacyStatus")
+        if new_status == "public":
+            # Update database status to 'uploaded'
+            conn = get_connection()
+            try:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    UPDATE videos 
+                    SET status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP 
+                    WHERE id = ?
+                """, (db_id,))
+                conn.commit()
+            finally:
+                conn.close()
+
+            # Post engagement comment on the newly public video
+            try:
+                youtube.commentThreads().insert(
+                    part="snippet",
+                    body={
+                        "snippet": {
+                            "videoId": vid,
+                            "topLevelComment": {
+                                "snippet": {
+                                    "textOriginal": "👇 What's YOUR answer? Drop it in the comments below!"
+                                }
+                            }
+                        }
+                    }
+                ).execute()
+                logger.info(f"[STAGED RELEASE] Successfully posted auto-comment on released video {vid}")
+            except Exception as ce:
+                logger.warning(f"Failed to post comment on released video {vid}: {ce}")
+
+            logger.info(f"🎉 [STAGED RELEASE] Successfully released video {vid} from UNLISTED -> PUBLIC in full 1080p HD!")
+            return unlisted_video
+        else:
+            logger.warning(f"[STAGED RELEASE] Video status update returned status: {new_status}")
+            return None
+    except Exception as e:
+        logger.error(f"[STAGED RELEASE] Failed to release video {vid} to public: {e}")
+        return None
+
+
 def run() -> str | None:
     """Orchestrates Step 11 of the pipeline. Returns video URL if successful."""
     logger.info("=== STEP 11: UPLOAD TO YOUTUBE ===")
@@ -382,9 +472,17 @@ def run() -> str | None:
     except Exception as e:
         logger.error(f"YouTube authentication failed: {e}. Skipping upload.")
         return None
+
+    # 4.5. Staged Release Buffer: Release any previously unlisted video to PUBLIC first!
+    staged_release = get_setting("upload", "staged_release", True)
+    if staged_release:
+        release_pending_unlisted_video(youtube)
         
     # 5. Prepare upload body
-    privacy_status = get_setting('upload', 'privacy', 'unlisted')
+    if staged_release:
+        privacy_status = "unlisted"
+    else:
+        privacy_status = get_setting('upload', 'privacy', 'public')
     category_id = metadata.get("category", get_setting('upload', 'category', '22'))
     
     # Format description to include exactly 5-6 hashtags at the end
@@ -462,24 +560,29 @@ def run() -> str | None:
             video_url = f"https://youtube.com/shorts/{video_id}"
             logger.info(f"Upload complete! Watch your video here: {video_url}")
             
-            # Post a top-level comment to bait engagement
-            try:
-                youtube.commentThreads().insert(
-                    part="snippet",
-                    body={
-                        "snippet": {
-                            "videoId": video_id,
-                            "topLevelComment": {
-                                "snippet": {
-                                    "textOriginal": "👇 What's YOUR answer? Drop it in the comments below!"
+            db_status = "uploaded_unlisted" if (staged_release and privacy_status == "unlisted") else "uploaded"
+            
+            if db_status == "uploaded":
+                # Post a top-level comment to bait engagement for immediate public releases
+                try:
+                    youtube.commentThreads().insert(
+                        part="snippet",
+                        body={
+                            "snippet": {
+                                "videoId": video_id,
+                                "topLevelComment": {
+                                    "snippet": {
+                                        "textOriginal": "👇 What's YOUR answer? Drop it in the comments below!"
+                                    }
                                 }
                             }
                         }
-                    }
-                ).execute()
-                logger.info(f"Successfully posted auto-comment on video {video_id}")
-            except Exception as e:
-                logger.warning(f"Failed to post auto-comment on video {video_id}: {e}")
+                    ).execute()
+                    logger.info(f"Successfully posted auto-comment on video {video_id}")
+                except Exception as e:
+                    logger.warning(f"Failed to post auto-comment on video {video_id}: {e}")
+            else:
+                logger.info(f"🔒 [STAGED RELEASE] Video {video_id} queued as UNLISTED pre-warming buffer. Will be released to PUBLIC at the next scheduled slot in pristine 1080p HD!")
             
             try:
                 # 1. Update central shortest_orbit_v3.db
@@ -489,14 +592,14 @@ def run() -> str | None:
                     cursor = conn.cursor()
                     cursor.execute("""
                         UPDATE videos 
-                        SET youtube_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
+                        SET youtube_id = ?, status = ?, uploaded_at = CURRENT_TIMESTAMP
                         WHERE id = (SELECT id FROM videos ORDER BY id DESC LIMIT 1)
-                    """, (video_id,))
+                    """, (video_id, db_status))
                     conn.commit()
                 finally:
                     if conn:
                         conn.close()
-                logger.info(f"Central database video status updated to 'uploaded' for YouTube ID: {video_id}")
+                logger.info(f"Central database video status updated to '{db_status}' for YouTube ID: {video_id}")
                 
                 # 2. Update platform-specific youtube.db
                 from automation.database.connection import get_youtube_conn
@@ -506,14 +609,14 @@ def run() -> str | None:
                     yt_cursor = yt_conn.cursor()
                     yt_cursor.execute("""
                         UPDATE videos
-                        SET youtube_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
+                        SET youtube_id = ?, status = ?, uploaded_at = CURRENT_TIMESTAMP
                         WHERE id = (SELECT id FROM videos ORDER BY id DESC LIMIT 1)
-                    """, (video_id,))
+                    """, (video_id, db_status))
                     yt_conn.commit()
                 finally:
                     if yt_conn:
                         yt_conn.close()
-                logger.info(f"Platform youtube.db video status updated to 'uploaded' for YouTube ID: {video_id}")
+                logger.info(f"Platform youtube.db video status updated to '{db_status}' for YouTube ID: {video_id}")
 
             except Exception as e:
                 logger.warning(f"Database video upload update error: {e}")

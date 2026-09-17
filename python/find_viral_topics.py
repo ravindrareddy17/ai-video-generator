@@ -427,6 +427,24 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             if "wikipedia" in c_text:
                 logger.info(f"Filtered out Wikipedia topic to prevent repetition: {c.get('source_headline')}")
                 continue
+            
+            # Anti-repetition: Reject candidate if 2 or more distinct keywords overlap with any of the last 20 video titles
+            if recent_titles:
+                import re
+                c_words = set(re.findall(r'[a-z]{4,}', c_text))
+                stop_words = {"space", "future", "world", "first", "about", "could", "would", "what", "where", "which", "there", "their", "hidden", "truth", "secret", "video", "shorts", "revealed", "shock", "shocking", "exposed", "eating", "swallows", "whole"}
+                meaningful_c_words = c_words - stop_words
+                is_duplicate = False
+                for r_title in recent_titles[:20]:
+                    r_words = set(re.findall(r'[a-z]{4,}', r_title.lower())) - stop_words
+                    overlap = meaningful_c_words & r_words
+                    if len(overlap) >= 2:
+                        logger.warning(f"Filtered out candidate '{c.get('source_headline')}' due to repeated keywords {overlap} with recent video '{r_title}'")
+                        is_duplicate = True
+                        break
+                if is_duplicate:
+                    continue
+
             safe_concepts.append(c)
                 
         if not safe_concepts:
