@@ -435,7 +435,7 @@ def run() -> str | None:
                 UPDATE videos
                    SET facebook_id  = ?,
                        facebook_url = ?,
-                       status = 'uploaded',
+                       status = CASE WHEN status = 'uploaded_unlisted' THEN 'uploaded_unlisted' ELSE 'uploaded' END,
                        uploaded_at = CURRENT_TIMESTAMP
                  WHERE id = (SELECT id FROM videos ORDER BY id DESC LIMIT 1)
                 """,
@@ -462,7 +462,7 @@ def run() -> str | None:
                 UPDATE videos
                    SET facebook_id  = ?,
                        facebook_url = ?,
-                       status = 'uploaded',
+                       status = CASE WHEN status = 'uploaded_unlisted' THEN 'uploaded_unlisted' ELSE 'uploaded' END,
                        uploaded_at = CURRENT_TIMESTAMP
                  WHERE id = (SELECT id FROM videos ORDER BY id DESC LIMIT 1)
                 """,

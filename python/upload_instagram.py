@@ -786,7 +786,9 @@ def run() -> str | None:
                     cursor.execute(
                         """
                         UPDATE videos 
-                        SET instagram_url = ?, instagram_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
+                        SET instagram_url = ?, instagram_id = ?, 
+                            status = CASE WHEN status = 'uploaded_unlisted' THEN 'uploaded_unlisted' ELSE 'uploaded' END, 
+                            uploaded_at = CURRENT_TIMESTAMP
                         WHERE id = ?
                         """,
                         (permalink, ig_media_id, video_row_id),
@@ -810,7 +812,9 @@ def run() -> str | None:
                     ig_cursor.execute(
                         """
                         UPDATE videos
-                        SET instagram_url = ?, instagram_id = ?, status = 'uploaded', uploaded_at = CURRENT_TIMESTAMP
+                        SET instagram_url = ?, instagram_id = ?, 
+                            status = CASE WHEN status = 'uploaded_unlisted' THEN 'uploaded_unlisted' ELSE 'uploaded' END, 
+                            uploaded_at = CURRENT_TIMESTAMP
                         WHERE id = (SELECT id FROM videos ORDER BY id DESC LIMIT 1)
                         """,
                         (permalink, ig_media_id),
