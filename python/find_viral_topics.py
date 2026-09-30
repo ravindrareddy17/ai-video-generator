@@ -379,22 +379,42 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "}\n\n"
         "RULES:\n"
         "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify.\n"
-        "2. Hook_line MUST use powerful, high-emotion viral power words like 'Uncovered', 'Exposed', 'Game Changer', 'Forbidden', or 'Breaking'.\n"
-        "3. STRICT SPACE FRONTIER NICHE INTERSECTION: The chosen topic MUST strictly combine Countries/Agencies + Space Exploration + AI + Global Competition. Every video must connect these elements naturally. Reject purely AI-only, space-only, country-politics-only, or military-only news. Target a weight distribution of 70% Space-primary (space exploration assisted by AI) and 30% AI-primary (AI breakthroughs supporting space programs) across your selections.\n"
-        "4. STRICT BAN: Do NOT select biology, wildlife, general political news, geopolitical wars, financial stocks, lifestyle/beauty hacks, or speculative pop-psychology.\n"
-        "5. HOOK HONESTY RULE: The hook_line must be a 100% true fact. Do NOT invent numbers.\n"
-        "6. FACTUAL TRUTH GATING: Do NOT select speculative rumors, clickbait conspiracy theories, or fake-sounding news. Only select topics backed by solid scientific reports, official announcements, or reputable journal publications. Reject sensationalized headlines that claim a company's product did something illegal or highly unlikely."
+        "2. Hook_line MUST use powerful, high-emotion viral words like 'Uncovered', 'Exposed', 'Disrespects', 'Game Changer', 'Forbidden', 'Terrifying', or 'Defies'.\n"
+        "3. 4-PILLAR CONTENT ROTATION (CRITICAL FOR CHANNEL ALGORITHM GROWTH):\n"
+        "   To avoid channel fatigue and capture massive casual Shorts traffic, balance your topic choices across these 4 core pillars:\n"
+        "   - Pillar A: Deep Space & Universe Wonders (JWST discoveries, black holes, rogue planets, asteroid mining, Moon/Mars race)\n"
+        "   - Pillar B: Extreme Nature & Apex Wildlife Wonders (Bizarre animal behavior, deep sea monsters, animal-vs-animal sabotage, volcanic forces, crazy survival adaptations)\n"
+        "   - Pillar C: Radical Tech & Humanoid AI Frontiers (Humanoid robotics, bio-computing, AI outsmarting humans, brain-computer interfaces)\n"
+        "   - Pillar D: Accidental Discoveries & Science Oddities (Science mistakes that changed history, ancient frozen secrets, lost structures, physics oddities)\n"
+        "   VARIETY IS KING: Never pick the same pillar twice in a row. Rotate between Space, Nature, Tech, and Science Oddities!\n"
+        "4. STRICT BAN: Do NOT select partisan political elections, stock prices, celebrity gossip, or lifestyle/beauty hacks.\n"
+        "5. HOOK HONESTY RULE: The hook_line must be grounded in real events or science. Do NOT invent numbers.\n"
+        "6. FACTUAL TRUTH GATING: Do NOT select speculative rumors or clickbait conspiracy theories. Ground topics in verified reports, announcements, or reputable publications."
     )
     
-    user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}"
+    # Load audience feedback insights if available
+    insights_context = ""
+    insights_path = DATA_DIR / "self_learning_insights.json"
+    if insights_path.exists():
+        try:
+            with open(insights_path, "r", encoding="utf-8") as f:
+                insights_data = json.load(f)
+            hi_niches = insights_data.get("high_interest_niches", [])
+            boost_kws = insights_data.get("algorithm_boost_keywords", [])
+            if hi_niches or boost_kws:
+                insights_context = f"\nAUDIENCE ENGAGEMENT INSIGHTS:\n- High-Interest Niches: {', '.join(hi_niches[:5])}\n- High-Velocity Keywords: {', '.join(boost_kws[:6])}\n"
+                logger.info("Injected audience performance insights into topic discovery prompt.")
+        except Exception as ie:
+            logger.warning(f"Could not load self-learning insights: {ie}")
+
+    user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}{insights_context}"
     
     if recent_titles:
         recent_titles_str = "\n".join([f"- {t}" for t in recent_titles])
         user_prompt += (
             f"\n\nHere are the recently uploaded videos on the channel:\n{recent_titles_str}\n\n"
-            "CRITICAL: Do NOT select any topic that overlaps or is similar to the above list. "
-            "Analyze the above list and select the next topic category to move the channel closer to a strict "
-            "70% Space-primary / 30% AI-primary global publishing ratio within the Space Frontier intersection."
+            "CRITICAL VARIETY INSTRUCTION: Analyze the above recent videos. Do NOT select a topic from the same category as the most recent uploads. "
+            "If the recent uploads were Space/AI, pick an Extreme Nature, Wild Animal Anomaly, or Accidental Science Discovery to keep the audience excited and engaged!"
         )
     
     logger.info("Calling Groq LLM to scan and score viral topics...")

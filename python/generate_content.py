@@ -17,10 +17,12 @@ from pathlib import Path
 import json
 from groq import Groq
 
+import re
+
 # Project imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from utils.paths import VIRAL_TOPICS_FILE, CONTENT_FILE, METADATA_FILE
+from utils.paths import VIRAL_TOPICS_FILE, CONTENT_FILE, METADATA_FILE, DATA_DIR
 from utils.config import get_groq_key, get_setting
 from utils.logger import get_logger
 from utils.helpers import save_json, load_json
@@ -170,12 +172,28 @@ def generate_narration(topic_data: dict) -> dict:
         "8. AUTO-DUBBING & TRANSLATION FRIENDLINESS: Avoid complex local idioms, localized slang, or metaphors. Use clean, globally standard grammar for seamless translation."
     )
     
+    # Load audience feedback insights if available
+    insights_guidelines = ""
+    insights_path = DATA_DIR / "self_learning_insights.json"
+    if insights_path.exists():
+        try:
+            with open(insights_path, "r", encoding="utf-8") as f:
+                insights_data = json.load(f)
+            hg = insights_data.get("viral_hook_guideline", "")
+            pg = insights_data.get("pacing_and_length_adjustments", "")
+            if hg or pg:
+                insights_guidelines = f"\nAUDIENCE ENGAGEMENT CALIBRATION:\n- Hook Guideline: {hg}\n- Pacing Guideline: {pg}\n"
+                logger.info("Injected self-learning guidelines into script generation prompt.")
+        except Exception as ie:
+            logger.warning(f"Could not read self-learning insights: {ie}")
+
     viral_angle = topic_data.get("viral_angle", "")
     
     user_prompt = (
         f"Generate a script for this viral concept:\n"
         f"Hook Line: {chosen_hook}\n"
-        f"Viral Angle (What to explain): {viral_angle}\n\n"
+        f"Viral Angle (What to explain): {viral_angle}\n"
+        f"{insights_guidelines}\n"
         f"CRITICAL STRUCTURE REQUIREMENTS (75-105 WORDS TOTAL):\n"
         f"Your script must contain exactly 3 concise, high-impact sentences:\n"
         f"Sentence 1 (Hook): Start exactly with the hook line (approx 8-12 words).\n"
@@ -265,39 +283,63 @@ def generate_narration(topic_data: dict) -> dict:
 
 
 def generate_metadata(topic: str, title: str) -> dict:
-    """Generate YouTube metadata (description, tags, hashtags, translations) via Groq LLM."""
+    """Generate YouTube metadata (description, tags, hashtags, translations) via Groq LLM with strict title variety."""
     api_key = get_groq_key()
     model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
     client = Groq(api_key=api_key)
     
+    # Query last 15 titles to extract and block repetitive starting prefixes (e.g. "The HIDDEN...")
+    blocked_prefixes = {"the hidden", "the untold", "hidden truth", "hidden ai", "the secret"}
+    try:
+        conn = get_connection()
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT title FROM videos WHERE title IS NOT NULL ORDER BY id DESC LIMIT 15")
+            rows = cursor.fetchall()
+            for r in rows:
+                t_str = re.sub(r'^[^\w]+', '', str(r[0])).strip().lower()
+                words = t_str.split()
+                if len(words) >= 2:
+                    blocked_prefixes.add(f"{words[0]} {words[1]}")
+        finally:
+            conn.close()
+    except Exception as e:
+        logger.warning(f"Could not load recent title prefixes: {e}")
+
+    blocked_prefixes_str = ", ".join(sorted(list(blocked_prefixes))[:20])
+
     system_prompt = (
         "You are an elite YouTube SEO manager and copywriter specializing in viral YouTube Shorts.\n"
         "Your task is to generate metadata for a YouTube Short video, including translations for international auto-dubbing.\n\n"
-        "1. TITLE DESIGN (ULTRA-VIRAL):\n"
-        "The title MUST be a highly controversial, curiosity-driven, or mind-bending psychological hook. "
-        "Use extreme capitalization on power words (e.g., NEVER, TRUTH, HIDDEN, EXPOSED, BANNED, SCIENTISTS PANIC). "
-        "Frame it as an unsolved mystery, a terrifying discovery, or an unfair advantage. "
-        "Example formats:\n"
-        " - 'Why [Entity] is TERRIFIED of [Discovery] 😱'\n"
-        " - 'The HIDDEN Truth About [Topic] They Won't Tell You...'\n"
-        " - 'Did [Country] Just WIN the Space Race? 🚀'\n"
+        "1. TITLE DESIGN (MAXIMUM VIRALITY & VARIETY):\n"
+        "STRICT DIVERSITY RULE: You MUST vary the title structure completely from past videos.\n"
+        f"STRICTLY FORBIDDEN: NEVER start the title with 'The HIDDEN', 'The Untold', 'The Secret', or any of these recent prefixes:\n"
+        f"[{blocked_prefixes_str}]\n\n"
+        "Pick ONE of these 6 proven high-CTR viral title archetypes that best fits the video:\n"
+        " - Archetype 1 (Intriguing Question): 'Can [Subject] Really Outsmart [Target]?' / 'Why Did [Entity] Just Ban This?'\n"
+        " - Archetype 2 (Bizarre Paradox / Animal / Nature): '[Creature/Phenomenon] Defies All Laws of Nature' / '1-Ton Beast Disrespects [Target]'\n"
+        " - Archetype 3 (High-Stakes Showdown): '[Entity A] vs [Entity B]: Who Survives?' / '[Entity] Caught in Sabotage'\n"
+        " - Archetype 4 (Shocking Discovery): 'Scientists Stumbled Upon This by Complete Mistake' / 'What Was Found Deep Inside [Location]'\n"
+        " - Archetype 5 (Human vs Machine): 'Robots Caught Doing What Humans Thought Impossible'\n"
+        " - Archetype 6 (Urgent Breakthrough): 'A Dangerous Discovery That Changes [Field] in Seconds'\n\n"
+        "CRITICAL TITLE LENGTH RULE: The English title MUST be UNDER 48 CHARACTERS (excluding #Shorts) so it doesn't get cut off on mobile Shorts feeds!\n"
         "Ensure it contains the hashtag #Shorts at the very end.\n\n"
-        "2. DESCRIPTION & TRENDING AUDIO SEO HACK:\n"
-        "Create a 2-3 sentence description that invites clicks. "
-        "At the absolute end of the description, you MUST append a 'Trending Audio' SEO block. "
-        "This tricks the algorithm by indexing popular search terms for music. Use exactly this format:\n"
+        "2. DESCRIPTION & CALL-TO-ACTION SEO:\n"
+        "Create a 2-sentence description that invites clicks, followed by a subscriber invitation:\n"
+        "'Subscribe to @theshortestorbit for daily 30-second science, nature & space discoveries.'\n"
+        "At the absolute end of the description, append a 'Trending Audio' SEO block:\n"
         "'🎧 Trending Audio: [Pick one: Interstellar Main Theme - Hans Zimmer | Metamorphosis (Phonk) | Blade Runner 2049 Synth | Paris - Else | Suspense Dark Cinematic]'\n\n"
         "3. VIRAL HASHTAGS:\n"
-        "Do NOT use generic tags. Select exactly 6 hashtags from this elite, high-traffic list only:\n"
-        "#SpaceX #NASA #ArtificialIntelligence #SpaceExploration #MarsColonization #FutureTech #Astrophysics #ElonMusk #SciFi #UniverseMystery #AIFuture #DeepSpace #ScienceFacts #SpaceNews\n\n"
+        "Select exactly 6 hashtags appropriate for the topic from this high-traffic list:\n"
+        "#Shorts #Science #NatureIsMetal #SpaceExploration #ArtificialIntelligence #FutureTech #Astrophysics #UniverseMystery #OceanExploration #ScienceFacts #WildNature #TechBreakthrough\n\n"
         "4. LOCALIZATION:\n"
         "Translate the final English title and description (including the audio recommendation) into Spanish (es), Hindi (hi), French (fr), Portuguese (pt), and Telugu (te).\n"
         "CRITICAL: Write both the titles and descriptions in their native scripts (e.g. Hindi script for Hindi). Do not write localized titles in English script unless natural to the language.\n"
         "CRITICAL JSON RULE: Output raw UTF-8 characters (e.g., 'स्पेसएक्स'). Do NOT output escaped Unicode (like \\u0938).\n\n"
         "Respond in JSON format with the following keys:\n"
-        "- title: The ultra-viral YouTube title in English (ending with #Shorts)\n"
-        "- description: 2-3 sentence description + the 🎧 Trending Audio block\n"
-        "- hashtags: array of 6 hashtags chosen from the elite list above\n"
+        "- title: The ultra-viral YouTube title in English (under 50 chars, ending with #Shorts)\n"
+        "- description: 2-3 sentence description + subscribe CTA + trending audio block\n"
+        "- hashtags: array of 6 hashtags chosen from the list above\n"
         "- keywords: array of 6-10 search keywords for tagging\n"
         "- category: '28' (Science & Technology)\n"
         "- localizations: dictionary containing 'es', 'hi', 'fr', 'pt', and 'te'. Format:\n"
@@ -310,7 +352,7 @@ def generate_metadata(topic: str, title: str) -> dict:
     
     user_prompt = f"Generate SEO metadata for a video on topic '{topic}' with script title '{title}'"
     
-    logger.info("Calling Groq to generate YouTube metadata...")
+    logger.info("Calling Groq to generate YouTube metadata with high title variety...")
     try:
         from utils.config import call_groq_with_fallback
         from utils.helpers import extract_json_from_llm
@@ -321,16 +363,54 @@ def generate_metadata(topic: str, title: str) -> dict:
                 {"role": "user", "content": user_prompt}
             ],
             initial_model=model,
-            temperature=0.7,
+            temperature=0.75,
             response_format={"type": "json_object"}
         )
         
         response_text = chat_completion.choices[0].message.content
         metadata = extract_json_from_llm(response_text)
         
-        # Ensure #Shorts is in the title
-        if "#shorts" not in metadata.get("title", "").lower():
-            metadata["title"] = f"{metadata.get('title', title)} #Shorts"
+        raw_title = metadata.get("title", title).strip()
+        
+        # Clean #Shorts from raw title for prefix analysis
+        title_core = re.sub(r'#\w+', '', raw_title).strip()
+        
+        # Programmatic sanitization: Strip formulaic "The HIDDEN..." prefixes if LLM still hallucinated them
+        lower_core = title_core.lower()
+        for formulaic_prefix in [
+            "the hidden truth about", "the hidden truth:", "the hidden truth", 
+            "the hidden secret behind", "the hidden ai secret behind", "the hidden ai power",
+            "the hidden ai pilot", "the hidden war between", "the hidden $", "the hidden",
+            "the untold story of", "the untold story:", "the untold", "the secret behind", "the secret"
+        ]:
+            if lower_core.startswith(formulaic_prefix):
+                title_core = title_core[len(formulaic_prefix):].strip()
+                if title_core.startswith(":") or title_core.startswith("-"):
+                    title_core = title_core[1:].strip()
+                if title_core:
+                    title_core = title_core[0].upper() + title_core[1:]
+                logger.info(f"Sanitized formulaic title prefix -> '{title_core}'")
+                break
+
+        # Check against blocked prefixes from last 15 videos
+        lower_sanitized = title_core.lower()
+        for bp in blocked_prefixes:
+            if lower_sanitized.startswith(bp) and len(title_core) > len(bp):
+                title_core = title_core[len(bp):].strip()
+                if title_core.startswith(":") or title_core.startswith("-"):
+                    title_core = title_core[1:].strip()
+                if title_core:
+                    title_core = title_core[0].upper() + title_core[1:]
+                logger.info(f"Sanitized repetitive title prefix '{bp}' -> '{title_core}'")
+                break
+
+        # Enforce mobile length: keep under 50 characters before #Shorts
+        if len(title_core) > 50:
+            title_core = title_core[:47].rsplit(" ", 1)[0] + "..."
+            
+        final_title = f"{title_core} #Shorts"
+        metadata["title"] = final_title
+        logger.info(f"Final Optimized Video Title: '{final_title}' ({len(final_title)} chars)")
             
         # Ensure #Shorts is in localized titles as well
         localizations = metadata.get("localizations", {})
@@ -344,11 +424,13 @@ def generate_metadata(topic: str, title: str) -> dict:
         # High quality fallback metadata
         clean_title = re.sub(r'^[^\w]+', '', title).strip()
         clean_topic = re.sub(r'^[^\w]+', '', topic).strip()
+        if len(clean_title) > 48:
+            clean_title = clean_title[:45] + "..."
         return {
             "title": f"{clean_title} #Shorts",
-            "description": f"The untold story and hidden science behind {clean_topic}. Will this change everything we know?\n\n🔥 Trending Audio: Interstellar Main Theme - Hans Zimmer",
-            "hashtags": ["#Shorts", "#SpaceExploration", "#FutureTech", "#ScienceFacts", "#UniverseMystery", "#Viral"],
-            "keywords": [clean_topic, "science", "future tech", "space", "discovery", "mystery", "documentary"],
+            "description": f"The untold science behind {clean_topic}.\n\n🚀 Subscribe to @theshortestorbit for daily 30-second science & nature breakdowns.\n\n🔥 Trending Audio: Interstellar Main Theme - Hans Zimmer",
+            "hashtags": ["#Shorts", "#Science", "#NatureIsMetal", "#SpaceExploration", "#FutureTech", "#Viral"],
+            "keywords": [clean_topic, "science", "nature", "space", "discovery", "mystery", "documentary"],
             "category": "28",
             "localizations": {}
         }

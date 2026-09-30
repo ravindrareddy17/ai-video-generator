@@ -404,7 +404,7 @@ def release_pending_unlisted_video(youtube=None) -> dict | None:
                             "videoId": vid,
                             "topLevelComment": {
                                 "snippet": {
-                                    "textOriginal": "👇 What's YOUR answer? Drop it in the comments below!"
+                                    "textOriginal": "👇 What's YOUR take on this? Drop it in the comments below!\n🚀 Subscribe to @theshortestorbit for daily 30-second science, nature & space discoveries!"
                                 }
                             }
                         }
@@ -572,7 +572,7 @@ def run() -> str | None:
                                 "videoId": video_id,
                                 "topLevelComment": {
                                     "snippet": {
-                                        "textOriginal": "👇 What's YOUR answer? Drop it in the comments below!"
+                                        "textOriginal": "👇 What's YOUR take on this? Drop it in the comments below!\n🚀 Subscribe to @theshortestorbit for daily 30-second science, nature & space discoveries!"
                                     }
                                 }
                             }
