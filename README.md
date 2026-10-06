@@ -264,13 +264,13 @@ Every parameter of the video generation pipeline is scientifically tuned for You
 
 ## ⏰ GLOBAL POSTING SCHEDULE & PRIME-TIME WINDOWS
 
-Configured in [`.github/workflows/main.yml`](file:///.github/workflows/main.yml) to capture peak active commuting and evening hours across the United States, Europe, and India:
+Configured in [`.github/workflows/main.yml`](file:///.github/workflows/main.yml) aligned directly with our channel's **YouTube Analytics Viewer Heatmap**:
 
 ```yaml
   schedule:
-    - cron: "30 11 * * *"  # Slot 1: 5:00 PM IST  / 7:30 AM EST  / 12:30 PM BST (US Morning Commute Peak)
-    - cron: "0 16 * * *"   # Slot 2: 9:30 PM IST  / 12:00 PM EST / 5:00 PM BST  (US Lunch & EU Evening Peak)
-    - cron: "30 22 * * *"  # Slot 3: 4:00 AM IST  / 6:30 PM EST  / 11:30 PM BST (US Evening Prime-Time Peak)
+    - cron: "30 0 * * *"   # Slot 1: 06:00 AM IST / 00:30 UTC (Darkest Purple Heatmap Peak — US Evening Prime Time)
+    - cron: "0 8 * * *"    # Slot 2: 01:30 PM IST / 08:00 UTC (Afternoon Active Window — US Early Morning / EU Morning)
+    - cron: "0 16 * * *"   # Slot 3: 09:30 PM IST / 16:00 UTC (Evening Active Window — US Lunch / EU Evening)
 ```
 
 ---
