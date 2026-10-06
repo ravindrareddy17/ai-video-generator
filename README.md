@@ -268,9 +268,10 @@ Configured in [`.github/workflows/main.yml`](file:///.github/workflows/main.yml)
 
 ```yaml
   schedule:
-    - cron: "30 0 * * *"   # Slot 1: 06:00 AM IST / 00:30 UTC (Darkest Purple Heatmap Peak — US Evening Prime Time)
-    - cron: "0 8 * * *"    # Slot 2: 01:30 PM IST / 08:00 UTC (Afternoon Active Window — US Early Morning / EU Morning)
-    - cron: "0 16 * * *"   # Slot 3: 09:30 PM IST / 16:00 UTC (Evening Active Window — US Lunch / EU Evening)
+    # 3 Peak Daily Upload Slots Aligned strictly with YouTube Analytics Viewer Heatmap (GMT+0530 / IST):
+    - cron: "30 20 * * *"  # Slot 1: 02:00 AM IST / 20:30 UTC (Heatmap Peak Window — 02:00 AM–05:00 AM IST)
+    - cron: "30 22 * * *"  # Slot 2: 04:00 AM IST / 22:30 UTC (Heatmap Peak Window — 02:00 AM–05:00 AM IST)
+    - cron: "0 16 * * *"   # Slot 3: 09:30 PM IST / 16:00 UTC (Evening Active Window — 09:00 PM–11:00 PM IST)
 ```
 
 ---
@@ -557,7 +558,7 @@ To enable 100% autonomous 3x daily posting in the cloud:
    - `FACEBOOK_PAGE_ID`, `INSTAGRAM_BUSINESS_ACCOUNT_ID`
    - `TOKEN_PICKLE_BASE64` (run `base64 -w 0 token.pickle` and paste value)
    - `CLIENT_SECRET_BASE64` (run `base64 -w 0 client_secret.json` and paste value)
-3. Enable Workflows under the **Actions** tab. The pipeline will automatically execute at 11:30, 16:00, and 22:30 UTC every day.
+3. Enable Workflows under the **Actions** tab. The pipeline will automatically execute at 20:30, 22:30, and 16:00 UTC every day (02:00 AM, 04:00 AM, and 09:30 PM IST) based strictly on the channel's latest YouTube Analytics Viewer Heatmap.
 
 ---
 
