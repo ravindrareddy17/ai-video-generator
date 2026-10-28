@@ -100,10 +100,15 @@ def fetch_pexels_candidates(query: str, used_ids: set[str]) -> list[dict]:
                     h = vf.get("height") or 0
                     link = vf.get("link")
                     if link and "mp4" in link:
-                        hd_files.append((h > w, h, link))
+                        is_vert = (h > w)
+                        target_h = 1920 if is_vert else 1080
+                        diff = abs(h - target_h)
+                        if h > target_h:
+                            diff += (h - target_h) * 2
+                        hd_files.append((diff, is_vert, h, link))
                 if hd_files:
-                    hd_files.sort(key=lambda x: x[1], reverse=True)
-                    is_vert, height, link = hd_files[0]
+                    hd_files.sort(key=lambda x: x[0])
+                    _, is_vert, height, link = hd_files[0]
                     candidates.append({"url": link, "id": v_id, "source": "Pexels", "is_vertical": is_vert, "height": height})
     except Exception as e:
         logger.error(f"Error fetching Pexels candidates: {e}")
@@ -160,10 +165,11 @@ def search_dual_sources(query: str, used_ids: set[str] = None) -> tuple[str | No
     if not pool:
         return None, None, None
         
-    # Sort pool by resolution/height descending
-    pool.sort(key=lambda x: x["height"], reverse=True)
+    # Sort pool: prefer heights closest to 1920 (for vertical) or 1080 (for landscape), avoiding huge 4K files
+    target_h = 1920 if (pool == verticals) else 1080
+    pool.sort(key=lambda x: abs(x["height"] - target_h) + (max(0, x["height"] - target_h) * 2))
     
-    # Pick randomly from the top 5 highest resolution candidates across both platforms for variety
+    # Pick randomly from the top 5 best-fit resolution candidates across both platforms for variety
     top_candidates = pool[:min(5, len(pool))]
     winner = random.choice(top_candidates)
     

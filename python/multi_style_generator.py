@@ -55,6 +55,11 @@ def generate_all_scenes() -> list[Path]:
         duration = float(item.get("duration_s", item.get("duration", 4.0)))
         
         output_clip = DOWNLOADS_VIDEOS_DIR / f"scene_{i}.mp4"
+        if output_clip.exists() and output_clip.stat().st_size > 500000:
+            logger.info(f"Scene {i} already exists ({output_clip.stat().st_size} bytes). Reusing.")
+            generated_clips.append(output_clip)
+            continue
+
         logger.info(f">>> Generating Scene {i}/{len(queries)} [Style: {v_style.upper()}] (Duration: {duration:.2f}s) — Prompt: '{prompt[:60]}...'")
         
         scene_start = time.time()
