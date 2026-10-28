@@ -7,7 +7,7 @@ from groq import Groq
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from utils.paths import CONTENT_FILE
-from utils.config import get_groq_key, get_setting
+from utils.config import get_groq_key, get_setting, call_groq_with_fallback
 from utils.logger import get_logger
 from utils.helpers import load_json
 
@@ -69,12 +69,13 @@ def check_script_quality(content: dict) -> bool:
     
     logger.info("Calling Groq for quality review...")
     try:
-        completion = client.chat.completions.create(
+        completion = call_groq_with_fallback(
+            client=client,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            model=model,
+            initial_model=model,
             temperature=0.2,
             response_format={"type": "json_object"}
         )

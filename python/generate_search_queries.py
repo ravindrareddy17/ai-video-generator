@@ -222,6 +222,7 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         
         output_queries = []
         for sub in sub_beats:
+            item = item_map.get(sub["index"], {})
             if visual_mode == "cinematic":
                 v_style = "cinematic"
             else:
@@ -236,7 +237,7 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
                     else:
                         v_style = "cinematic"
 
-            q = item.get("query", "space motion")
+            q = item.get("query", "")
             fb = item.get("fallback_queries", [])
             prompt_desc = item.get("prompt", sub["text"])
             camera_motion = item.get("camera_motion", "zoom_in")
@@ -245,13 +246,20 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
             # Sanitize query
             q_clean = re.sub(r'[^\w\s]', '', q).strip().lower()
             if not q_clean:
-                q_clean = "space motion"
+                # Content-aware fallback from sentence keywords rather than hardcoded space
+                clean_words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', sub["text"]) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which"}]
+                topic_words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', topic_info.get("selected_topic", "") or topic_info.get("topic", "")) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which"}]
+                q_clean = " ".join(clean_words[:2]) if clean_words else (" ".join(topic_words[:2]) if topic_words else "cinematic documentary 4k")
                 
             clean_fallbacks = []
             for f in fb:
                 cf = re.sub(r'[^\w\s]', '', str(f)).strip().lower()
                 if cf and cf not in clean_fallbacks:
                     clean_fallbacks.append(cf)
+            if not clean_fallbacks:
+                topic_words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', topic_info.get("selected_topic", "") or topic_info.get("topic", "")) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which"}]
+                if topic_words:
+                    clean_fallbacks.append(" ".join(topic_words[:2]))
                     
             output_queries.append({
                 "subtitle_index": sub["index"],
@@ -276,18 +284,21 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         
     except Exception as e:
         logger.error(f"Error parsing LLM response for visual director: {e}")
-        # Rule fallback based on sentence keywords
+        # Rule fallback based on sentence keywords and topic context
         output_queries = []
+        topic_words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', topic_info.get("selected_topic", "") or topic_info.get("topic", "")) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which"}]
+        topic_fallback = " ".join(topic_words[:2]) if topic_words else "cinematic documentary"
         for sub in sub_beats:
-            words = [w.strip().lower() for w in sub["text"].split() if len(w.strip()) > 3][:2]
-            q = (" ".join(words) + " space") if words else "space motion"
+            words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', sub["text"]) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which"}][:2]
+            q = " ".join(words) if words else topic_fallback
             output_queries.append({
                 "subtitle_index": sub["index"],
                 "text": sub["text"],
+                "visual_style": "cinematic",
                 "type": "video",
                 "query": q,
-                "fallback_queries": ["rocket launch", "satellite orbit", "space motion"],
-                "image_prompt": "",
+                "fallback_queries": [topic_fallback, "cinematic 4k vertical nature"],
+                "image_prompt": sub["text"],
                 "start": sub["start"],
                 "end": sub["end"],
                 "start_ms": sub["start_ms"],

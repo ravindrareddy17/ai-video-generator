@@ -330,9 +330,26 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
     model = get_setting('llm', 'model', 'openai/gpt-oss-120b')
     client = Groq(api_key=api_key)
     
-    # Take top 12 candidates to optimize token usage
+    # Pre-filter topics against recent uploaded titles (last 20) to eliminate repeating topics before prompt creation
+    stop_words = {"space", "future", "world", "first", "about", "could", "would", "what", "where", "which", "there", "their", "hidden", "truth", "secret", "video", "shorts", "revealed", "shock", "shocking", "exposed", "eating", "swallows", "whole"}
     topics_sorted = sorted(topics, key=lambda x: x["score_signal"], reverse=True)
-    top_candidates = topics_sorted[:12]
+    filtered_topics = []
+    if recent_titles:
+        import re
+        for t in topics_sorted:
+            t_words = set(re.findall(r'[a-zA-Z]{4,}', t['title'].lower())) - stop_words
+            overlap_found = False
+            for r_title in recent_titles[:20]:
+                r_words = set(re.findall(r'[a-zA-Z]{4,}', r_title.lower())) - stop_words
+                if len(t_words & r_words) >= 2:
+                    overlap_found = True
+                    break
+            if not overlap_found:
+                filtered_topics.append(t)
+    else:
+        filtered_topics = topics_sorted
+        
+    top_candidates = filtered_topics[:12] if len(filtered_topics) >= 4 else topics_sorted[:12]
     
     candidate_list_str = "\n".join([f"- {t['title']} (Source: {t['source']})" for t in top_candidates])
     
@@ -379,7 +396,7 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
         "}\n\n"
         "RULES:\n"
         "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify.\n"
-        "2. Hook_line MUST use powerful, high-emotion viral words like 'Uncovered', 'Exposed', 'Disrespects', 'Game Changer', 'Forbidden', 'Terrifying', or 'Defies'.\n"
+        "2. Hook_line MUST sound natural, conversational, and intriguing. DO NOT start hooks with 'EXPOSED:' or 'UNCOVERED:'. Instead, frame it as a shocking observation, direct intrigue question, or high-stakes mystery that stops the scroll.\n"
         "3. 4-PILLAR CONTENT ROTATION (CRITICAL FOR CHANNEL ALGORITHM GROWTH):\n"
         "   To avoid channel fatigue and capture massive casual Shorts traffic, balance your topic choices across these 4 core pillars:\n"
         "   - Pillar A: Deep Space & Universe Wonders (JWST discoveries, black holes, rogue planets, asteroid mining, Moon/Mars race)\n"
@@ -468,7 +485,8 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             safe_concepts.append(c)
                 
         if not safe_concepts:
-            safe_concepts = concepts if concepts else [{}]
+            # Fallback to the concept with the least overlap rather than blindly accepting duplicates
+            safe_concepts = [c for c in concepts if c.get("risk_flag") in ["none", "null", "false", "no", ""]] or (concepts[:1] if concepts else [{}])
             
         # Score each candidate and write to database
         db_candidates = []

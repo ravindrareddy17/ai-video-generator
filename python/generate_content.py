@@ -94,6 +94,13 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
             top_score = hooks[0].get("score", 0.0)
             if top_score >= 85.0:
                 best_hook = hooks[0]["text"]
+                # Programmatically sanitize formulaic label prefixes from the hook
+                for prefix in ["EXPOSED:", "EXPOSED -", "EXPOSED", "UNCOVERED:", "UNCOVERED -", "UNCOVERED", "TERRIFYING:", "INSANE:", "BREAKING:"]:
+                    if best_hook.strip().upper().startswith(prefix):
+                        best_hook = best_hook.strip()[len(prefix):].strip()
+                        if best_hook.startswith(":") or best_hook.startswith("-"):
+                            best_hook = best_hook[1:].strip()
+                        break
                 logger.info(f"Optimized hook accepted on attempt {attempt + 1}: '{best_hook}' (Score: {top_score})")
                 return best_hook, hooks
             else:
@@ -107,9 +114,19 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
         all_attempts_hooks.sort(key=lambda x: x.get("score", 0.0), reverse=True)
         best_hook = all_attempts_hooks[0]["text"]
         logger.warning(f"Could not generate a hook scoring >= 85.0. Falling back to best available: '{best_hook}' (Score: {all_attempts_hooks[0].get('score', 0.0)})")
-        return best_hook, all_attempts_hooks[:3]
-        
-    return base_hook, [{"style": "default", "text": base_hook, "score": 50.0}]
+    else:
+        best_hook = base_hook
+
+    # Programmatically sanitize formulaic label prefixes from the hook
+    import re
+    for prefix in ["EXPOSED:", "EXPOSED -", "EXPOSED", "UNCOVERED:", "UNCOVERED -", "UNCOVERED", "TERRIFYING:", "INSANE:", "BREAKING:"]:
+        if best_hook.strip().upper().startswith(prefix):
+            best_hook = best_hook.strip()[len(prefix):].strip()
+            if best_hook.startswith(":") or best_hook.startswith("-"):
+                best_hook = best_hook[1:].strip()
+            break
+            
+    return best_hook, all_attempts_hooks[:3] if all_attempts_hooks else [{"style": "default", "text": best_hook, "score": 50.0}]
 
 
 def generate_narration(topic_data: dict) -> dict:
@@ -155,9 +172,10 @@ def generate_narration(topic_data: dict) -> dict:
         "  \"narration\": \"A 20-second script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced.\"\n"
         "}\n\n"
         "NON-NEGOTIABLE RULES:\n"
-        "1. Start the narration exactly with the provided hook line.\n"
-        "2. Keep the script between 75 and 105 words total for an ultra-fast, high-retention 35-40 second Short.\n"
-        "3. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
+        "1. Start the narration naturally with the provided hook line. NEVER begin with 'EXPOSED:' or 'UNCOVERED:'.\n"
+        "2. Keep the script between 75 and 100 words total structured across 4 to 5 short, punchy sentences (12-16 words each).\n"
+        "3. STRICT PROHIBITION ON RUN-ON SENTENCES: Every sentence MUST end with a period (.), question mark (?), or exclamation point (!). NEVER write a single 30+ word sentence with multiple commas. Neural TTS voices need periods to create natural human-like breathing pauses!\n"
+        "4. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
         "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
         "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
         "6. REWATCH LOOP & COMMENT BAITING: The script's final sentence MUST be a provocative, opinion-splitting question that FORCES viewers to comment. Do NOT repeat or append the hook sentence at the end of the narration. The script must end with the question itself. Make it divisive — pick a side! Choose from or base it on these high-engagement questions:\n"
@@ -241,6 +259,15 @@ def generate_narration(topic_data: dict) -> dict:
             logger.info(f"Generated script (Attempt {attempt+1}/{max_attempts}). Word count: {word_count}")
             
             narration_text = content.get("narration", "").strip()
+            # Strip formulaic prefixes from narration if any slipped in
+            for prefix in ["EXPOSED:", "EXPOSED -", "UNCOVERED:", "UNCOVERED -", "TERRIFYING:", "INSANE:", "BREAKING:"]:
+                if narration_text.strip().upper().startswith(prefix):
+                    narration_text = narration_text.strip()[len(prefix):].strip()
+                    if narration_text.startswith(":") or narration_text.startswith("-"):
+                        narration_text = narration_text[1:].strip()
+                    content["narration"] = narration_text
+                    break
+                    
             if 70 <= word_count <= 115 and narration_text.endswith("?"):
                 import re
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]

@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from automation.database.connection import (
     get_youtube_conn, get_instagram_conn, get_facebook_conn, get_ai_learning_conn
 )
-from utils.config import get_groq_key, get_setting
+from utils.config import get_groq_key, get_setting, call_groq_with_fallback
 from utils.logger import get_logger
 
 logger = get_logger("ai.learning")

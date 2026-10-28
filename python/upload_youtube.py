@@ -348,14 +348,14 @@ def release_pending_unlisted_video(youtube=None) -> dict | None:
     try:
         cursor = conn.cursor()
         cursor.execute("""
-            SELECT id, title, youtube_id 
+            SELECT id, title, youtube_id, script 
             FROM videos 
             WHERE status = 'uploaded_unlisted' AND youtube_id IS NOT NULL AND youtube_id != ''
             ORDER BY id ASC LIMIT 1
         """)
         row = cursor.fetchone()
         if row:
-            unlisted_video = {"db_id": row[0], "title": row[1], "youtube_id": row[2]}
+            unlisted_video = {"db_id": row[0], "title": row[1], "youtube_id": row[2], "script": row[3]}
     finally:
         conn.close()
 
@@ -395,8 +395,15 @@ def release_pending_unlisted_video(youtube=None) -> dict | None:
             finally:
                 conn.close()
 
-            # Post engagement comment on the newly public video
+            # Post engagement debate question comment on the newly public video
             try:
+                import re
+                script_text = str(unlisted_video.get("script", "") or "")
+                # Find closing question in script
+                q_match = re.search(r'([A-Z][^\.?!]*\?)\s*$', script_text)
+                closing_q = q_match.group(1).strip() if q_match else "What's YOUR take on this?"
+                comment_text = f"👇 Debate: {closing_q} Drop your vote in the replies!\n🚀 Subscribe to @theshortestorbit for daily 30-second science, nature & space discoveries!"
+                
                 youtube.commentThreads().insert(
                     part="snippet",
                     body={
@@ -404,13 +411,13 @@ def release_pending_unlisted_video(youtube=None) -> dict | None:
                             "videoId": vid,
                             "topLevelComment": {
                                 "snippet": {
-                                    "textOriginal": "👇 What's YOUR take on this? Drop it in the comments below!\n🚀 Subscribe to @theshortestorbit for daily 30-second science, nature & space discoveries!"
+                                    "textOriginal": comment_text
                                 }
                             }
                         }
                     }
                 ).execute()
-                logger.info(f"[STAGED RELEASE] Successfully posted auto-comment on released video {vid}")
+                logger.info(f"[STAGED RELEASE] Successfully posted debate comment on released video {vid}")
             except Exception as ce:
                 logger.warning(f"Failed to post comment on released video {vid}: {ce}")
 
