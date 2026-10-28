@@ -554,31 +554,61 @@ def burn_subtitles(
     # Check for animated subscribe outro overlay
     from utils.paths import PROJECT_ROOT
     outro_path = PROJECT_ROOT / "assets" / "animations" / "subscribe_outro.mov"
+    outro_sfx_path = PROJECT_ROOT / "assets" / "animations" / "subscribe_outro_sfx.wav"
     if outro_path.exists():
         try:
             total_dur = get_duration(video_path)
             start_outro = max(0.0, total_dur - 5.5)
             logger.info("Applying animated subscribe outro overlay from %.2fs to %.2fs", start_outro, total_dur)
-            filter_complex = (
-                f"[0:v]{vf}[subv];"
-                f"[subv][1:v]overlay=x=(W-w)/2:y=1380:enable='gte(t,{start_outro:.2f})'[outv]"
-            )
-            _run_ffmpeg([
-                "-i", str(video_path),
-                "-itsoffset", f"{start_outro:.2f}",
-                "-i", str(outro_path),
-                "-filter_complex", filter_complex,
-                "-map", "[outv]",
-                "-map", "0:a?",
-                "-c:v", "libx264",
-                "-preset", "medium",
-                "-crf", "23",
-                "-pix_fmt", "yuv420p",
-                "-movflags", "+faststart",
-                "-c:a", "copy",
-                str(output_path),
-            ])
-            logger.info("Subtitled video with subscribe outro saved to %s", output_path.name)
+            delay_ms = int(start_outro * 1000)
+            
+            if outro_sfx_path.exists():
+                logger.info("Mixing synchronized outro sound effects (clicks + bell chime)")
+                filter_complex = (
+                    f"[0:v]{vf}[subv];"
+                    f"[subv][1:v]overlay=x=(W-w)/2:y=1320:enable='gte(t,{start_outro:.2f})'[outv];"
+                    f"[2:a]aformat=channel_layouts=stereo,adelay={delay_ms}|{delay_ms},volume=1.4[sfx];"
+                    f"[0:a]aformat=channel_layouts=stereo[maina];"
+                    f"[maina][sfx]amix=inputs=2:duration=first:dropout_transition=2[outa]"
+                )
+                _run_ffmpeg([
+                    "-i", str(video_path),
+                    "-itsoffset", f"{start_outro:.2f}",
+                    "-i", str(outro_path),
+                    "-i", str(outro_sfx_path),
+                    "-filter_complex", filter_complex,
+                    "-map", "[outv]",
+                    "-map", "[outa]",
+                    "-c:v", "libx264",
+                    "-preset", "medium",
+                    "-crf", "23",
+                    "-pix_fmt", "yuv420p",
+                    "-movflags", "+faststart",
+                    "-c:a", "aac",
+                    "-b:a", "192k",
+                    str(output_path),
+                ])
+            else:
+                filter_complex = (
+                    f"[0:v]{vf}[subv];"
+                    f"[subv][1:v]overlay=x=(W-w)/2:y=1320:enable='gte(t,{start_outro:.2f})'[outv]"
+                )
+                _run_ffmpeg([
+                    "-i", str(video_path),
+                    "-itsoffset", f"{start_outro:.2f}",
+                    "-i", str(outro_path),
+                    "-filter_complex", filter_complex,
+                    "-map", "[outv]",
+                    "-map", "0:a?",
+                    "-c:v", "libx264",
+                    "-preset", "medium",
+                    "-crf", "23",
+                    "-pix_fmt", "yuv420p",
+                    "-movflags", "+faststart",
+                    "-c:a", "copy",
+                    str(output_path),
+                ])
+            logger.info("Subtitled video with subscribe outro and SFX saved to %s", output_path.name)
             return output_path
         except Exception as oe:
             logger.warning("Could not overlay subscribe outro (%s), falling back to standard subtitles", oe)
