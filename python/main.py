@@ -65,7 +65,7 @@ def mark_pending_videos_failed():
         logger.warning(f"Could not update database status to failed: {e}")
 
 
-def run_pipeline() -> bool:
+def run_pipeline(skip_upload: bool = False) -> bool:
     """Run the entire 11-step pipeline from end to end."""
     start_time = time.time()
     upload_succeeded = False
@@ -215,14 +215,21 @@ def run_pipeline() -> bool:
         logger.info(f"Step 10 Complete. Thumbnail saved at: {thumbnail.name} ({time.time() - step_start:.2f}s)")
         
         # ── Step 11: Multi-Platform Publishing (YouTube + Meta) ──────
-        step_start = time.time()
-        logger.info(">>> Step 11: Publishing to configured platforms...")
-        publish_res = publish_service.run()
-        youtube_url = publish_res.youtube_url
-        facebook_url = publish_res.facebook_url
-        instagram_url = publish_res.instagram_url
-        upload_succeeded = publish_res.status in ("success", "partial")
-        logger.info(f"Step 11 Complete. Status: {publish_res.status} ({time.time() - step_start:.2f}s)")
+        if skip_upload:
+            logger.info(">>> Step 11: Skipping multi-platform publishing as requested (--no-upload).")
+            upload_succeeded = True
+            youtube_url = None
+            facebook_url = None
+            instagram_url = None
+        else:
+            step_start = time.time()
+            logger.info(">>> Step 11: Publishing to configured platforms...")
+            publish_res = publish_service.run()
+            youtube_url = publish_res.youtube_url
+            facebook_url = publish_res.facebook_url
+            instagram_url = publish_res.instagram_url
+            upload_succeeded = publish_res.status in ("success", "partial")
+            logger.info(f"Step 11 Complete. Status: {publish_res.status} ({time.time() - step_start:.2f}s)")
         
         # ── Step 11.5: Harvest Platform-Specific Analytics ───────────
         step_start = time.time()
@@ -284,18 +291,23 @@ def run_pipeline() -> bool:
 
 
 if __name__ == "__main__":
-    max_attempts = 5
+    import argparse
+    parser = argparse.ArgumentParser(description="AI Video Generator V2 Orchestrator")
+    parser.add_argument("--no-upload", "--skip-upload", action="store_true", help="Generate video without uploading to platforms")
+    args = parser.parse_args()
+
+    max_attempts = 3 if args.no_upload else 5
     success = False
     for attempt in range(1, max_attempts + 1):
         print(f"\n--- PIPELINE ATTEMPT {attempt}/{max_attempts} ---")
-        success = run_pipeline()
+        success = run_pipeline(skip_upload=args.no_upload)
         if success:
-            print("Pipeline executed and uploaded successfully!")
+            print("Pipeline executed successfully!")
             break
         
         if attempt < max_attempts:
-            print(f"Attempt {attempt} failed to upload. Waiting 30 seconds before retrying with a new topic...")
-            time.sleep(30)
+            print(f"Attempt {attempt} failed. Waiting 20 seconds before retrying...")
+            time.sleep(20)
             
     if success:
         sys.exit(0)

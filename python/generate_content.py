@@ -166,7 +166,7 @@ def generate_narration(topic_data: dict) -> dict:
         "FACTUAL REQUIREMENT: You MUST rely on the absolute latest, most original, and cutting-edge facts. Do NOT use generic or outdated knowledge.\n"
         "SUBSCRIBER DRIVER & ENGAGEMENT BOOSTER (CRITICAL FOR CHANNEL GROWTH):\n"
         "To rapidly convert casual viewers into permanent subscribers, the script MUST include a punchy verbal subscribe CTA alongside the closing debate question.\n"
-        "Examples: 'Hit subscribe for daily discoveries — which side will win?', 'Which country will lead? Subscribe to never miss the universe in 30 seconds!', 'Subscribe for tomorrow's wild discovery — what would you do?'\n\n"
+        "Examples: 'Hit subscribe for daily discoveries — which side will win?', 'Subscribe to never miss the universe in 30 seconds — who do you think will lead?', 'Subscribe for tomorrow\'s wild discovery — what would you do?'\n\n"
         "Respond in valid JSON format only:\n"
         "{\n"
         "  \"title\": \"Curiosity-driven, stop-scrolling English title (e.g. 'Why is China investing billions in lunar AI?'), under 50 characters\",\n"
