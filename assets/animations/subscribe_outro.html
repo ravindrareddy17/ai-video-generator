@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YouTube Animated Outro</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --red: #ff0033;
+  --dark: #202020;
+  --white: #ffffff;
+}
+
+html, body {
+  width: 1080px;
+  height: 260px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.stage {
+  width: 1080px;
+  height: 260px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent;
+}
+
+.outro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px;
+  opacity: 0;
+  transform: scale(.8) translateY(15px);
+  animation: enter .6s cubic-bezier(.2,.8,.2,1) .2s forwards;
+}
+
+.btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 72px;
+  padding: 0 28px;
+  border: 0;
+  border-radius: 36px;
+  color: var(--white);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  white-space: nowrap;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+}
+
+svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+  flex-shrink: 0;
+}
+
+.like {
+  background: var(--dark);
+  opacity: 0;
+  transform: scale(.5);
+  animation: likeEnter .45s ease-out 1.9s forwards;
+}
+
+.like-icon {
+  transform-origin: 50% 70%;
+  animation: likePop .55s cubic-bezier(.2,1.8,.4,1) 2.75s both;
+}
+
+.subscribe {
+  background: var(--red);
+  animation: subscribeChange .5s ease 3.5s forwards;
+}
+
+.sub-label::after {
+  content: "SUBSCRIBE";
+  animation: labelChange .1s step-end 3.5s forwards;
+}
+
+.bell {
+  width: 72px;
+  padding: 0;
+  border-radius: 50%;
+  background: var(--dark);
+  opacity: 0;
+  transform: scale(.6);
+  animation: bellEnter .4s ease-out 4.05s forwards;
+}
+
+.bell-icon {
+  transform-origin: 50% 10%;
+  animation: ring .7s ease-in-out 4.65s both;
+}
+
+.click {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  color: white;
+  z-index: 5;
+  opacity: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+  pointer-events: none;
+}
+
+.like-click {
+  left: 45%;
+  top: 48%;
+  animation: clickLike .6s ease 2.25s both;
+}
+
+.sub-click {
+  left: 48%;
+  top: 50%;
+  animation: clickSub .55s ease 3.15s both;
+}
+
+.bell-click {
+  left: 46%;
+  top: 48%;
+  animation: clickBell .5s ease 4.4s both;
+}
+
+@keyframes enter {
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes likeEnter {
+  0% { opacity: 0; transform: scale(.5) translateY(8px); }
+  75% { transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes likePop {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.5) rotate(-12deg); color: #3ea6ff; }
+  65% { transform: scale(.85) rotate(8deg); }
+  100% { transform: scale(1); color: white; }
+}
+
+@keyframes subscribeChange {
+  0% { background: var(--red); transform: scale(1); }
+  45% { transform: scale(.93); }
+  70% { transform: scale(1.05); }
+  100% { background: #383838; transform: scale(1); }
+}
+
+@keyframes labelChange {
+  0% { content: "SUBSCRIBE"; }
+  100% { content: "✓ SUBSCRIBED"; }
+}
+
+@keyframes bellEnter {
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes ring {
+  0%, 100% { transform: rotate(0); }
+  15%, 45%, 75% { transform: rotate(18deg); }
+  30%, 60%, 90% { transform: rotate(-18deg); }
+}
+
+@keyframes clickLike {
+  0% { opacity: 0; transform: translate(22px,20px) scale(1.4); }
+  35% { opacity: 1; transform: translate(0,0) scale(1); }
+  60% { opacity: 1; transform: translate(0,0) scale(.8); }
+  100% { opacity: 0; transform: translate(-4px,5px) scale(.8); }
+}
+
+@keyframes clickSub {
+  0% { opacity: 0; transform: translate(25px,20px) scale(1.3); }
+  40%, 65% { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(0,5px) scale(.8); }
+}
+
+@keyframes clickBell {
+  0% { opacity: 0; transform: translate(20px,20px) scale(1.2); }
+  40%, 65% { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(0,5px) scale(.8); }
+}
+</style>
+</head>
+
+<body>
+<div class="stage">
+  <div class="outro">
+
+    <button class="btn like" aria-label="Like">
+      <svg class="like-icon" viewBox="0 0 24 24">
+        <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/>
+      </svg>
+      LIKE
+      <svg class="click like-click" viewBox="0 0 24 24">
+        <path d="M3 2l17 12-7 1-4 7z" fill="white" stroke="#222" stroke-width="1.5"/>
+      </svg>
+    </button>
+
+    <button class="btn subscribe" aria-label="Subscribe">
+      <span class="sub-label"></span>
+      <svg class="click sub-click" viewBox="0 0 24 24">
+        <path d="M3 2l17 12-7 1-4 7z" fill="white" stroke="#222" stroke-width="1.5"/>
+      </svg>
+    </button>
+
+    <button class="btn bell" aria-label="Notifications">
+      <svg class="bell-icon" viewBox="0 0 24 24">
+        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4a1.5 1.5 0 0 0-3 0v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1z"/>
+      </svg>
+      <svg class="click bell-click" viewBox="0 0 24 24">
+        <path d="M3 2l17 12-7 1-4 7z" fill="white" stroke="#222" stroke-width="1.5"/>
+      </svg>
+    </button>
+
+  </div>
+</div>
+</body>
+</html>
