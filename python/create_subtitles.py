@@ -9,6 +9,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from utils.paths import CONTENT_FILE, WORD_TIMINGS_FILE, SUBTITLES_FILE, SUBTITLES_ASS_FILE
 from utils.logger import get_logger
 from utils.helpers import load_json
+from utils.config import get_setting
 
 logger = get_logger(__name__)
 
@@ -121,7 +122,17 @@ def build_word_spans(sentence_timings: list[dict]) -> list[dict]:
 
 def generate_karaoke_ass(word_spans: list[dict], chunk_size: int = 2, outro_cutoff_ms: float = None) -> str:
     """Generate high-end, responsive ASS subtitle script matching viral creator typography."""
-    header = """[Script Info]
+    font_name = get_setting('subtitles', 'font', 'Plus Jakarta Sans ExtraBold')
+    font_size = get_setting('subtitles', 'fontsize', 86)
+    margin_v = get_setting('subtitles', 'margin_vertical', 440)
+    outline_width = get_setting('subtitles', 'outline_width', 6.5)
+    highlight_tag = get_setting('subtitles', 'highlight_color', '&H00E6FF&')
+    if not highlight_tag.startswith("&H"):
+        highlight_tag = f"&H{highlight_tag}"
+    if not highlight_tag.endswith("&"):
+        highlight_tag = f"{highlight_tag}&"
+
+    header = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: 1080
 PlayResY: 1920
@@ -129,7 +140,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Default,Plus Jakarta Sans ExtraBold,68,&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,5.0,2.0,2,40,40,460,1
+Style: Default,{font_name},{font_size},&H00FFFFFF,&H000000FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,{outline_width},2.5,2,40,40,{margin_v},1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -150,12 +161,11 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
         start_ts = format_ass_timestamp(start_ms)
         end_ts = format_ass_timestamp(end_ms)
         
-        # Format chunk words with golden accent highlight for important words
+        # Format chunk words with golden accent highlight for important words (Combo 1: Cyber Gold #FFE600)
         formatted_words = []
         for w in chunk:
             if w["is_important"]:
-                # Golden yellow highlight in BGR format: &H00D6FF& (#FFD60A)
-                formatted_words.append(f"{{\\c&H00D6FF&}}{w['word']}{{\\c&HFFFFFF&}}")
+                formatted_words.append(f"{{\\c{highlight_tag}}}{w['word']}{{\\c&HFFFFFF&}}")
             else:
                 formatted_words.append(w["word"])
                 
@@ -186,7 +196,7 @@ def generate_karaoke_srt(word_spans: list[dict], chunk_size: int = 2, outro_cuto
         display_words = []
         for w in chunk:
             if w["is_important"]:
-                display_words.append(f"<font color=\"#FFD60A\">{w['word']}</font>")
+                display_words.append(f"<font color=\"#FFE600\">{w['word']}</font>")
             else:
                 display_words.append(w["word"])
                 

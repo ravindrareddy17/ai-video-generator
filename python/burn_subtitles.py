@@ -40,8 +40,8 @@ def run() -> Path:
         
     # Load subtitle styling configurations
     font_name = get_setting('subtitles', 'font', 'Plus Jakarta Sans ExtraBold')
-    font_size = get_setting('subtitles', 'fontsize', 68)
-    margin_v = get_setting('subtitles', 'margin_vertical', 420)
+    font_size = get_setting('subtitles', 'fontsize', 86)
+    margin_v = get_setting('subtitles', 'margin_vertical', 440)
     back_color = get_setting('subtitles', 'back_color', '&H80800000')
     
     logger.info(f"Burning subtitles from {sub_path.name}. Font: '{font_name}', Size: {font_size}")
