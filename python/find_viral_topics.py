@@ -1,3 +1,4 @@
+import re
 """
 find_viral_topics.py — Step 1 of the AI Video Generator V2 pipeline.
 
@@ -10,6 +11,7 @@ Outputs:
 """
 
 import sys
+import re
 from pathlib import Path
 import json
 import urllib.parse
@@ -29,6 +31,39 @@ from utils.retry import retry
 from automation.database.connection import get_automation_conn
 
 logger = get_logger(__name__)
+
+# ==============================================================================
+# THE WINNING NICHES: High-Stakes Tech/Aerospace & Extreme Apex Showdowns
+# ==============================================================================
+NICHE_A_KEYWORDS = [
+    "spacex", "tesla", "starlink", "nasa", "starship", "elon", "musk",
+    "rocket", "falcon", "artemis", "orbit", "blue origin", "satellite",
+    "mars", "moon", "boeing", "faa", "iss", "astronaut", "space race",
+    "cnsa", "isro", "esa", "superheavy", "propulsion", "aerospace", "launch pad",
+    "robotics", "humanoid", "ai chip", "neuralink"
+]
+
+NICHE_B_KEYWORDS = [
+    "tiger", "lion", "croc", "crocodile", "alligator", "buffalo", "orca",
+    "killer whale", "shark", "great white", "deep ocean", "mariana trench",
+    "squid", "colossal squid", "predator", "apex", "abyssal", "leopard",
+    "hyena", "cheetah", "anaconda", "python", "komodo", "bear", "grizzly",
+    "polar bear", "wolf", "jaw", "venom", "sea monster", "submersible",
+    "trench", "abyss", "creature", "beast", "wildlife", "hunt", "escape",
+    "nature", "marine", "ocean", "prey", "herd"
+]
+
+def classify_niche(text: str) -> str:
+    """Classify text into Niche A, Niche B, or Unknown."""
+    t = str(text or "").lower()
+    score_a = sum(1 for kw in NICHE_A_KEYWORDS if kw in t)
+    score_b = sum(1 for kw in NICHE_B_KEYWORDS if kw in t)
+    if score_a > score_b and score_a > 0:
+        return "Niche A"
+    elif score_b > score_a and score_b > 0:
+        return "Niche B"
+    return "Unknown"
+
 
 
 @retry(max_attempts=3, delay=2.0, backoff=2.0)
@@ -234,6 +269,14 @@ def collect_all_topics() -> list[dict]:
     # 14. Anthropic Blog (via Google News keyword)
     safe_fetch_rss("https://news.google.com/rss/search?q=Anthropic&hl=en-US&gl=US&ceid=US:en", "Anthropic", 55)
     
+    # Winning Niche A Feeds (High-Stakes Tech & Aerospace Rivalries):
+    safe_fetch_rss("https://news.google.com/rss/search?q=(SpaceX+OR+Starlink+OR+Tesla+OR+NASA+OR+%22Blue+Origin%22+OR+Artemis)&hl=en-US&gl=US&ceid=US:en", "Niche A: Aerospace News", 75)
+    safe_fetch_rss("https://news.google.com/rss/search?q=(%22SpaceX+vs%22+OR+%22Tesla+vs%22+OR+%22NASA+vs%22+OR+%22Starship+launch%22+OR+%22FAA+SpaceX%22)&hl=en-US&gl=US&ceid=US:en", "Niche A: Tech Rivalries", 75)
+
+    # Winning Niche B Feeds (Extreme Apex Showdowns & Deep Ocean):
+    safe_fetch_rss("https://news.google.com/rss/search?q=(%22apex+predator%22+OR+%22tiger%22+OR+%22lion+vs%22+OR+%22crocodile%22+OR+%22orca%22+OR+%22great+white+shark%22+OR+%22buffalo+herd%22)&hl=en-US&gl=US&ceid=US:en", "Niche B: Apex Showdowns", 75)
+    safe_fetch_rss("https://news.google.com/rss/search?q=(%22deep+ocean%22+OR+%22mariana+trench%22+OR+%22colossal+squid%22+OR+%22abyssal+zone%22+OR+%22deep+sea+creature%22)&hl=en-US&gl=US&ceid=US:en", "Niche B: Deep Ocean", 75)
+
     # 15. DeepMind, Microsoft AI, and Wikipedia Trending
     safe_fetch_rss("https://news.google.com/rss/search?q=%22Google+DeepMind%22&hl=en-US&gl=US&ceid=US:en", "DeepMind", 60)
     safe_fetch_rss("https://news.google.com/rss/search?q=%22Microsoft+AI%22&hl=en-US&gl=US&ceid=US:en", "Microsoft AI", 55)
@@ -308,12 +351,13 @@ def get_recent_uploaded_titles() -> list[str]:
 
 
 def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> dict:
-    """Send topics to Groq LLM to score angles and select the best candidate."""
+    """Send topics to Groq LLM to score angles and select the best candidate strictly alternating between Winning Niches."""
     if not topics:
         return {
-            "selected_topic": "Scientists just found something hiding in our solar system.",
+            "selected_topic": "Tiger vs Hidden Croc: Jungle Clash",
             "viral_angle": "Default fallback topic",
-            "hook_line": "Scientists just found something hiding in our solar system.",
+            "hook_line": "Could an apex tiger survive a mega crocodile ambush?",
+            "niche": "Niche B",
             "source": "Fallback",
             "trend_score": 50.0,
             "competition_score": 50.0,
@@ -330,12 +374,45 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
     model = get_setting('llm', 'model', 'openai/gpt-oss-120b')
     client = Groq(api_key=api_key)
     
+    # Detect most recent winning niche to strictly alternate:
+    last_detected_niche = None
+    if recent_titles:
+        for r_title in recent_titles:
+            n = classify_niche(r_title)
+            if n in ["Niche A", "Niche B"]:
+                last_detected_niche = n
+                logger.info(f"Most recent uploaded niche detected: {last_detected_niche} ('{r_title}')")
+                break
+                
+    if last_detected_niche == "Niche A":
+        target_niche = "Niche B"
+        target_niche_title = "Niche B: Extreme Apex Showdowns (Tiger, Lion vs Croc, Deep Ocean)"
+    elif last_detected_niche == "Niche B":
+        target_niche = "Niche A"
+        target_niche_title = "Niche A: High-Stakes Tech & Aerospace Rivalries (SpaceX, Tesla, Starlink, NASA)"
+    else:
+        # Default starting point: Niche B (since recent video was SpaceX Niche A)
+        target_niche = "Niche B"
+        target_niche_title = "Niche B: Extreme Apex Showdowns (Tiger, Lion vs Croc, Deep Ocean)"
+
+    logger.info(f"Target Winning Niche locked for this generation: {target_niche_title}")
+
+    # Prioritize candidates belonging to target_niche
+    target_kws = NICHE_B_KEYWORDS if target_niche == "Niche B" else NICHE_A_KEYWORDS
+
+    def get_candidate_priority(t: dict) -> float:
+        title_text = t.get("title", "").lower()
+        target_match = any(kw in title_text for kw in target_kws)
+        either_match = classify_niche(title_text) in ["Niche A", "Niche B"]
+        boost = 150.0 if target_match else (75.0 if either_match else 0.0)
+        return boost + float(t.get("score_signal", 50))
+
+    topics_sorted = sorted(topics, key=get_candidate_priority, reverse=True)
+    
     # Pre-filter topics against recent uploaded titles (last 20) to eliminate repeating topics before prompt creation
     stop_words = {"space", "future", "world", "first", "about", "could", "would", "what", "where", "which", "there", "their", "hidden", "truth", "secret", "video", "shorts", "revealed", "shock", "shocking", "exposed", "eating", "swallows", "whole"}
-    topics_sorted = sorted(topics, key=lambda x: x["score_signal"], reverse=True)
     filtered_topics = []
     if recent_titles:
-        import re
         for t in topics_sorted:
             t_words = set(re.findall(r'[a-zA-Z]{4,}', t['title'].lower())) - stop_words
             overlap_found = False
@@ -349,64 +426,55 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
     else:
         filtered_topics = topics_sorted
         
-    top_candidates = filtered_topics[:12] if len(filtered_topics) >= 4 else topics_sorted[:12]
-    
+    top_candidates = filtered_topics[:14] if len(filtered_topics) >= 4 else topics_sorted[:14]
     candidate_list_str = "\n".join([f"- {t['title']} (Source: {t['source']})" for t in top_candidates])
     
     system_prompt = (
-        "SYSTEM PROMPT — The Shortest Orbit: Viral Topic Selector v3.1 (Global Space Race Edition)\n\n"
-        "You take raw current news items about space, science, or AI and convert "
-        "each into a viral-ready Shorts concept. Your job is to extract the single "
-        "most shocking, curiosity-driving angle inside it that a general audience would stop scrolling for.\n\n"
-        "PRIORITY HIERARCHY:\n"
-        "1. Mind-Blowing Nature & Earth Wonders (extreme weather, bioluminescent oceans, volcanic phenomenon, mysterious creature adaptations, unmapped natural secrets)\n"
-        "2. Breaking space news & discoveries (James Webb, exoplanets, black holes, solar flares, asteroid mining)\n"
-        "3. Major technological & mission announcements from ANY country (ISRO, NASA, ESA, JAXA, CNSA)\n"
-        "4. Deep Ocean & Earth Mysteries (Mariana Trench anomalies, Antarctica declassified findings, geothermal vents)\n"
-        "5. Global technological competition & rivalries\n"
-        "6. AI breakthroughs & human evolution (Neuralink, humanoid robotics, autonomous exploration)\n"
-        "7. Future planetary survival & extreme habitats\n"
-        "8. Evergreen educational wonders (Earth's magnetic field, deepest depths, alien-like Earth ecosystems)\n\n"
-        "CRITICAL DIVERSITY RULE: You MUST rotate themes between Nature/Earth Wonders, Deep Ocean mysteries, Space discoveries, and Mega-Technology. VARIETY IS KING for explosive algorithm growth.\n\n"
-        "HIGH-VIRAL TOPIC THEMES TO MONITOR & GENERATE:\n"
-        "- Nature & Earth Wonders: Extreme natural forces, monster waves, volcanic eruptions, bioluminescent sea life, aurora borealis, deepest cave systems, ancient frozen secrets in ice caps, nature vs modern engineering.\n"
-        "- Global Space Race: USA vs China space developments, India's latest ISRO missions (Chandrayaan, Gaganyaan), Artemis Program, Moon/Mars race, Deep-space exploration, Habitable worlds.\n"
-        "- Scientific Discoveries: Exoplanets, black holes, dark matter, dark energy, Fast Radio Bursts (FRBs), supernovae, telescope discoveries (JWST), extreme planetary conditions.\n"
-        "- Future Technologies: AI in scientific discovery, humanoid robots, Moon bases, deep-sea exploration subs, autonomous systems.\n\n"
-        "TREND DETECTION:\n"
-        "Detect and prioritize breaking launches, mission delays, successes, failures, spacecraft anomalies, major funding announcements, international agreements, astronaut missions, space policy changes, historic milestones, and record-breaking achievements.\n\n"
-        "Input: a list of recent news headlines/summaries.\n"
-        "Output: valid JSON object with a single 'topics' key containing an array of objects:\n\n"
-        "{\n"
-        "  \"topics\": [\n"
-        "    {\n"
-        "      \"source_headline\": \"the original news item this is based on\",\n"
-        "      \"viral_angle\": \"the ONE most surprising fact hiding in this story — stated in plain language a 12-year-old would understand\",\n"
-        "      \"hook_line\": \"first 2 seconds — must sound almost unbelievable, framed as a question or shocking statement. MUST be a scientifically true statement, NEVER fabricate statistics, numbers, or percentages.\",\n"
-        "      \"why_it_could_go_viral\": \"1 sentence: what makes people want to comment, share, or argue about this\",\n"
-        "      \"interest_score\": 8.5, // 0.0 to 10.0 scale (Public Interest)\n"
-        "      \"conflict_score\": 9.0, // 0.0 to 10.0 scale (Geopolitical / Space Race Conflict)\n"
-        "      \"novelty_score\": 8.0, // 0.0 to 10.0 scale (Freshness / Uniqueness)\n"
-        "      \"curiosity_score\": 9.0, // 0.0 to 10.0 scale (Immediate Question in Viewer Mind)\n"
-        "      \"stakes_score\": 9.5, // 0.0 to 10.0 scale (Money, Power, Future Consequence)\n"
-        "      \"brand_fit_score\": 10.0, // 0.0 to 10.0 scale (Fit for The Shortest Orbit: Space + AI + Future Tech)\n"
-        "      \"risk_flag\": \"note if this topic is too technical, too uncertain/early-stage research, or too niche to simplify honestly — flag rather than force it\"\n"
-        "    }\n"
-        "  ]\n"
-        "}\n\n"
-        "RULES:\n"
-        "1. Reject stories that can't be simplified without becoming misleading. Skip them rather than oversimplify.\n"
-        "2. Hook_line MUST sound natural, conversational, and intriguing. DO NOT start hooks with 'EXPOSED:' or 'UNCOVERED:'. Instead, frame it as a shocking observation, direct intrigue question, or high-stakes mystery that stops the scroll.\n"
-        "3. 4-PILLAR CONTENT ROTATION (CRITICAL FOR CHANNEL ALGORITHM GROWTH):\n"
-        "   To avoid channel fatigue and capture massive casual Shorts traffic, balance your topic choices across these 4 core pillars:\n"
-        "   - Pillar A: Deep Space & Universe Wonders (JWST discoveries, black holes, rogue planets, asteroid mining, Moon/Mars race)\n"
-        "   - Pillar B: Extreme Nature & Apex Wildlife Wonders (Bizarre animal behavior, deep sea monsters, animal-vs-animal sabotage, volcanic forces, crazy survival adaptations)\n"
-        "   - Pillar C: Radical Tech & Humanoid AI Frontiers (Humanoid robotics, bio-computing, AI outsmarting humans, brain-computer interfaces)\n"
-        "   - Pillar D: Accidental Discoveries & Science Oddities (Science mistakes that changed history, ancient frozen secrets, lost structures, physics oddities)\n"
-        "   VARIETY IS KING: Never pick the same pillar twice in a row. Rotate between Space, Nature, Tech, and Science Oddities!\n"
-        "4. STRICT BAN: Do NOT select partisan political elections, stock prices, celebrity gossip, or lifestyle/beauty hacks.\n"
-        "5. HOOK HONESTY RULE: The hook_line must be grounded in real events or science. Do NOT invent numbers.\n"
-        "6. FACTUAL TRUTH GATING: Do NOT select speculative rumors or clickbait conspiracy theories. Ground topics in verified reports, announcements, or reputable publications."
+        f"""SYSTEM PROMPT - The Shortest Orbit: Winning Niches Viral Engine
+
+You are the Lead Creative Director and Viral Strategist for 'The Shortest Orbit'.
+The channel focuses strictly on 2 proven high-performing winning niches:
+- Niche A: High-Stakes Tech & Aerospace Rivalries (SpaceX, Tesla, Starlink, NASA, Artemis, Moon/Mars race, AI robotics).
+- Niche B: Extreme Apex Showdowns (Tiger, Lion vs Croc, Buffalo, Orcas, Deep Ocean / Mariana Trench monsters).
+
+MANDATORY NICHE TARGET FOR THIS VIDEO:
+===> {target_niche_title} <===
+
+Your objective: Extract and formulate the single most shocking, high-CTR viral Shorts concept that strictly belongs to {target_niche}.
+
+NICHE-SPECIFIC DIRECTIVES:
+- When targeting Niche A (High-Stakes Tech & Aerospace Rivalries):
+  Spotlight billionaire clashes (Elon Musk vs FAA/NASA), Falcon 9/Starship launch anomalies, Starlink orbital dominance, lunar base races (USA vs China), or autonomous AI robotics.
+- When targeting Niche B (Extreme Apex Showdowns & Deep Ocean):
+  Spotlight brutal predator clashes (Tiger in epic escapes, Lion vs Crocodile river ambushes, Cape Buffalo vengeance, Orca pods outsmarting Great Whites), or Mariana Trench alien-like leviathans surviving impossible pressure.
+
+Input: a list of recent news headlines/summaries.
+Output: valid JSON object with a single 'topics' key containing an array of objects:
+
+{{
+  "topics": [
+    {{
+      "source_headline": "the original news item this is based on",
+      "niche": "{target_niche}",
+      "viral_angle": "the ONE most surprising, jaw-dropping fact hiding in this story - stated in plain language a 12-year-old would understand",
+      "hook_line": "first 2 seconds - must sound almost unbelievable, framed as a question or shocking observation. MUST be a scientifically true statement, NEVER fabricate statistics, numbers, or percentages.",
+      "why_it_could_go_viral": "1 sentence: what makes people want to comment, share, or argue about this",
+      "interest_score": 9.0,
+      "conflict_score": 9.5,
+      "novelty_score": 8.5,
+      "curiosity_score": 9.0,
+      "stakes_score": 9.5,
+      "brand_fit_score": 10.0,
+      "risk_flag": "none"
+    }}
+  ]
+}}
+
+RULES:
+1. Reject stories that cannot be simplified without becoming misleading.
+2. Hook_line MUST sound natural, conversational, and intriguing. DO NOT start hooks with 'EXPOSED:' or 'UNCOVERED:'.
+3. STRICT WINNING NICHE COMPLIANCE: The selected concept MUST belong to {target_niche_title}.
+4. HOOK HONESTY RULE: The hook_line must be grounded in real events or verified science. Do NOT invent numbers."""
     )
     
     # Load audience feedback insights if available
@@ -419,20 +487,18 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             hi_niches = insights_data.get("high_interest_niches", [])
             boost_kws = insights_data.get("algorithm_boost_keywords", [])
             if hi_niches or boost_kws:
-                insights_context = f"\nAUDIENCE ENGAGEMENT INSIGHTS:\n- High-Interest Niches: {', '.join(hi_niches[:5])}\n- High-Velocity Keywords: {', '.join(boost_kws[:6])}\n"
+                niche_str = ", ".join(hi_niches[:5])
+                kw_str = ", ".join(boost_kws[:6])
+                insights_context = f"\nAUDIENCE ENGAGEMENT INSIGHTS:\n- High-Interest Niches: {niche_str}\n- High-Velocity Keywords: {kw_str}\n"
                 logger.info("Injected audience performance insights into topic discovery prompt.")
         except Exception as ie:
             logger.warning(f"Could not load self-learning insights: {ie}")
 
-    user_prompt = f"Extract and score viral angles from these raw headlines:\n\n{candidate_list_str}{insights_context}"
-    
-    if recent_titles:
-        recent_titles_str = "\n".join([f"- {t}" for t in recent_titles])
-        user_prompt += (
-            f"\n\nHere are the recently uploaded videos on the channel:\n{recent_titles_str}\n\n"
-            "CRITICAL VARIETY INSTRUCTION: Analyze the above recent videos. Do NOT select a topic from the same category as the most recent uploads. "
-            "If the recent uploads were Space/AI, pick an Extreme Nature, Wild Animal Anomaly, or Accidental Science Discovery to keep the audience excited and engaged!"
-        )
+    user_prompt = (
+        f"Extract and score viral angles strictly for {target_niche_title} from these candidates:\n\n"
+        f"{candidate_list_str}{insights_context}\n\n"
+        f"CRITICAL INSTRUCTION: Your output MUST focus on {target_niche} to maintain the 2-niche daily rotation!"
+    )
     
     logger.info("Calling Groq LLM to scan and score viral topics...")
     try:
@@ -467,7 +533,7 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             
             # Anti-repetition: Reject candidate if 2 or more distinct keywords overlap with any of the last 20 video titles
             if recent_titles:
-                import re
+# (re imported at top)
                 c_words = set(re.findall(r'[a-z]{4,}', c_text))
                 stop_words = {"space", "future", "world", "first", "about", "could", "would", "what", "where", "which", "there", "their", "hidden", "truth", "secret", "video", "shorts", "revealed", "shock", "shocking", "exposed", "eating", "swallows", "whole"}
                 meaningful_c_words = c_words - stop_words
@@ -516,18 +582,17 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
             final_topic_score = (topic_score * 0.80) + (hist_sim_score * 0.20)
             overall_growth_score = final_topic_score * 10.0  # scale to 100 for legacy compatibility
             
-            # Apply priority boost for strict Space Frontier niche (Country + Space + AI)
-            text_to_check = (c.get("viral_angle", "") + " " + c.get("hook_line", "")).lower()
-            countries = ["usa", "united states", "china", "india", "japan", "russia", "south korea", "uae", "united arab emirates", "israel", "european union", "eu", "canada", "australia", "saudi arabia", "türkiye", "turkey", "brazil", "nasa", "isro", "cnsa", "esa", "jaxa", "roscosmos", "kari", "csa"]
-            space_kws = ["space", "exploration", "rocket", "launch", "landing", "moon", "mars", "satellite", "exoplanet", "telescope", "black hole", "asteroid", "orbit", "astronaut", "artemis", "starship", "spacex", "blue origin", "rocket lab", "hail mary"]
-            ai_kws = ["ai", "artificial intelligence", "robot", "autonomous", "machine learning", "neural network", "algorithm", "automation"]
+            # Apply priority boost for Target Winning Niche
+            text_to_check = (str(c.get("viral_angle", "")) + " " + str(c.get("hook_line", "")) + " " + str(c.get("source_headline", ""))).lower()
+            c_niche = classify_niche(text_to_check)
+            c["niche"] = c_niche if c_niche in ["Niche A", "Niche B"] else target_niche
             
-            has_country = any(c_kw in text_to_check for c_kw in countries)
-            has_space = any(s_kw in text_to_check for s_kw in space_kws)
-            has_ai = any(a_kw in text_to_check for a_kw in ai_kws)
-            
-            if has_country and has_space and has_ai:
-                overall_growth_score = min(overall_growth_score + 25.0, 100.0)
+            if c_niche == target_niche:
+                overall_growth_score = min(overall_growth_score + 35.0, 100.0)
+            elif c_niche in ["Niche A", "Niche B"]:
+                overall_growth_score = min(overall_growth_score + 15.0, 100.0)
+            else:
+                overall_growth_score = max(overall_growth_score - 15.0, 10.0)
                 
             c["trend_score"] = float(c.get("trend_score", 80.0))
             c["competition_score"] = float(c.get("competition_score", 80.0))
@@ -633,6 +698,7 @@ def run() -> dict:
         "selected_topic": selected.get("selected_topic"),
         "viral_angle": selected.get("viral_angle"),
         "hook_line": selected.get("hook_line"),
+        "niche": selected.get("niche", "Niche B"),
         "source": selected.get("source"),
         "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat()
     }

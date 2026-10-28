@@ -33,7 +33,7 @@ def check_script_quality(content: dict) -> bool:
             narration = narration.rstrip(".! ") + " What do you think?"
             content["narration"] = narration
             content["word_count"] = len(narration.split())
-            import json
+            # json imported at top
             CONTENT_FILE.write_text(json.dumps(content, indent=2), encoding="utf-8")
         
     # 2. Programmatic repetitive wording checks

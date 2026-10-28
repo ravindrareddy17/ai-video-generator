@@ -1,3 +1,4 @@
+import re
 """
 generate_content.py — Step 2 of the AI Video Generator V2 pipeline.
 
@@ -23,6 +24,7 @@ import re
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from utils.paths import VIRAL_TOPICS_FILE, CONTENT_FILE, METADATA_FILE, DATA_DIR
+from python.find_viral_topics import classify_niche, NICHE_A_KEYWORDS, NICHE_B_KEYWORDS
 from utils.config import get_groq_key, get_setting
 from utils.logger import get_logger
 from utils.helpers import save_json, load_json
@@ -118,7 +120,7 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
         best_hook = base_hook
 
     # Programmatically sanitize formulaic label prefixes from the hook
-    import re
+# (re imported at top)
     for prefix in ["EXPOSED:", "EXPOSED -", "EXPOSED", "UNCOVERED:", "UNCOVERED -", "UNCOVERED", "TERRIFYING:", "INSANE:", "BREAKING:"]:
         if best_hook.strip().upper().startswith(prefix):
             best_hook = best_hook.strip()[len(prefix):].strip()
@@ -130,68 +132,85 @@ def optimize_hook(topic_data: dict, client: Groq, model: str) -> tuple[str, list
 
 
 def generate_narration(topic_data: dict) -> dict:
-    """Generate script content for the YouTube Short via Groq LLM using The Shortest Orbit prompt."""
+    """Generate script content for the YouTube Short via Groq LLM tailored strictly to the Winning Niches."""
     api_key = get_groq_key()
     model = get_setting('llm', 'model', 'openai/gpt-oss-120b')
-    
     client = Groq(api_key=api_key)
     
+    # Identify Winning Niche
+    raw_text = (str(topic_data.get("niche", "")) + " " + str(topic_data.get("viral_angle", "")) + " " + str(topic_data.get("selected_topic", ""))).lower()
+    current_niche = topic_data.get("niche") or classify_niche(raw_text)
+    if current_niche not in ["Niche A", "Niche B"]:
+        current_niche = "Niche B"
+        
+    logger.info(f"Generating narration script tailored for: {current_niche}")
+
     # Optimize hook first
     chosen_hook, hooks_data = optimize_hook(topic_data, client, model)
     
+    if current_niche == "Niche A":
+        niche_focus = "Niche A: High-Stakes Tech & Aerospace Rivalries (SpaceX, Tesla, Starlink, NASA)"
+        style_guidance = (
+            "Focus on intense high-stakes aerospace rivalries, launchpad drama, orbital dominance, "
+            "or billionaire tech clashes (Elon Musk vs FAA/NASA, SpaceX vs Boeing/China, Starlink vs Telecom). "
+            "Tone: Cinematic, high-tension documentary, urgent and authoritative."
+        )
+        cta_examples = "'Hit subscribe for daily space race breakdowns — which side will dominate?', 'Subscribe to never miss rocket discoveries — who do you back?'"
+        closing_questions = [
+            "Which side do you think will lead the next space era?",
+            "Will SpaceX outpace NASA, or is the risk too great?",
+            "Would you trust autonomous AI to pilot a rocket?",
+            "Can any competitor challenge Starlink's dominance?"
+        ]
+    else:
+        niche_focus = "Niche B: Extreme Apex Showdowns & Deep Ocean (Tiger, Lion vs Croc, Deep Ocean)"
+        style_guidance = (
+            "Focus on brutal predator showdowns, cunning animal survival adaptations, lethal ambushes, "
+            "or Mariana Trench abyssal leviathans surviving thousands of atmospheres of pressure. "
+            "Tone: Breathtaking BBC Earth meets NatGeo Wild, fast-paced, visceral and awe-inspiring."
+        )
+        cta_examples = "'Hit subscribe for daily apex clashes — who wins this fight?', 'Subscribe to never miss daily wild showdowns — who would survive?'"
+        closing_questions = [
+            "Could an apex tiger survive a mega crocodile ambush?",
+            "Who wins this lethal showdown in the wild?",
+            "Would anything survive in the deepest trench on Earth?",
+            "Is the killer whale the undisputed king of the ocean?"
+        ]
+
+    closing_q_str = "\n   - ".join(closing_questions)
+
     system_prompt = (
-        "SYSTEM PROMPT - SPACE FRONTIER ENGINE MASTER PROMPT (v4.0 - Countries + AI + Space)\n\n"
-        "You are an elite AI filmmaker, documentary editor, and storytelling expert.\n"
-        "Your objective is to create a premium YouTube Shorts script (20 seconds max) that maximizes retention, "
-        "watch time, and replay value while maintaining a luxury cinematic documentary aesthetic.\n\n"
-        "CORE NICHE: You generate high-retention video scripts covering Space Exploration, Extreme Nature, Breakthrough Science, Technology, or AI.\n"
-        "STORY STRUCTURE (6-STEP STORYFLOW):\n"
-        "1. Strong 3-second hook (Sentence 1): E.g. 'The next world superpower may not be decided on Earth...', 'One country just made a move that could change space forever...'\n"
-        "2. The Event: Explain country, what happened, mission name, AI technology involved, goal, timeline, importance.\n"
-        "3. Why This Matters: Scientific, economic, strategic, or technological importance, and global impact.\n"
-        "4. Healthy Debate: Balanced discussion of credible viewpoints (e.g. NASA vs CNSA, government vs private, Moon vs Mars, AI autonomy vs human control).\n"
-        "5. Future Outlook: What happens next, challenges, responses.\n"
-        "6. Community Question (Sentence 3): End with ONE engaging question (e.g. 'Which country do you think will lead the next space era?', 'Would you trust AI to control a Mars mission?').\n\n"
-        "RETENTION RULES:\n"
-        "- Strong qualitative hook (no fabricated statistics or numbers)\n"
-        "- A surprising fact\n"
-        "- A comparison between countries or missions\n"
-        "- AI's role in the story\n"
-        "- Why viewers should care\n"
-        "- A future prediction (possibility, not fact)\n"
-        "- A discussion question at the end\n\n"
-        "CONTENT TONE:\n"
-        "Documentary-style storytelling, cinematic narration, easy to understand, fast-paced, curiosity-driven.\n"
-        "GROWTH & ENGAGEMENT HACK: To maximize virality and dominate the algorithm, make the content slightly controversial and edgy. Challenge popular beliefs, spark debate, and highlight intense global rivalries.\n"
-        "FACTUAL REQUIREMENT: You MUST rely on the absolute latest, most original, and cutting-edge facts. Do NOT use generic or outdated knowledge.\n"
-        "SUBSCRIBER DRIVER & ENGAGEMENT BOOSTER (CRITICAL FOR CHANNEL GROWTH):\n"
-        "To rapidly convert casual viewers into permanent subscribers, the script MUST include a punchy verbal subscribe CTA alongside the closing debate question.\n"
-        "Examples: 'Hit subscribe for daily discoveries — which side will win?', 'Subscribe to never miss the universe in 30 seconds — who do you think will lead?', 'Subscribe for tomorrow\'s wild discovery — what would you do?'\n\n"
-        "Respond in valid JSON format only:\n"
-        "{\n"
-        "  \"title\": \"Curiosity-driven, stop-scrolling English title (e.g. 'Why is China investing billions in lunar AI?'), under 50 characters\",\n"
-        "  \"hook\": \"The exact hook line provided in the prompt\",\n"
-        "  \"narration\": \"A 20-second script that explains the viral angle. Include the hook as the first sentence. Make it sound dramatic, scientific but accessible, and fast-paced.\"\n"
-        "}\n\n"
-        "NON-NEGOTIABLE RULES:\n"
-        "1. Start the narration naturally with the provided hook line. NEVER begin with 'EXPOSED:' or 'UNCOVERED:'.\n"
-        "2. Keep the script between 75 and 100 words total structured across 4 to 5 short, punchy sentences (12-16 words each).\n"
-        "3. STRICT PROHIBITION ON RUN-ON SENTENCES: Every sentence MUST end with a period (.), question mark (?), or exclamation point (!). NEVER write a single 30+ word sentence with multiple commas. Neural TTS voices need periods to create natural human-like breathing pauses!\n"
-        "4. Use plain English, avoiding overly dense scientific jargon, but sound authoritative.\n"
-        "4. Information quality must be scientifically accurate. Do not exaggerate.\n"
-        "5. The final result must sound like a premium documentary produced by a world-class creative studio.\n"
-        "6. REWATCH LOOP & COMMENT BAITING: The script's final sentence MUST be a provocative, opinion-splitting question that FORCES viewers to comment. Do NOT repeat or append the hook sentence at the end of the narration. The script must end with the question itself. Make it divisive — pick a side! Choose from or base it on these high-engagement questions:\n"
-        "   - 'Which country do you think will lead the next space era?'\n"
-        "   - 'Should countries compete or collaborate in space?'\n"
-        "   - 'Would you trust AI to control a Mars mission?'\n"
-        "   - 'Would you support building a permanent Moon base?'\n"
-        "   - 'Is Mars the right destination, or should humanity focus elsewhere?'\n"
-        "   - 'Which mission excites you the most?'\n"
-        "   - 'Could AI discover alien life before humans?'\n"
-        "7. EXOPLANET ACCURACY: Exoplanets orbit other stars, NOT our Sun. Always describe them as orbiting distant stars in other star systems.\n"
-        "8. AUTO-DUBBING & TRANSLATION FRIENDLINESS: Avoid complex local idioms, localized slang, or metaphors. Use clean, globally standard grammar for seamless translation."
+        f"""SYSTEM PROMPT - THE SHORTEST ORBIT: WINNING NICHES ENGINE v5.0
+
+You are an elite YouTube Shorts filmmaker, documentary writer, and viral retention expert.
+Your mission is to write a high-retention 25-35 second narration script for The Shortest Orbit.
+
+CURRENT ACTIVE NICHE:
+===> {niche_focus} <===
+{style_guidance}
+
+STORY STRUCTURE (4-5 SHORT SENTENCES, 75-100 WORDS TOTAL):
+1. Sentence 1 (Hook, 8-12 words): Start naturally with the hook line provided. Make it stop the scroll.
+2. Sentences 2-3 (Conflict & High Stakes, 50-65 words): Explain the dramatic clash, why it matters, unexpected turning point, or extreme survival adaptation.
+3. Sentence 4 (Spoken Subscribe CTA + Closing Debate Question, 15-22 words):
+   Combine a punchy verbal subscribe invitation with an opinion-splitting question that FORCES comments!
+   Examples: {cta_examples}
+
+NON-NEGOTIABLE RETENTION RULES:
+- Script length: STRICTLY between 75 and 100 words total.
+- Sentence limits: Every sentence MUST end with punctuation (. ! ?). No run-on sentences!
+- Never start with 'EXPOSED:' or 'UNCOVERED:'.
+- The script MUST end with a question mark (?). Choose or adapt from:
+   - {closing_q_str}
+
+Respond in valid JSON format only:
+{{
+  "title": "Curiosity-driven, stop-scrolling English title under 48 characters",
+  "hook": "{chosen_hook}",
+  "niche": "{current_niche}",
+  "narration": "Full narration script (75-100 words) starting with hook and ending with closing question mark (?)"
+}}"""
     )
-    
     # Load audience feedback insights if available
     insights_guidelines = ""
     insights_path = DATA_DIR / "self_learning_insights.json"
@@ -270,27 +289,38 @@ def generate_narration(topic_data: dict) -> dict:
                     content["narration"] = narration_text
                     break
                     
-            # Ensure narration has a spoken subscribe CTA
+            # Ensure narration has a spoken subscribe CTA tailored to the niche
             lower_narr = narration_text.lower()
             if "subscribe" not in lower_narr:
                 import random
-                sub_ctas = [
-                    "Subscribe for daily 30-second discoveries!",
-                    "Hit subscribe for tomorrow's breakdown!",
-                    "Subscribe to never miss the universe in 30 seconds!"
-                ]
-                chosen_cta = random.choice(sub_ctas)
-                if narration_text.endswith("?"):
-                    narration_text = narration_text + f" {chosen_cta}"
+                if current_niche == "Niche A":
+                    sub_ctas = [
+                        "Hit subscribe for daily space breakdowns — which side will dominate?",
+                        "Subscribe to never miss daily space discoveries — who do you back?",
+                        "Subscribe for daily tech rivalries — what do you think?"
+                    ]
                 else:
-                    narration_text = narration_text + " Subscribe for daily discoveries!"
+                    sub_ctas = [
+                        "Hit subscribe for daily apex clashes — who wins this fight?",
+                        "Subscribe to never miss daily wild showdowns — who would survive?",
+                        "Subscribe for daily apex discoveries — what do you think?"
+                    ]
+                chosen_cta = random.choice(sub_ctas)
+                if "?" in narration_text:
+                    parts = re.split(r'(?<=\.) +', narration_text)
+                    if len(parts) >= 2:
+                        narration_text = " ".join(parts[:-1]) + f" {chosen_cta}"
+                    else:
+                        narration_text = narration_text.rstrip("?!. ") + f". {chosen_cta}"
+                else:
+                    narration_text = narration_text.rstrip("?!. ") + f". {chosen_cta}"
                 content["narration"] = narration_text
                 word_count = len(narration_text.split())
 
             has_valid_ending = narration_text.endswith("?") or narration_text.endswith("!") or narration_text.endswith(".")
             has_question = "?" in narration_text
             if 70 <= word_count <= 125 and has_valid_ending and has_question:
-                import re
+# (re imported at top)
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
                 if not sentences:
                     sentences = [content["narration"]]
@@ -319,7 +349,7 @@ def generate_narration(topic_data: dict) -> dict:
         content["title"] = cleaned_title
         logger.warning(f"Sanitized fallback title to: '{content['title']}'")
 
-    import re
+# (re imported at top)
     sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content.get("narration", "")) if s.strip()]
     if not sentences:
         sentences = [content.get("narration", "")]
@@ -374,12 +404,13 @@ def generate_metadata(topic: str, title: str) -> dict:
         "Ensure it contains the hashtag #Shorts at the very end.\n\n"
         "2. DESCRIPTION & CALL-TO-ACTION SEO:\n"
         "Create a 2-sentence description that invites clicks, followed by a subscriber invitation:\n"
-        "'Subscribe to @theshortestorbit for daily 30-second science, nature & space discoveries.'\n"
+        "'Subscribe to @theshortestorbit for daily 30-second winning niche discoveries (high-stakes tech rivalries & extreme apex clashes).'\n"
         "At the absolute end of the description, append a 'Trending Audio' SEO block:\n"
         "'🎧 Trending Audio: [Pick one: Interstellar Main Theme - Hans Zimmer | Metamorphosis (Phonk) | Blade Runner 2049 Synth | Paris - Else | Suspense Dark Cinematic]'\n\n"
-        "3. VIRAL HASHTAGS:\n"
-        "Select exactly 6 hashtags appropriate for the topic from this high-traffic list:\n"
-        "#Shorts #Science #NatureIsMetal #SpaceExploration #ArtificialIntelligence #FutureTech #Astrophysics #UniverseMystery #OceanExploration #ScienceFacts #WildNature #TechBreakthrough\n\n"
+        "3. VIRAL HASHTAGS (WINNING NICHES SEO):\n"
+        "Select exactly 6 high-velocity hashtags fitting the specific winning niche:\n"
+        "- If Tech & Aerospace: #Shorts #SpaceX #Tesla #Starlink #NASA #Rocket #SpaceRace #TechNews\n"
+        "- If Apex Showdowns & Deep Ocean: #Shorts #NatureIsMetal #WildAnimals #Tiger #Lion #DeepOcean #ApexPredator #OceanExploration\n\n"
         "4. LOCALIZATION:\n"
         "Translate the final English title and description (including the audio recommendation) into Spanish (es), Hindi (hi), French (fr), Portuguese (pt), and Telugu (te).\n"
         "CRITICAL: Write both the titles and descriptions in their native scripts (e.g. Hindi script for Hindi). Do not write localized titles in English script unless natural to the language.\n"
