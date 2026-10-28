@@ -164,7 +164,9 @@ def generate_narration(topic_data: dict) -> dict:
         "Documentary-style storytelling, cinematic narration, easy to understand, fast-paced, curiosity-driven.\n"
         "GROWTH & ENGAGEMENT HACK: To maximize virality and dominate the algorithm, make the content slightly controversial and edgy. Challenge popular beliefs, spark debate, and highlight intense global rivalries.\n"
         "FACTUAL REQUIREMENT: You MUST rely on the absolute latest, most original, and cutting-edge facts. Do NOT use generic or outdated knowledge.\n"
-        "ENGAGEMENT BOOSTER: The narration MUST include a direct call-to-action phrase naturally woven into the script. Examples: 'Drop your answer below', 'Comment which side you're on', 'Tell us what you think'. This is CRITICAL for algorithm growth.\n\n"
+        "SUBSCRIBER DRIVER & ENGAGEMENT BOOSTER (CRITICAL FOR CHANNEL GROWTH):\n"
+        "To rapidly convert casual viewers into permanent subscribers, the script MUST include a punchy verbal subscribe CTA alongside the closing debate question.\n"
+        "Examples: 'Hit subscribe for daily discoveries — which side will win?', 'Which country will lead? Subscribe to never miss the universe in 30 seconds!', 'Subscribe for tomorrow's wild discovery — what would you do?'\n\n"
         "Respond in valid JSON format only:\n"
         "{\n"
         "  \"title\": \"Curiosity-driven, stop-scrolling English title (e.g. 'Why is China investing billions in lunar AI?'), under 50 characters\",\n"
@@ -268,7 +270,26 @@ def generate_narration(topic_data: dict) -> dict:
                     content["narration"] = narration_text
                     break
                     
-            if 70 <= word_count <= 115 and narration_text.endswith("?"):
+            # Ensure narration has a spoken subscribe CTA
+            lower_narr = narration_text.lower()
+            if "subscribe" not in lower_narr:
+                import random
+                sub_ctas = [
+                    "Subscribe for daily 30-second discoveries!",
+                    "Hit subscribe for tomorrow's breakdown!",
+                    "Subscribe to never miss the universe in 30 seconds!"
+                ]
+                chosen_cta = random.choice(sub_ctas)
+                if narration_text.endswith("?"):
+                    narration_text = narration_text + f" {chosen_cta}"
+                else:
+                    narration_text = narration_text + " Subscribe for daily discoveries!"
+                content["narration"] = narration_text
+                word_count = len(narration_text.split())
+
+            has_valid_ending = narration_text.endswith("?") or narration_text.endswith("!") or narration_text.endswith(".")
+            has_question = "?" in narration_text
+            if 70 <= word_count <= 125 and has_valid_ending and has_question:
                 import re
                 sentences = [s.strip() for s in re.split(r'(?<=[.!?]) +', content["narration"]) if s.strip()]
                 if not sentences:

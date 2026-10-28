@@ -400,8 +400,8 @@ def release_pending_unlisted_video(youtube=None) -> dict | None:
                 import re
                 script_text = str(unlisted_video.get("script", "") or "")
                 # Find closing question in script
-                q_match = re.search(r'([A-Z][^\.?!]*\?)\s*$', script_text)
-                closing_q = q_match.group(1).strip() if q_match else "What's YOUR take on this?"
+                q_matches = re.findall(r'([A-Z][^\.?!]*\?)', script_text)
+                closing_q = q_matches[-1].strip() if q_matches else "What's YOUR take on this?"
                 comment_text = f"👇 Debate: {closing_q} Drop your vote in the replies!\n🚀 Subscribe to @theshortestorbit for daily 30-second science, nature & space discoveries!"
                 
                 youtube.commentThreads().insert(
