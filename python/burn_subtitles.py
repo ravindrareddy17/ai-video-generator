@@ -1,12 +1,12 @@
 """
 burn_subtitles.py — Step 9 of the AI Video Generator V2 pipeline.
 
-Burns the SRT subtitle captions into the video. Custom subtitle styling
-(font, size, margin, color, outline) is loaded from config.
+Burns the ASS/SRT subtitle captions into the video with custom subtitle styling
+(Plus Jakarta Sans, size 68, outline 5, lower-third positioning, title case).
 
 Inputs:
     temp/video_audio.mp4
-    captions/voice.srt
+    captions/voice.ass (or captions/voice.srt)
 
 Outputs:
     output/short.mp4
@@ -18,7 +18,7 @@ from pathlib import Path
 # Project imports
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from utils.paths import VIDEO_AUDIO_FILE, SUBTITLES_FILE, FINAL_VIDEO_FILE, FONTS_DIR
+from utils.paths import VIDEO_AUDIO_FILE, SUBTITLES_FILE, SUBTITLES_ASS_FILE, FINAL_VIDEO_FILE, FONTS_DIR
 from utils.config import get_setting
 from utils.logger import get_logger
 from utils.ffmpeg import burn_subtitles
@@ -33,21 +33,23 @@ def run() -> Path:
     # Validate inputs
     if not VIDEO_AUDIO_FILE.exists():
         raise FileNotFoundError(f"Source video with audio not found at {VIDEO_AUDIO_FILE}. Run Step 8 first.")
-    if not SUBTITLES_FILE.exists():
-        raise FileNotFoundError(f"Subtitles SRT file not found at {SUBTITLES_FILE}. Run Step 4 first.")
+        
+    sub_path = SUBTITLES_ASS_FILE if SUBTITLES_ASS_FILE.exists() else SUBTITLES_FILE
+    if not sub_path.exists():
+        raise FileNotFoundError(f"Subtitles file not found at {sub_path}. Run Step 4 first.")
         
     # Load subtitle styling configurations
-    font_name = get_setting('subtitles', 'font', 'Cinzel')
-    font_size = get_setting('subtitles', 'fontsize', 24)
-    margin_v = get_setting('subtitles', 'margin_vertical', 60)
+    font_name = get_setting('subtitles', 'font', 'Plus Jakarta Sans ExtraBold')
+    font_size = get_setting('subtitles', 'fontsize', 68)
+    margin_v = get_setting('subtitles', 'margin_vertical', 420)
     back_color = get_setting('subtitles', 'back_color', '&H80800000')
     
-    logger.info(f"Burning subtitles. Font: '{font_name}', Size: {font_size}, BackColor: {back_color}")
+    logger.info(f"Burning subtitles from {sub_path.name}. Font: '{font_name}', Size: {font_size}")
     
     try:
         burn_subtitles(
             video_path=VIDEO_AUDIO_FILE,
-            srt_path=SUBTITLES_FILE,
+            srt_path=sub_path,
             output_path=FINAL_VIDEO_FILE,
             font_name=font_name,
             font_size=font_size,
@@ -68,5 +70,5 @@ if __name__ == "__main__":
         out_path = run()
         print(f"Subtitle burning complete. File saved at: {out_path}")
     except Exception as exc:
-        logger.exception("burn_subtitles module execution failed")
+        logger.error(f"Execution failed: {exc}")
         sys.exit(1)

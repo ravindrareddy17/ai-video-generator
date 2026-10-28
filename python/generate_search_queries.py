@@ -171,24 +171,20 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         )
 
     system_prompt = (
-        "You are an Elite Visual Director for viral educational explainer Shorts.\n"
-        "Your task is to analyze each fast visual beat and formulate the OPTIMAL REALISTIC VISUALS to communicate the concept with maximum cinematic impact.\n\n"
-        f"{style_instructions}"
-        "RULES:\n"
-        "- Choose targeted real-world physical queries (1-3 words) in 'query'.\n"
-        "- Provide a descriptive prompt for 4K ultra-realistic cinematic scene in 'prompt'.\n"
-        "- Select a camera motion in 'camera_motion' ('zoom_in', 'pan_up', 'aerial_track', 'drone_orbit', 'macro_reveal').\n"
-        "- Output strictly valid JSON matching this schema:\n"
+        "You are an Elite Visual Director for viral educational YouTube Shorts.\n"
+        "For each narration beat, formulate the OPTIMAL REAL-WORLD PHYSICAL VIDEO SEARCH QUERY (2-4 words) to find breathtaking cinematic 4K stock footage on Pexels/Pixabay.\n\n"
+        "CRITICAL RULES:\n"
+        "1. Every query must describe a REAL PHYSICAL OBJECT, TECHNOLOGY, OR ENVIRONMENT that matches the sentence.\n"
+        "   Examples: 'starlink satellites in orbit', 'spacex rocket launch', 'fiber optic data cables', 'mobile phone cell tower', 'data center server rack', 'earth from space orbit', 'smartphone in hand'.\n"
+        "2. NEVER use abstract verbs, filler phrases, or conversational fragments (e.g. NEVER output 'its own', 'acting massive', 'giants create', 'you think', 'concerns and', 'allowing data').\n"
+        "3. Output STRICTLY JSON matching this schema without markdown or verbose essays:\n"
         "{\n"
         "  \"queries\": [\n"
         "    {\n"
         "       \"index\": 1,\n"
         "       \"visual_style\": \"cinematic\",\n"
-        "       \"query\": \"black hole accretion disc\",\n"
-        "       \"prompt\": \"Cinematic 4K cosmic black hole with swirling accretion disc\",\n"
-        "       \"fallback_queries\": [\"black hole\", \"accretion disc\", \"deep space\"],\n"
-        "       \"camera_motion\": \"zoom_in\",\n"
-        "       \"accent_color\": \"orange\"\n"
+        "       \"query\": \"starlink satellites in orbit\",\n"
+        "       \"fallback_queries\": [\"spacex constellation space\", \"earth from orbit night\"]\n"
         "    }\n"
         "  ]\n"
         "}"
@@ -201,7 +197,7 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
     )
     
     logger.info("Calling Visual Decision Director to classify and formulate visual scenes...")
-    raw_response = call_groq_with_fallback(system_prompt, user_prompt, temperature=0.3)
+    raw_response = call_groq_with_fallback(system_prompt, user_prompt, temperature=0.2, max_tokens=2500)
     
     if hasattr(raw_response, "choices") and raw_response.choices:
         response_text = raw_response.choices[0].message.content
@@ -245,11 +241,12 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
             
             # Sanitize query
             q_clean = re.sub(r'[^\w\s]', '', q).strip().lower()
-            if not q_clean:
-                # Content-aware fallback from sentence keywords rather than hardcoded space
-                clean_words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', sub["text"]) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which"}]
+            if not q_clean or len(q_clean.split()) < 2:
+                # Content-aware fallback anchored to core topic
+                clean_words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', sub["text"]) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which", "will", "have", "been", "acting", "massive", "create", "giants", "think", "sparks", "concerns"}]
                 topic_words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', topic_info.get("selected_topic", "") or topic_info.get("topic", "")) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which"}]
-                q_clean = " ".join(clean_words[:2]) if clean_words else (" ".join(topic_words[:2]) if topic_words else "cinematic documentary 4k")
+                core_prefix = " ".join(topic_words[:2]) if topic_words else "satellite space"
+                q_clean = f"{core_prefix} {clean_words[0]}" if clean_words else f"{core_prefix} 4k orbit" 
                 
             clean_fallbacks = []
             for f in fb:
@@ -284,13 +281,13 @@ def generate_queries(subtitles: list[dict], topic_info: dict) -> list[dict]:
         
     except Exception as e:
         logger.error(f"Error parsing LLM response for visual director: {e}")
-        # Rule fallback based on sentence keywords and topic context
+        # Rule fallback anchored strictly to physical topic keywords
         output_queries = []
         topic_words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', topic_info.get("selected_topic", "") or topic_info.get("topic", "")) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which"}]
-        topic_fallback = " ".join(topic_words[:2]) if topic_words else "cinematic documentary"
+        topic_prefix = " ".join(topic_words[:2]) if topic_words else "satellite space"
         for sub in sub_beats:
-            words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', sub["text"]) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which"}][:2]
-            q = " ".join(words) if words else topic_fallback
+            words = [w.strip().lower() for w in re.findall(r'[a-zA-Z]{3,}', sub["text"]) if w.lower() not in {"this", "that", "with", "from", "they", "their", "what", "when", "where", "into", "seconds", "exposed", "comment", "below", "which", "will", "have", "been", "acting", "massive", "create", "giants", "think", "sparks", "concerns"}][:2]
+            q = f"{topic_prefix} {' '.join(words)}" if words else f"{topic_prefix} orbit 4k" 
             output_queries.append({
                 "subtitle_index": sub["index"],
                 "text": sub["text"],

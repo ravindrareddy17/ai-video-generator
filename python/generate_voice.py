@@ -33,10 +33,10 @@ logger = get_logger(__name__)
 
 # Valid voice styles for LLM to choose from
 VOICE_PROFILES = {
-    "deep_story": {"voice": "en-US-SteffanNeural", "rate": "+3%"},
-    "energetic": {"voice": "en-US-ChristopherNeural", "rate": "+8%"},
-    "casual": {"voice": "en-US-AndrewMultilingualNeural", "rate": "+3%"},
-    "serious": {"voice": "en-US-EricNeural", "rate": "+3%"},
+    "deep_story": {"voice": "en-US-BrianMultilingualNeural", "rate": "+0%"},
+    "energetic": {"voice": "en-US-BrianMultilingualNeural", "rate": "+1%"},
+    "casual": {"voice": "en-US-AndrewMultilingualNeural", "rate": "+1%"},
+    "serious": {"voice": "en-US-BrianMultilingualNeural", "rate": "+0%"},
 }
 
 def analyze_voice_style(topic: str) -> dict:
@@ -72,7 +72,7 @@ def analyze_voice_style(topic: str) -> dict:
     except Exception as e:
         logger.warning(f"Voice style selection failed: {e}")
         
-    return VOICE_PROFILES["energetic"]  # Fallback
+    return VOICE_PROFILES["deep_story"]  # Fallback to ultra-natural Brian
 
 
 async def _generate_speech(text: str, voice: str, rate: str, pitch: str, output_path: Path) -> tuple[Path, list[dict]]:

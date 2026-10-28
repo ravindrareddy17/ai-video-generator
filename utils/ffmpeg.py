@@ -510,33 +510,45 @@ def burn_subtitles(
     output_path = Path(output_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    escaped_srt = _escape_srt_path(srt_path.resolve())
-
-    # force_style: Bold Cinzel, white text, yellow highlight, opaque box
-    force_style = (
-        f"FontName={font_name},"
-        f"FontSize={font_size},"
-        f"PrimaryColour=&H00FFFFFF,"
-        f"SecondaryColour=&H00000000,"
-        f"OutlineColour=&H00000000,"
-        f"BackColour=&H40000000,"
-        f"BorderStyle=1,"
-        f"Outline=2.5,"
-        f"Shadow=1,"
-        f"Bold=1,"
-        f"Alignment=2,"
-        f"MarginV={margin_v}"
-    )
-
-    if fonts_dir is not None:
-        escaped_fonts_dir = str(fonts_dir).replace('\\', '/').replace(':', '\\:')
-        vf = f"subtitles='{escaped_srt}':fontsdir='{escaped_fonts_dir}':force_style='{force_style}'"
+    # Check if ASS version of subtitles exists
+    if srt_path.suffix.lower() == ".ass":
+        actual_sub_path = srt_path
+    elif srt_path.with_suffix(".ass").exists():
+        actual_sub_path = srt_path.with_suffix(".ass")
     else:
-        vf = f"subtitles='{escaped_srt}':force_style='{force_style}'"
+        actual_sub_path = srt_path
+
+    escaped_sub = _escape_srt_path(actual_sub_path.resolve())
+    escaped_fonts_dir = str(fonts_dir).replace('\\', '/').replace(':', '\\:') if fonts_dir else ""
+
+    if actual_sub_path.suffix.lower() == ".ass":
+        if escaped_fonts_dir:
+            vf = f"ass='{escaped_sub}':fontsdir='{escaped_fonts_dir}'"
+        else:
+            vf = f"ass='{escaped_sub}'"
+    else:
+        force_style = (
+            f"FontName={font_name},"
+            f"FontSize={font_size},"
+            f"PrimaryColour=&H00FFFFFF,"
+            f"SecondaryColour=&H00000000,"
+            f"OutlineColour=&H00000000,"
+            f"BackColour=&H40000000,"
+            f"BorderStyle=1,"
+            f"Outline=4.0,"
+            f"Shadow=1.5,"
+            f"Bold=1,"
+            f"Alignment=2,"
+            f"MarginV=30"
+        )
+        if escaped_fonts_dir:
+            vf = f"subtitles='{escaped_sub}':fontsdir='{escaped_fonts_dir}':force_style='{force_style}'"
+        else:
+            vf = f"subtitles='{escaped_sub}':force_style='{force_style}'"
 
     logger.info(
         "Burning subtitles from %s with font=%s size=%d",
-        srt_path.name, font_name, font_size,
+        actual_sub_path.name, font_name, font_size,
     )
 
     # Check for animated subscribe outro overlay

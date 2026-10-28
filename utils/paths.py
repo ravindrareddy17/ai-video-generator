@@ -53,6 +53,7 @@ VOICE_FILE: Path = AUDIO_DIR / "voice.mp3"
 WORD_TIMINGS_FILE: Path = AUDIO_DIR / "word_timings.json"
 
 SUBTITLES_FILE: Path = CAPTIONS_DIR / "voice.srt"
+SUBTITLES_ASS_FILE: Path = CAPTIONS_DIR / "voice.ass"
 
 SILENT_VIDEO_FILE: Path = TEMP_DIR / "video.mp4"
 VIDEO_AUDIO_FILE: Path = TEMP_DIR / "video_audio.mp4"
