@@ -11,6 +11,7 @@ from automation.database.connection import (
     get_youtube_conn, get_instagram_conn, get_facebook_conn, get_ai_learning_conn
 )
 from utils.config import get_groq_key, get_setting, call_groq_with_fallback
+from utils.helpers import extract_json_from_llm
 from utils.logger import get_logger
 
 logger = get_logger("ai.learning")
@@ -262,7 +263,7 @@ def run_learning_engine() -> bool:
                     {"role": "system", "content": "You are a database analytics learning model. Return JSON only."},
                     {"role": "user", "content": user_prompt}
                 ],
-                initial_model="qwen/qwen3.6-27b",
+                initial_model="qwen/qwen3.8-27b",
                 temperature=0.2,
                 max_tokens=1024
             )
