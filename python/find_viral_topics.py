@@ -36,21 +36,21 @@ logger = get_logger(__name__)
 # THE WINNING NICHES: High-Stakes Tech/Aerospace & Extreme Apex Showdowns
 # ==============================================================================
 NICHE_A_KEYWORDS = [
-    "spacex", "tesla", "starlink", "nasa", "starship", "elon", "musk",
-    "rocket", "falcon", "artemis", "orbit", "blue origin", "satellite",
-    "mars", "moon", "boeing", "faa", "iss", "astronaut", "space race",
-    "cnsa", "isro", "esa", "superheavy", "propulsion", "aerospace", "launch pad",
-    "robotics", "humanoid", "ai chip", "neuralink"
+    "spacex", "tesla", "starlink", "nasa", "starship", "elon musk",
+    "falcon 9", "artemis", "blue origin", "space race", "boeing space",
+    "faa spacex", "superheavy", "propulsion", "launch pad", "astronaut",
+    "moon base", "mars colony", "orbital", "humanoid robot", "ai chip",
+    "isro", "cnsa", "rocket launch", "spacecraft"
 ]
 
 NICHE_B_KEYWORDS = [
     "tiger", "lion", "croc", "crocodile", "alligator", "buffalo", "orca",
     "killer whale", "shark", "great white", "deep ocean", "mariana trench",
-    "squid", "colossal squid", "predator", "apex", "abyssal", "leopard",
-    "hyena", "cheetah", "anaconda", "python", "komodo", "bear", "grizzly",
-    "polar bear", "wolf", "jaw", "venom", "sea monster", "submersible",
-    "trench", "abyss", "creature", "beast", "wildlife", "hunt", "escape",
-    "nature", "marine", "ocean", "prey", "herd"
+    "squid", "colossal squid", "predator", "apex predator", "abyssal", "leopard",
+    "hyena", "cheetah", "anaconda", "python", "komodo dragon", "grizzly bear",
+    "polar bear", "wolf pack", "sea monster", "megalodon", "anglerfish",
+    "viperfish", "chimera", "abyss", "deep sea creature", "apex showdown",
+    "river ambush", "deadly duel"
 ]
 
 def classify_niche(text: str) -> str:
@@ -426,7 +426,13 @@ def select_best_topic(topics: list[dict], recent_titles: list[str] = None) -> di
     else:
         filtered_topics = topics_sorted
         
-    top_candidates = filtered_topics[:14] if len(filtered_topics) >= 4 else topics_sorted[:14]
+    # Strictly filter candidates belonging to the target winning niche
+    niche_candidates = [t for t in filtered_topics if classify_niche(t["title"]) == target_niche]
+    if len(niche_candidates) >= 4:
+        top_candidates = niche_candidates[:14]
+        logger.info(f"Filtered {len(niche_candidates)} candidates strictly belonging to {target_niche}.")
+    else:
+        top_candidates = [t for t in filtered_topics if classify_niche(t["title"]) in ["Niche A", "Niche B"]][:14] or filtered_topics[:14]
     candidate_list_str = "\n".join([f"- {t['title']} (Source: {t['source']})" for t in top_candidates])
     
     system_prompt = (

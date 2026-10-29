@@ -363,7 +363,7 @@ Respond in valid JSON format only:
 def generate_metadata(topic: str, title: str) -> dict:
     """Generate YouTube metadata (description, tags, hashtags, translations) via Groq LLM with strict title variety."""
     api_key = get_groq_key()
-    model = get_setting('llm', 'model', 'llama-3.3-70b-versatile')
+    model = get_setting('llm', 'model', 'openai/gpt-oss-120b')
     client = Groq(api_key=api_key)
     
     # Query last 15 titles to extract and block repetitive starting prefixes (e.g. "The HIDDEN...")
